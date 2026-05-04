@@ -1,0 +1,196 @@
+/* HelpPage-specific styles — layout comes from AboutPage.css */
+
+.help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.help-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.help-step:hover {
+  border-color: #9dd7ef;
+  box-shadow: 0 3px 10px rgba(58,154,217,0.08);
+}
+
+.help-step-num {
+  min-width: 22px;
+  height: 22px;
+  background: var(--c-teal-dk);
+  color: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.help-step-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.help-step-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--c-teal-dk);
+  margin-bottom: 2px;
+}
+
+.help-step-desc {
+  font-size: 11.5px;
+  color: var(--c-text-mute);
+  line-height: 1.55;
+}
+
+/* FAQ */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.faq-item {
+  border: 1px solid var(--c-border);
+  border-radius: 9px;
+  overflow: hidden;
+  background: #fff;
+  transition: border-color 0.18s;
+}
+
+.faq-item.open {
+  border-color: #9dd7ef;
+}
+
+.faq-trigger {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 11px 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+  text-align: left;
+}
+
+.faq-trigger:hover { background: #f5fbfd; }
+.faq-item.open .faq-trigger { background: #edf8fb; }
+
+.faq-question {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--c-text);
+  line-height: 1.4;
+}
+
+.faq-chevron {
+  font-size: 16px;
+  color: var(--c-teal);
+  font-weight: 300;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.faq-answer {
+  padding: 10px 13px 13px;
+  font-size: 12px;
+  color: var(--c-text-mid);
+  line-height: 1.7;
+  border-top: 1px solid var(--c-border);
+}
+
+/* Contact */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.contact-card {
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  transition: border-color 0.18s, transform 0.16s, box-shadow 0.18s;
+  cursor: default;
+  text-align: center;
+}
+
+.contact-card:hover {
+  border-color: #9dd7ef;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(58,154,217,0.09);
+}
+
+.contact-icon { font-size: 22px; line-height: 1; }
+
+.contact-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-teal-dk);
+}
+
+.contact-value {
+  font-size: 10.5px;
+  color: var(--c-text-mute);
+  line-height: 1.4;
+}
+
+/* Make sure Leaflet map fills the container */
+.map-full {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.map-full .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #e8e2d4;
+}
+
+/* Optional: Style the popup */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.leaflet-popup-content {
+  font-size: 12px;
+  color: var(--c-text);
+  margin: 8px 12px;
+}
+
+/* Style custom marker tooltips */
+.leaflet-tooltip {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--c-teal);
+  border-radius: 6px;
+  color: var(--c-teal-dk);
+  padding: 4px 8px;
+}
