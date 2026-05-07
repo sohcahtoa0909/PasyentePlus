@@ -4,7 +4,7 @@ import { prisma } from "./lib/prismaclient";
 import express from 'express';
 
 const app = express();
-const port = 3000;
+const port = process.env.API_PORT!;
 
 async function loadRoutes(dir: string, baseRoute: string = '') {  
   const files = fs.readdirSync(dir, { withFileTypes: true });
