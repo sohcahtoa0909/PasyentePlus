@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../../node_modules/.prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/* DEFINING HOSPITAL DATA */
+
+/*  
+  Object: Hospital
+
+  About:
+    This object contains hospital data, it models an "institution", see examples below
+
+  Examples:
+    -BROKENSHIRE
+    -DMSF
+    -DAVAO DOC
+*/
+model Hospital {
+  id            String @id @default(uuid())
+  hospitalName  String
+
+  locLat        Float
+  locLng        Float
+  address       String?
+
+  imageUrl      String?
+
+  facilities    Facility[]
+}
+
+/*
+  Object: Facility
+
+  About:
+    This object is an emulation of wards/clinics/offices, see examples below
+
+  Examples:
+    -DMSF ER
+    -BROKENSHIRE DENTIST
+    -DAVAO DOC DIALYSIS
+*/
+model Facility {
+  id            String        @id @default(uuid())
+  facilityName  String
+
+  hospital      Hospital      @relation(fields: [hospitalId], references: [id])
+  hospitalId    String
+
+  type          FacilityType  @relation(fields: [typeId], references: [id])
+  typeId        String
+
+  services      FacilityService[]
+
+  reports       FeedbackReport[]
+}
+
+/*
+Object: Service
+
+  About:
+    This object models specific services or jobs in a facility or office
+
+  Examples:
+    -DENTIST CLEANING
+    -DENTIST FILLING
+    -OBGYNE CONSULTATION
+*/
+model ServiceType {
+  id              String        @id @default(uuid())
+  name            String
+
+  facilityType    FacilityType  @relation(fields: [facilityTypeId], references: [id])
+  facilityTypeId  String
+
+  services        FacilityService[]
+}
+
+/*
+  Object: FacilityType
+
+  About:
+    This object creates distinction between different facility types
+*/
+model FacilityType {
+  id          String @id @default(uuid())
+  name        String @unique
+
+  services    ServiceType[]
+  facilities  Facility[]
+}
+
+/*
+  Join Table: Joins Facilities and their Services provided
+*/
+model FacilityService {
+  id          String      @id @default(uuid())
+
+  facility    Facility    @relation(fields: [facilityId], references: [id])
+  facilityId  String
+
+  service     ServiceType @relation(fields: [serviceId], references: [id])
+  serviceId   String
+
+  minCost     Int?
+  maxCost     Int?
+
+  isAvailable Boolean?
+
+  notes       String?
+
+  @@unique([facilityId, serviceId])
+}
+
+/*  DEFINING FEEDBACK DATA  */
+
+/*
+  Object: User
+
+  About:
+    This object defines an app user
+*/
+model User {
+  id              String  @id @default(uuid())
+  displayName     String
+  userName        String  @unique
+  hashedPassword  String
+
+  isAdmin         Boolean @default(false)
+
+  reports         FeedbackReport[]
+}
+
+/*
+  Object: Report
+
+  About:
+    This object is used whenever a user gives their rating (out of 5 stars), their waiting times, or their comments.
+*/
+model FeedbackReport {
+  id          String    @id  @default(uuid())
+
+  facility    Facility  @relation(fields: [facilityId], references: [id])
+  facilityId  String
+
+  reporter    User      @relation(fields: [reporterId], references: [id])
+  reporterId  String
+
+  //Rating is 1-5 Stars
+  rating      Int
+
+  //Time entered and exited
+  timeIn      DateTime
+  timeOut     DateTime
+
+  //Money spent by user
+  moneySpent  Int?
+
+  //Additiona comments/remarks
+  textComment String?
+
+  createdAt   DateTime  @default(now())
+}
