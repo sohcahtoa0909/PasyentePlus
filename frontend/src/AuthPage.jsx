@@ -82,6 +82,39 @@ export default function AuthPage() {
   });
   const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
 
+  const onLoginPressed = () => {
+    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailOrUserName: form.email,
+        passwordAttempt: form.password
+      })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+
+      console.log(data);
+
+      return {
+        success: res.ok,
+        status: res.status,
+        data: data
+      };
+    })
+    .then((result) => {
+      if(result.success) {
+        //Move to home page
+        alert("Login success!");        
+
+        localStorage.setItem('token', result.data.token);
+      } else {
+        //Alert somehow to tell that login failed!
+        alert("Login failed!");        
+      }
+    });
+  };
+
   return (
     <div className="auth-shell">
       {/* ── Right: Image Panel ── */}
@@ -183,7 +216,8 @@ export default function AuthPage() {
           <div className="auth-actions">
             {mode === "login" ? (
               <>
-                <button className="auth-btn-primary">
+                <button className="auth-btn-primary"
+                  onClick={() => onLoginPressed() }>
                   Sign in <IconArrow />
                 </button>
               </>

@@ -30,17 +30,17 @@ router.post('/', async (req, res) => {
                 //Use username as basis for login
                 userName: emailOrUserName
             }
-    });
+    });    
     if(!user) {
         return res.status(401).json({
-            error: "Invalid credentials"
+            message: "Invalid credentials"
         });
     }
 
     const isPasswordCorrect = await argon2.verify(user.hashedPassword, passwordAttempt);
     if(!isPasswordCorrect) {
         return res.status(401).json({
-            error: "Password incorrect!"
+            message: "Password incorrect!"
         });
     }
 
@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
         { expiresIn: '1d' }
     );
 
-    res.json({
+    res.status(200).json({
         token,
         user: { displayName: user.displayName }
     });
