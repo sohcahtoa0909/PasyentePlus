@@ -4,6 +4,8 @@ import { prisma } from "./lib/prismaclient";
 import express from 'express';
 
 const app = express();
+app.use(express.json());
+
 const port = process.env.API_PORT!;
 
 async function loadRoutes(dir: string, baseRoute: string = '') {  
