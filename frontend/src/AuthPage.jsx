@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./AuthPage.css";
-import LogoSrc from './Logo.svg';
+import LogoSrc from './Logo.png';
 import BgImage from './AuthPage_Background.png';
 
 /* ── Icons ── */

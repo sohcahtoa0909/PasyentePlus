@@ -48,7 +48,7 @@ body, html {
   height: 100%;
   object-fit: cover;
   transition: opacity 0.4s ease;
-  object-position: right center;
+  object-position: right;
 }
 
 

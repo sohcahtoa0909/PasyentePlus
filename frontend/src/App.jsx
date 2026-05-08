@@ -6,7 +6,7 @@ import HomePage from "./HomePage";
 import AuthPage from "./AuthPage";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("Home");
+  const [activePage, setActivePage] = useState("Auth");
 
   const renderPage = () => {
     switch (activePage) {
