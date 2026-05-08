@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./AboutPage.css";
 import MapComponent from "./MapComponent";
+import LogoSrc from './Logo.png';
 
 /* ── Icons ─────────────────────────────────── */
 const IconHome = () => (
@@ -102,7 +103,7 @@ export default function AboutPage({ activePage, setActivePage }) {
       <nav className="side-nav">
         <div className="nav-logo">
           <img
-            src="/logo-placeholder.png"
+            src={LogoSrc}
             alt="logo"
             onError={(e) => {
               e.target.style.display = "none";
@@ -132,7 +133,7 @@ export default function AboutPage({ activePage, setActivePage }) {
         <div className="nav-spacer" />
         <div className="nav-divider" />
 
-        <button className="nav-item" title="Settings">
+        <button className="nav-item" onClick={() => setActivePage("Settings")} title="Settings">
           <IconSettings />
         </button>
       </nav>

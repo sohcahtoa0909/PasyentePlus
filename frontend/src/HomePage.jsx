@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./HomePage.css";
 import MapComponent from "./MapComponent";
+import LogoSrc from './Logo.png';
 
 
 /* ── Icons ─────────────────────────────────────────── */
@@ -208,7 +209,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
       {/* ── Side Nav ── */}
       <nav className="hp-side-nav">
         <div className="hp-nav-logo">
-          <span>P+</span>
+          <img src={LogoSrc} alt="logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
 
         <button className="hp-nav-item" title="Search">
@@ -230,7 +231,10 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
         <div className="hp-nav-spacer" />
         <div className="hp-nav-divider" />
 
-        <button className="hp-nav-item" title="Settings">
+        <button
+          className={`nav-item ${activePage === "Settings" ? "active" : ""}`}
+          onClick={() => handleNavClick("Settings")}
+          title="Settings">
           <IconSettings />
         </button>
       </nav>

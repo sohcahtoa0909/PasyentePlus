@@ -4,9 +4,10 @@ import HelpPage from "./HelpPage";
 import PreferencesPage from "./PreferencesPage";
 import HomePage from "./HomePage";
 import AuthPage from "./AuthPage";
+import SettingsPage from "./SettingsPage";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("Auth");
+  const [activePage, setActivePage] = useState("Home");
 
   const renderPage = () => {
     switch (activePage) {
@@ -15,6 +16,7 @@ export default function App() {
       case "Help":  return <HelpPage  activePage={activePage} setActivePage={setActivePage} />;
       case "Preferences": return <PreferencesPage activePage={activePage} setActivePage={setActivePage} />;
       case "Auth": return <AuthPage activePage={activePage} setActivePage={setActivePage} />;
+      case "Settings": return <SettingsPage activePage={activePage} setActivePage={setActivePage} />;
       default:      return <AboutPage activePage={activePage} setActivePage={setActivePage} />;
     }
   };
