@@ -55,7 +55,9 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
     "userName" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
+    "emailAddress" TEXT NOT NULL,
+    "hashedPassword" TEXT NOT NULL,
+    "isAdmin" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -83,6 +85,9 @@ CREATE UNIQUE INDEX "FacilityService_facilityId_serviceId_key" ON "FacilityServi
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_userName_key" ON "User"("userName");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_emailAddress_key" ON "User"("emailAddress");
 
 -- AddForeignKey
 ALTER TABLE "Facility" ADD CONSTRAINT "Facility_hospitalId_fkey" FOREIGN KEY ("hospitalId") REFERENCES "Hospital"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

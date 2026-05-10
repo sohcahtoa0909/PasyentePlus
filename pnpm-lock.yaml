@@ -62,7 +62,11 @@ importers:
         specifier: ^9.0.10
         version: 9.0.10
 
-  backend/db: {}
+  backend/db:
+    dependencies:
+      argon2:
+        specifier: ^0.44.0
+        version: 0.44.0
 
   frontend:
     dependencies:

@@ -1,5 +1,6 @@
 import { PrismaClient } from ".prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import argon2 from "argon2";
 import "dotenv/config";
 
 const connectionString = `${process.env.DATABASE_URL}`;
@@ -115,6 +116,16 @@ async function main() {
                 isAvailable: false, // doesn't offer braces
             },
         ],
+    });
+
+    // Create new users
+    await prisma.user.create({
+        data: {
+            displayName: `Pasyente Plus`,
+            userName: `pasyenteplus`,
+            emailAddress: `pasyente.plus@pasyenteplus.org`,
+            hashedPassword: await argon2.hash("pasyentepassword")
+        }
     });
 
     console.log("✅ Seed data inserted");
