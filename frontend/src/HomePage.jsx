@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import "./HomePage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
+import NavSearchBar from "./NavSearchBar";
 
 
 /* ── Icons ─────────────────────────────────────────── */
@@ -363,6 +364,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   const [selectedId,      setSelectedId]      = useState(1);
   const [filterTab,       setFilterTab]       = useState("All");
   const [selectedService, setSelectedService] = useState(null);
+  const [selectedFacility, setSelectedFacility] = useState(null);
 
   const panelOpen = activePage === "Home";
 
@@ -374,6 +376,12 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   function handleServiceSelect(svc) {
     setSelectedService(svc);
     if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
+  }
+
+  // When a facility is picked from the nav search, highlight it in the list
+  function handleFacilitySelect(facility) {
+    setSelectedFacility(facility);
+    if (facility) setSelectedId(facility.id);
   }
 
   const filtered = FACILITIES.filter(f => {
@@ -408,9 +416,10 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           <img src={LogoSrc} alt="logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
 
-        <button className="hp-nav-item" title="Search">
-          <IconSearch />
-        </button>
+        <NavSearchBar
+          selectedFacility={selectedFacility}
+          onFacilitySelect={handleFacilitySelect}
+        />
         <div className="hp-nav-divider" />
 
         {NAV.map(n => (
