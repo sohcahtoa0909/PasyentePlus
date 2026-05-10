@@ -72,15 +72,103 @@ function FloatingField({ label, type = "text", value, onChange, icon, rightSlot 
 }
 
 /* ── AuthPage ── */
-export default function AuthPage() {
+export default function AuthPage({ activePage, setActivePage }) {
+  const failureDialogues = [    
+    "Incorrect username or password.", // Login fail
+    "User already exists.", // Register fail because backend denies
+    "Passwords don't match." // Register fail because password dont match
+  ];
+
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  
+  const [regSuccess, setRegSuccess] = useState(false);
+  const [loginAttemptFail, setAttemptFail] = useState(false);
+  const [failureDialogueIndex, setFailureDialogueIndex] = useState(0);
 
   const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", password: "", confirm: ""
+    firstName: "", lastName: "", userName: "", email: "", password: "", confirm: ""
   });
   const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
+
+  const onLoginPressed = () => {
+    setAttemptFail(false);
+
+    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailOrUserName: form.email.trim(),
+        passwordAttempt: form.password
+      })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+
+      console.log(data);
+
+      return {
+        success: res.ok,
+        status: res.status,
+        data: data
+      };
+    })
+    .then((result) => {
+      if(result.success) {
+        //Move to home page
+        setActivePage("Home");
+
+        //Local storage for now, find other methods later
+        localStorage.setItem('token', result.data.token);
+      } else {
+        //Alert somehow to tell that login failed!
+        setAttemptFail(true);
+        setFailureDialogueIndex(0);
+      }
+    });
+  };
+
+  const onRegisterPressed = () => {
+    setAttemptFail(false);
+
+    if(form.password !== form.confirm) {
+      setAttemptFail(true);
+      setFailureDialogueIndex(2);
+      return;
+    }
+    
+    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        userName: form.userName.trim(),
+        emailAddress: form.email.trim(),
+        givenPassword: form.password
+      })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+
+      console.log(data);
+
+      return {
+        success: res.ok,
+        status: res.status,
+        data: data
+      };
+    })
+    .then((result) => {
+      if(result.success) {
+        setRegSuccess(true);
+      } else {
+        setAttemptFail(true);
+        setFailureDialogueIndex(1);
+      }
+    })
+  }
 
   return (
     <div className="auth-shell">
@@ -139,6 +227,13 @@ export default function AuthPage() {
               </div>
             )}
 
+            {mode === "signup" && (
+              <FloatingField
+                label="Username" type="userName" value={form.userName}
+                onChange={set("userName")} icon={<IconMail />}
+              />
+            )}
+
             <FloatingField
               label="Email" type="email" value={form.email}
               onChange={set("email")} icon={<IconMail />}
@@ -172,6 +267,12 @@ export default function AuthPage() {
               />
             )}
 
+            {loginAttemptFail && (
+              <p className="auth-sub auth-sub-red">
+                {failureDialogues[failureDialogueIndex]}
+              </p>
+            )}
+
             {mode === "login" && (
               <div className="auth-forgot-row">
                 <button className="auth-forgot-link">Forgot password?</button>
@@ -183,16 +284,28 @@ export default function AuthPage() {
           <div className="auth-actions">
             {mode === "login" ? (
               <>
-                <button className="auth-btn-primary">
+                <button className="auth-btn-primary"
+                  onClick={() => onLoginPressed() }>
                   Sign in <IconArrow />
                 </button>
               </>
             ) : (
               <>
-                <button className="auth-btn-secondary" onClick={() => setMode("login")}>Log in instead</button>
-                <button className="auth-btn-primary">
-                  Create account <IconArrow />
-                </button>
+                  {regSuccess ?
+                    (<>
+                    <button className="auth-btn-primary"
+                        onClick={() => setMode("login")}>
+                        You have been signed up, sign in here <IconArrow />
+                      </button>
+                    </>) :
+                    (<>
+                      <button className="auth-btn-secondary" onClick={() => setMode("login")}>Log in instead</button>
+                      <button className="auth-btn-primary"
+                        onClick={() => onRegisterPressed()}>
+                        Create account <IconArrow />
+                      </button>
+                    </>)
+                  }
               </>
             )}
           </div>

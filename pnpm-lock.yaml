@@ -45,6 +45,9 @@ importers:
       argon2:
         specifier: ^0.44.0
         version: 0.44.0
+      cors:
+        specifier: ^2.8.6
+        version: 2.8.6
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -59,7 +62,11 @@ importers:
         specifier: ^9.0.10
         version: 9.0.10
 
-  backend/db: {}
+  backend/db:
+    dependencies:
+      argon2:
+        specifier: ^0.44.0
+        version: 0.44.0
 
   frontend:
     dependencies:
@@ -2437,6 +2444,10 @@ packages:
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
+
+  cors@2.8.6:
+    resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
+    engines: {node: '>= 0.10'}
 
   cosmiconfig@6.0.0:
     resolution: {integrity: sha512-xb3ZL6+L8b9JLLCx3ZdoZy4+2ECphCMo2PwqgP1tlfVq6M6YReyzBJtvWWtbDSpNr9hn96pkCiZqUcFEc+54Qg==}
@@ -9061,6 +9072,11 @@ snapshots:
   core-js@3.49.0: {}
 
   core-util-is@1.0.3: {}
+
+  cors@2.8.6:
+    dependencies:
+      object-assign: 4.1.1
+      vary: 1.1.2
 
   cosmiconfig@6.0.0:
     dependencies:

@@ -3,37 +3,59 @@ export const pathOverride: String | null = null;
 //Set if you don't want this file to be read 
 export const exclude: boolean = false;
 
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { prisma } from "../../lib/prismaclient";
+import { validateEmail } from "../../lib/emailvalidate";
+
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import argon2 from "argon2"
 
 import { Router } from "express";
 const router: Router = Router();
 router.post('/', async (req, res) => {
-    const { userName, displayName, rawPassword, emailAddress } = req.body;
+    let {
+        firstName,
+        lastName,
+        userName,
+        emailAddress,
+        givenPassword
+    } = req.body;
 
-    const hashedPassword = await argon2.hash(rawPassword);
+    firstName = (firstName as string).trim();
+    lastName = (lastName as string).trim();    
+    userName = (userName as string).trim();
+    emailAddress = (emailAddress as string).trim();
+
+    if(!validateEmail(emailAddress.trim())) {
+        return res.status(400).json({
+            message: "Invalid email address"
+        });
+    }
 
     try {
-        const newUser = prisma.user.create({
+        const hashedPassword = await argon2.hash(givenPassword);
+
+        const newUser = await prisma.user.create({
             data: {
+                displayName: `${firstName} ${lastName}`,
                 userName: userName,
-                displayName: displayName,
-                passwordHash: hashedPassword
+                emailAddress: emailAddress,
+                hashedPassword: hashedPassword
             }
         });
 
-        return res.status(409).json({ message: "Successfully created your account" })
+        return res.status(200).json({
+            message: "Successfully signed up!",
+            displayName: newUser.displayName
+        });
     } catch (e) {
-        if (e instanceof PrismaClientKnownRequestError) {
-            if (e.code === "P2002") {
-                console.log(
-                    "Cannot create new user because either that username or email is taken!"
-                );
+        if(e instanceof PrismaClientKnownRequestError) {
+            if(e.code === "P2002") {
+                return res.status(400).json({
+                    message: "Cannot create this user"
+                });
             }
-
-            return res.status(409).json({ message: `Could not create a new account because of error: ${e.cause}` });
         }
+        throw e;
     }
 });
 export default router;
