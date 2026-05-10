@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import "./HomePage.css";
 import MapComponent from "./MapComponent";
+import LogoSrc from './Logo.png';
+import NavSearchBar from "./NavSearchBar";
 
 
 /* ── Icons ─────────────────────────────────────────── */
@@ -54,8 +57,56 @@ const IconClock = () => (
       d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
+const IconX = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
-/* ── Data ───────────────────────────────────────────── */
+/* ── Service Data ───────────────────────────────────── */
+// Each service has: name, category emoji, suggested budget, and a hint label
+const SERVICES = [
+  // Emergency
+  { name: "Emergency / ER Visit",         emoji: "🚨", category: "Emergency",     suggestedBudget: 2500 },
+  { name: "Ambulance Transport",           emoji: "🚑", category: "Emergency",     suggestedBudget: 1800 },
+  // Consultations
+  { name: "General Consultation (GP)",     emoji: "🩺", category: "Consultation",  suggestedBudget: 500  },
+  { name: "Pediatrics Consultation",       emoji: "👶", category: "Consultation",  suggestedBudget: 600  },
+  { name: "OB-GYN Consultation",           emoji: "🤰", category: "Consultation",  suggestedBudget: 700  },
+  { name: "Cardiology Consultation",       emoji: "❤️", category: "Consultation",  suggestedBudget: 1200 },
+  { name: "Orthopedics Consultation",      emoji: "🦴", category: "Consultation",  suggestedBudget: 900  },
+  { name: "Dermatology Consultation",      emoji: "🧴", category: "Consultation",  suggestedBudget: 800  },
+  { name: "Neurology Consultation",        emoji: "🧠", category: "Consultation",  suggestedBudget: 1500 },
+  { name: "Psychiatry / Mental Health",    emoji: "🧘", category: "Consultation",  suggestedBudget: 1000 },
+  { name: "ENT Consultation",              emoji: "👂", category: "Consultation",  suggestedBudget: 700  },
+  { name: "Ophthalmology / Eye Check",     emoji: "👁️", category: "Consultation",  suggestedBudget: 750  },
+  { name: "Dental Check-up & Cleaning",    emoji: "🦷", category: "Dental",        suggestedBudget: 400  },
+  { name: "Tooth Extraction",              emoji: "🦷", category: "Dental",        suggestedBudget: 600  },
+  { name: "Dental Braces / Orthodontics",  emoji: "😬", category: "Dental",        suggestedBudget: 2800 },
+  // Diagnostics
+  { name: "Blood Test / CBC",              emoji: "🩸", category: "Diagnostics",   suggestedBudget: 400  },
+  { name: "Urinalysis",                    emoji: "🧪", category: "Diagnostics",   suggestedBudget: 200  },
+  { name: "X-Ray",                         emoji: "🔬", category: "Diagnostics",   suggestedBudget: 500  },
+  { name: "Ultrasound",                    emoji: "📡", category: "Diagnostics",   suggestedBudget: 900  },
+  { name: "MRI Scan",                      emoji: "🧲", category: "Diagnostics",   suggestedBudget: 2500 },
+  { name: "CT Scan",                       emoji: "💻", category: "Diagnostics",   suggestedBudget: 2200 },
+  { name: "ECG / EKG",                     emoji: "📈", category: "Diagnostics",   suggestedBudget: 600  },
+  // Preventive
+  { name: "Annual Physical Exam (APE)",    emoji: "📋", category: "Preventive",    suggestedBudget: 800  },
+  { name: "Vaccination / Immunization",    emoji: "💉", category: "Preventive",    suggestedBudget: 500  },
+  { name: "Prenatal Check-up",             emoji: "🤱", category: "Preventive",    suggestedBudget: 700  },
+  { name: "Family Planning",              emoji: "👨‍👩‍👧", category: "Preventive",  suggestedBudget: 600  },
+  // Therapy
+  { name: "Physical Therapy / Rehab",      emoji: "🏋️", category: "Therapy",       suggestedBudget: 900  },
+  { name: "Speech Therapy",                emoji: "🗣️", category: "Therapy",       suggestedBudget: 1000 },
+  // Surgical
+  { name: "Minor Surgical Procedure",      emoji: "🔪", category: "Surgical",      suggestedBudget: 2000 },
+  { name: "Circumcision",                  emoji: "⚕️", category: "Surgical",      suggestedBudget: 1000 },
+];
+
+const CATEGORY_ORDER = ["Emergency", "Consultation", "Dental", "Diagnostics", "Preventive", "Therapy", "Surgical"];
+
+/* ── Other Data ─────────────────────────────────────── */
 const NAV = [
   { key: "Home",        icon: <IconHome /> },
   { key: "About",       icon: <IconInfo /> },
@@ -75,6 +126,166 @@ const FACILITIES = [
 ];
 
 const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
+
+/* ── ServiceSearch Component ────────────────────────── */
+function ServiceSearch({ onServiceSelect, selectedService }) {
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlighted, setHighlighted] = useState(-1);
+  const [dropdownStyle, setDropdownStyle] = useState({});
+  const inputRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  const filtered = query.trim().length === 0
+    ? SERVICES
+    : SERVICES.filter(s =>
+        s.name.toLowerCase().includes(query.toLowerCase()) ||
+        s.category.toLowerCase().includes(query.toLowerCase())
+      );
+
+  const grouped = CATEGORY_ORDER.reduce((acc, cat) => {
+    const items = filtered.filter(s => s.category === cat);
+    if (items.length) acc[cat] = items;
+    return acc;
+  }, {});
+
+  const flatList = Object.values(grouped).flat();
+
+  // Reposition dropdown to match input's screen coordinates
+  function updateDropdownPos() {
+    if (!wrapRef.current) return;
+    const rect = wrapRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: "fixed",
+      top: rect.bottom + 6,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }
+
+  useEffect(() => {
+    if (isOpen) updateDropdownPos();
+  }, [isOpen]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        wrapRef.current && !wrapRef.current.contains(e.target) &&
+        !e.target.closest(".hp-service-dropdown-portal")
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Reposition on scroll (panel body scrolls)
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = document.querySelector(".hp-panel-body");
+    const onScroll = () => updateDropdownPos();
+    panel?.addEventListener("scroll", onScroll);
+    return () => panel?.removeEventListener("scroll", onScroll);
+  }, [isOpen]);
+
+  function handleKeyDown(e) {
+    if (!isOpen) { if (e.key === "ArrowDown" || e.key === "Enter") setIsOpen(true); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHighlighted(h => Math.min(h + 1, flatList.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHighlighted(h => Math.max(h - 1, 0)); }
+    else if (e.key === "Enter" && highlighted >= 0) { selectService(flatList[highlighted]); }
+    else if (e.key === "Escape") { setIsOpen(false); }
+  }
+
+  function selectService(svc) {
+    onServiceSelect(svc);
+    setQuery("");
+    setIsOpen(false);
+    setHighlighted(-1);
+  }
+
+  function clearService() {
+    onServiceSelect(null);
+    setQuery("");
+    inputRef.current?.focus();
+  }
+
+  const dropdown = isOpen && !selectedService && createPortal(
+    <div className="hp-service-dropdown hp-service-dropdown-portal" style={dropdownStyle}>
+      {flatList.length === 0 ? (
+        <div className="hp-service-empty">No services found for "{query}"</div>
+      ) : (
+        Object.entries(grouped).map(([cat, items]) => (
+          <div key={cat} className="hp-service-group">
+            <div className="hp-service-group-label">{cat}</div>
+            {items.map(svc => {
+              const idx = flatList.indexOf(svc);
+              return (
+                <button
+                  key={svc.name}
+                  className={`hp-service-option${highlighted === idx ? " highlighted" : ""}`}
+                  onMouseEnter={() => setHighlighted(idx)}
+                  onMouseDown={e => { e.preventDefault(); selectService(svc); }}
+                >
+                  <span className="hp-svc-emoji">{svc.emoji}</span>
+                  <span className="hp-svc-name">{svc.name}</span>
+                  <span className="hp-svc-price">~₱{svc.suggestedBudget.toLocaleString()}</span>
+                </button>
+              );
+            })}
+          </div>
+        ))
+      )}
+    </div>,
+    document.body
+  );
+
+  return (
+    <div className="hp-service-search">
+      <div className="hp-section-label">I'm Looking For</div>
+
+      {selectedService ? (
+        <div className="hp-service-selected">
+          <span className="hp-service-selected-emoji">{selectedService.emoji}</span>
+          <span className="hp-service-selected-name">{selectedService.name}</span>
+          <span className="hp-service-selected-cat">{selectedService.category}</span>
+          <button className="hp-service-clear" onClick={clearService} title="Clear">
+            <IconX />
+          </button>
+        </div>
+      ) : (
+        <div ref={wrapRef} className={`hp-service-input-wrap${isOpen ? " open" : ""}`}>
+          <span className="hp-service-input-icon"><IconSearch /></span>
+          <input
+            ref={inputRef}
+            className="hp-service-input"
+            placeholder="Search service or condition…"
+            value={query}
+            onChange={e => { setQuery(e.target.value); setIsOpen(true); setHighlighted(-1); }}
+            onFocus={() => setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+            autoComplete="off"
+          />
+          {query && (
+            <button className="hp-service-input-clear" onClick={() => { setQuery(""); setHighlighted(-1); }}>
+              <IconX />
+            </button>
+          )}
+        </div>
+      )}
+
+      {dropdown}
+
+      {selectedService && (
+        <div className="hp-service-hint">
+          Typical cost around <strong>₱{selectedService.suggestedBudget.toLocaleString()}</strong> — budget slider adjusted.
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ── Sub-components ─────────────────────────────────── */
 
@@ -123,24 +334,16 @@ function FacilityCard({ facility, selected, onClick, animDelay }) {
       onClick={onClick}
     >
       <div className="hp-card-accent" />
-
       {facility.best && (
         <div className="hp-best-badge">★ Best Match</div>
       )}
-
       <div className="hp-card-name">{facility.name}</div>
       <div className="hp-card-type">{facility.type}</div>
-
       <div className="hp-card-stats">
         <span className="hp-stat budget">₱{facility.budget}</span>
-        <span className="hp-stat">
-          <IconMapPin />{facility.travel}m
-        </span>
-        <span className="hp-stat">
-          <IconClock />{facility.wait}m wait
-        </span>
+        <span className="hp-stat"><IconMapPin />{facility.travel}m</span>
+        <span className="hp-stat"><IconClock />{facility.wait}m wait</span>
       </div>
-
       <div className="hp-card-bottom">
         <Stars rating={facility.rating} />
         <div className="hp-tags">
@@ -155,17 +358,31 @@ function FacilityCard({ facility, selected, onClick, animDelay }) {
 
 /* ── Main Component ─────────────────────────────────── */
 export default function HomePage({ activePage = "Home", setActivePage = () => {} }) {
-  const [budget,     setBudget]     = useState(1500);
-  const [travel,     setTravel]     = useState(20);
-  const [waiting,    setWaiting]    = useState(60);
-  const [selectedId, setSelectedId] = useState(1);
-  const [filterTab,  setFilterTab]  = useState("All");
+  const [budget,          setBudget]          = useState(1500);
+  const [travel,          setTravel]          = useState(20);
+  const [waiting,         setWaiting]         = useState(60);
+  const [selectedId,      setSelectedId]      = useState(1);
+  const [filterTab,       setFilterTab]       = useState("All");
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedFacility, setSelectedFacility] = useState(null);
 
   const panelOpen = activePage === "Home";
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
+
+  // When a service is selected, nudge the budget slider to its suggested value
+  function handleServiceSelect(svc) {
+    setSelectedService(svc);
+    if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
+  }
+
+  // When a facility is picked from the nav search, highlight it in the list
+  function handleFacilitySelect(facility) {
+    setSelectedFacility(facility);
+    if (facility) setSelectedId(facility.id);
+  }
 
   const filtered = FACILITIES.filter(f => {
     const matchPref = f.budget <= budget && f.travel <= travel && f.wait <= waiting;
@@ -180,40 +397,29 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   return (
     <div className="hp-shell">
 
-      {/* Map grid background */}
-        <div className="map-full">
-        <MapComponent 
-            center={[7.1907, 125.4553]}
-            zoom={12}
-            markers={[
-            {
-                position: [7.1907, 125.4553],
-                name: "Davao City",
-                popupContent: "<strong>Davao City</strong><br/>Healthcare Hub"
-            },
-            {
-                position: [7.0833, 125.6],
-                name: "San Pedro Hospital",
-                popupContent: "<strong>San Pedro Hospital</strong><br/>📞 (082) 123-4567"
-            },
-            {
-                position: [7.1167, 125.6167],
-                name: "Davao Medical Center",
-                popupContent: "<strong>Davao Medical Center</strong><br/>Southern Philippines Medical Center"
-            }
-            ]}
+      {/* Map background */}
+      <div className="map-full">
+        <MapComponent
+          center={[7.1907, 125.4553]}
+          zoom={12}
+          markers={[
+            { position: [7.1907, 125.4553], name: "Davao City",            popupContent: "<strong>Davao City</strong><br/>Healthcare Hub" },
+            { position: [7.0833, 125.6],    name: "San Pedro Hospital",    popupContent: "<strong>San Pedro Hospital</strong><br/>📞 (082) 123-4567" },
+            { position: [7.1167, 125.6167], name: "Davao Medical Center",  popupContent: "<strong>Davao Medical Center</strong><br/>Southern Philippines Medical Center" },
+          ]}
         />
-        </div>
+      </div>
 
       {/* ── Side Nav ── */}
       <nav className="hp-side-nav">
         <div className="hp-nav-logo">
-          <span>P+</span>
+          <img src={LogoSrc} alt="logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
 
-        <button className="hp-nav-item" title="Search">
-          <IconSearch />
-        </button>
+        <NavSearchBar
+          selectedFacility={selectedFacility}
+          onFacilitySelect={handleFacilitySelect}
+        />
         <div className="hp-nav-divider" />
 
         {NAV.map(n => (
@@ -230,12 +436,15 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
         <div className="hp-nav-spacer" />
         <div className="hp-nav-divider" />
 
-        <button className="hp-nav-item" title="Settings">
+        <button
+          className={`nav-item ${activePage === "Settings" ? "active" : ""}`}
+          onClick={() => handleNavClick("Settings")}
+          title="Settings">
           <IconSettings />
         </button>
       </nav>
 
-      {/* ── Panel (1/3 width) ── */}
+      {/* ── Panel ── */}
       <div className={`hp-panel${panelOpen ? " open" : ""}`}>
         <div className="hp-panel-inner">
 
@@ -249,6 +458,14 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
 
           {/* Body */}
           <div className="hp-panel-body">
+
+            {/* Service search block — sits above preferences */}
+            <div className="hp-section-block">
+              <ServiceSearch
+                selectedService={selectedService}
+                onServiceSelect={handleServiceSelect}
+              />
+            </div>
 
             {/* Preferences block */}
             <div className="hp-section-block">
@@ -275,8 +492,6 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
 
             {/* Facilities block */}
             <div className="hp-section-block grow">
-
-              {/* Block header */}
               <div className="hp-facilities-header">
                 <div className="hp-facilities-title-row">
                   <div className="hp-section-label" style={{ marginBottom: 0 }}>
@@ -284,7 +499,6 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
                   </div>
                   <span className="hp-count-badge">{filtered.length}</span>
                 </div>
-
                 <div className="hp-filter-tabs">
                   {FILTER_TABS.map(t => (
                     <button
@@ -298,7 +512,6 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
                 </div>
               </div>
 
-              {/* Scrollable list */}
               <div className="hp-facility-list">
                 {filtered.length === 0 ? (
                   <div className="hp-empty">
@@ -317,7 +530,6 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
                   ))
                 )}
               </div>
-
             </div>
 
           </div>

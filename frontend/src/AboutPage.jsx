@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "./AboutPage.css";
 import MapComponent from "./MapComponent";
+import LogoSrc from './Logo.png';
+import NavSearchBar from "./NavSearchBar";
 
 /* ── Icons ─────────────────────────────────── */
 const IconHome = () => (
@@ -34,12 +36,6 @@ const IconSettings = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
-const IconSearch = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-  </svg>
-);
 
 const NAV = [
   { key: "Home",        icon: <IconHome /> },
@@ -64,11 +60,16 @@ const problems = [
 /* ── Component ──────────────────────────────── */
 export default function AboutPage({ activePage, setActivePage }) {
   const [tab, setTab] = useState("Overview");
+  const [selectedFacility, setSelectedFacility] = useState(null);
   const panelOpen = activePage === "About";
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
+
+  function handleFacilitySelect(facility) {
+    setSelectedFacility(facility);
+  }
 
   return (
     <div className="app-shell">
@@ -102,7 +103,7 @@ export default function AboutPage({ activePage, setActivePage }) {
       <nav className="side-nav">
         <div className="nav-logo">
           <img
-            src="/logo-placeholder.png"
+            src={LogoSrc}
             alt="logo"
             onError={(e) => {
               e.target.style.display = "none";
@@ -112,9 +113,10 @@ export default function AboutPage({ activePage, setActivePage }) {
           <span className="nav-logo-fallback">P+</span>
         </div>
 
-        <button className="nav-item" title="Search">
-          <IconSearch />
-        </button>
+        <NavSearchBar
+          selectedFacility={selectedFacility}
+          onFacilitySelect={handleFacilitySelect}
+        />
 
         <div className="nav-divider" />
 
@@ -132,7 +134,7 @@ export default function AboutPage({ activePage, setActivePage }) {
         <div className="nav-spacer" />
         <div className="nav-divider" />
 
-        <button className="nav-item" title="Settings">
+        <button className="nav-item" onClick={() => setActivePage("Settings")} title="Settings">
           <IconSettings />
         </button>
       </nav>
