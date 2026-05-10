@@ -72,10 +72,20 @@ function FloatingField({ label, type = "text", value, onChange, icon, rightSlot 
 }
 
 /* ── AuthPage ── */
-export default function AuthPage() {
+export default function AuthPage({ activePage, setActivePage }) {
+  const failureDialogues = [    
+    "Incorrect username or password.", // Login fail
+    "User already exists.", // Register fail because backend denies
+    "Passwords don't match." // Register fail because password dont match
+  ];
+
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  
+  const [regSuccess, setRegSuccess] = useState(false);
+  const [loginAttemptFail, setAttemptFail] = useState(false);
+  const [failureDialogueIndex, setFailureDialogueIndex] = useState(0);
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", userName: "", email: "", password: "", confirm: ""
@@ -105,17 +115,25 @@ export default function AuthPage() {
     .then((result) => {
       if(result.success) {
         //Move to home page
-        alert("Login success!");        
+        setActivePage("Home");
 
+        //Local storage for now, find other methods later
         localStorage.setItem('token', result.data.token);
       } else {
         //Alert somehow to tell that login failed!
-        alert("Login failed!");        
+        setAttemptFail(true);
+        setFailureDialogueIndex(0);
       }
     });
   };
 
   const onRegisterPressed = () => {
+    if(form.password !== form.confirm) {
+      setAttemptFail(true);
+      setFailureDialogueIndex(2);
+      return;
+    }
+    
     fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -140,9 +158,10 @@ export default function AuthPage() {
     })
     .then((result) => {
       if(result.success) {
-        alert("Register success!");
+        setRegSuccess(true);
       } else {
-        alert("Register failed!");
+        setAttemptFail(true);
+        setFailureDialogueIndex(1);
       }
     })
   }
@@ -244,6 +263,12 @@ export default function AuthPage() {
               />
             )}
 
+            {loginAttemptFail && (
+              <p className="auth-sub auth-sub-red">
+                {failureDialogues[failureDialogueIndex]}
+              </p>
+            )}
+
             {mode === "login" && (
               <div className="auth-forgot-row">
                 <button className="auth-forgot-link">Forgot password?</button>
@@ -262,11 +287,21 @@ export default function AuthPage() {
               </>
             ) : (
               <>
-                <button className="auth-btn-secondary" onClick={() => setMode("login")}>Log in instead</button>
-                <button className="auth-btn-primary"
-                  onClick={() => onRegisterPressed() }>
-                  Create account <IconArrow />
-                </button>
+                  {regSuccess ?
+                    (<>
+                    <button className="auth-btn-primary"
+                        onClick={() => setMode("login")}>
+                        You have been signed up, sign in here <IconArrow />
+                      </button>
+                    </>) :
+                    (<>
+                      <button className="auth-btn-secondary" onClick={() => setMode("login")}>Log in instead</button>
+                      <button className="auth-btn-primary"
+                        onClick={() => onRegisterPressed()}>
+                        Create account <IconArrow />
+                      </button>
+                    </>)
+                  }
               </>
             )}
           </div>
