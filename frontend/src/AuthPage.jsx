@@ -93,6 +93,8 @@ export default function AuthPage({ activePage, setActivePage }) {
   const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
 
   const onLoginPressed = () => {
+    setAttemptFail(false);
+
     fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -128,6 +130,8 @@ export default function AuthPage({ activePage, setActivePage }) {
   };
 
   const onRegisterPressed = () => {
+    setAttemptFail(false);
+
     if(form.password !== form.confirm) {
       setAttemptFail(true);
       setFailureDialogueIndex(2);
