@@ -106,8 +106,6 @@ export default function AuthPage({ activePage, setActivePage }) {
     .then(async (res) => {
       const data = await res.json();
 
-      console.log(data);
-
       return {
         success: res.ok,
         status: res.status,
@@ -151,8 +149,6 @@ export default function AuthPage({ activePage, setActivePage }) {
     })
     .then(async (res) => {
       const data = await res.json();
-
-      console.log(data);
 
       return {
         success: res.ok,
