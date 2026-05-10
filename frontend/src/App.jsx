@@ -6,11 +6,11 @@ import HomePage from "./HomePage";
 import AuthPage from "./AuthPage";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("Home");
+  const [activePage, setActivePage] = useState("Auth");
 
   const renderPage = () => {
     switch (activePage) {
-      case "Home":        return <HomePage        activePage={activePage} setActivePage={setActivePage} />;
+      case "Home":        return <HomePage activePage={activePage} setActivePage={setActivePage} />;
       case "About": return <AboutPage activePage={activePage} setActivePage={setActivePage} />;
       case "Help":  return <HelpPage  activePage={activePage} setActivePage={setActivePage} />;
       case "Preferences": return <PreferencesPage activePage={activePage} setActivePage={setActivePage} />;

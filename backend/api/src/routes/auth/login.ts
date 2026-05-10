@@ -32,16 +32,20 @@ router.post('/', async (req, res) => {
             }
     });    
     if(!user) {
-        return res.status(401).json({
-            message: "Invalid credentials"
-        });
+        // return res.status(401).json({
+        //     message: "Invalid credentials",            
+        // });
+
+        return res.sendStatus(401);
     }
 
     const isPasswordCorrect = await argon2.verify(user.hashedPassword, passwordAttempt);
     if(!isPasswordCorrect) {
-        return res.status(401).json({
-            message: "Password incorrect!"
-        });
+        // return res.status(401).json({
+        //     message: "Password incorrect!",            
+        // });
+
+        return res.sendStatus(401);
     }
 
     const token = jwt.sign(
