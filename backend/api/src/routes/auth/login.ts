@@ -3,43 +3,56 @@ export const pathOverride: String | null = null;
 //Set if you don't want this file to be read 
 export const exclude: boolean = false;
 
+import { validateEmail } from "../../lib/emailvalidate";
 import { prisma } from "../../lib/prismaclient";
+
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 
 import { Router } from "express";
 const router: Router = Router();
-router.get('/', async (req, res) => {
-    // Get POST request body
-    const { userName, passwordAttempt } = await req.body;
+router.post('/', async (req, res) => {
+    let {        
+        emailOrUserName,
+        passwordAttempt
+    } = req.body;
 
-    // Check if user exist
+    emailOrUserName = (emailOrUserName as string).trim();
+
+    const isValidEmail = validateEmail(emailOrUserName);
+
     const user = await prisma.user.findUnique({
-        where: {
-            userName
-        }
-    });
-    if(!user) return res.status(401).json({
-        message: "User does not exist"
-    });
+        where: 
+            isValidEmail ? {
+                //Use email as basis for login
+                emailAddress: emailOrUserName
+            } : {
+                //Use username as basis for login
+                userName: emailOrUserName
+            }
+    });    
+    if(!user) {
+        return res.status(401).json({
+            message: "Invalid credentials"
+        });
+    }
 
-    // Check if password correct
-    const isPasswordCorrect = argon2.verify(user.passwordHash, passwordAttempt);
-    if(!isPasswordCorrect) return res.status(401).json({ message: "Password is incorrect" });
+    const isPasswordCorrect = await argon2.verify(user.hashedPassword, passwordAttempt);
+    if(!isPasswordCorrect) {
+        return res.status(401).json({
+            message: "Password incorrect!"
+        });
+    }
 
-    // Generate JWT token
     const token = jwt.sign(
-        { userid: user.id },
+        { userId: user.id },
         process.env.JWT_SECRET!,
         { expiresIn: '1d' }
     );
 
-    // Return response
-    res.json({
+    res.status(200).json({
         token,
-        user: {
-            displayName: user.displayName
-        }
+        user: { displayName: user.displayName }
     });
 });
 export default router;

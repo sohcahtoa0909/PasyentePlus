@@ -78,9 +78,74 @@ export default function AuthPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", password: "", confirm: ""
+    firstName: "", lastName: "", userName: "", email: "", password: "", confirm: ""
   });
   const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
+
+  const onLoginPressed = () => {
+    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailOrUserName: form.email.trim(),
+        passwordAttempt: form.password
+      })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+
+      console.log(data);
+
+      return {
+        success: res.ok,
+        status: res.status,
+        data: data
+      };
+    })
+    .then((result) => {
+      if(result.success) {
+        //Move to home page
+        alert("Login success!");        
+
+        localStorage.setItem('token', result.data.token);
+      } else {
+        //Alert somehow to tell that login failed!
+        alert("Login failed!");        
+      }
+    });
+  };
+
+  const onRegisterPressed = () => {
+    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        userName: form.userName.trim(),
+        emailAddress: form.email.trim(),
+        givenPassword: form.password
+      })
+    })
+    .then(async (res) => {
+      const data = await res.json();
+
+      console.log(data);
+
+      return {
+        success: res.ok,
+        status: res.status,
+        data: data
+      };
+    })
+    .then((result) => {
+      if(result.success) {
+        alert("Register success!");
+      } else {
+        alert("Register failed!");
+      }
+    })
+  }
 
   return (
     <div className="auth-shell">
@@ -139,6 +204,13 @@ export default function AuthPage() {
               </div>
             )}
 
+            {mode === "signup" && (
+              <FloatingField
+                label="Username" type="userName" value={form.userName}
+                onChange={set("userName")} icon={<IconMail />}
+              />
+            )}
+
             <FloatingField
               label="Email" type="email" value={form.email}
               onChange={set("email")} icon={<IconMail />}
@@ -183,14 +255,16 @@ export default function AuthPage() {
           <div className="auth-actions">
             {mode === "login" ? (
               <>
-                <button className="auth-btn-primary">
+                <button className="auth-btn-primary"
+                  onClick={() => onLoginPressed() }>
                   Sign in <IconArrow />
                 </button>
               </>
             ) : (
               <>
                 <button className="auth-btn-secondary" onClick={() => setMode("login")}>Log in instead</button>
-                <button className="auth-btn-primary">
+                <button className="auth-btn-primary"
+                  onClick={() => onRegisterPressed() }>
                   Create account <IconArrow />
                 </button>
               </>

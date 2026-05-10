@@ -2,8 +2,12 @@ import fs, { read } from 'fs';
 import path from 'path';
 import { prisma } from "./lib/prismaclient";
 import express from 'express';
+import cors from 'cors';
 
 const app = express();
+app.use(cors())
+app.use(express.json());
+
 const port = process.env.API_PORT!;
 
 async function loadRoutes(dir: string, baseRoute: string = '') {  
