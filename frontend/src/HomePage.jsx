@@ -115,14 +115,14 @@ const NAV = [
 ];
 
 const FACILITIES = [
-  { id: 1, best: true,  name: "Southern Philippines Medical Center", type: "Government Hospital", budget: 800,  travel: 15, wait: 45, rating: 4.5, tags: ["PhilHealth", "ER"] },
-  { id: 2, best: false, name: "San Pedro Hospital",                  type: "Private Hospital",   budget: 900,  travel: 14, wait: 40, rating: 4.5, tags: ["Pediatrics", "OB-GYN"] },
-  { id: 3, best: false, name: "Davao Doctors Hospital",              type: "Private Hospital",   budget: 1000, travel: 13, wait: 35, rating: 4.5, tags: ["Cardiology"] },
-  { id: 4, best: false, name: "Brokenshire Memorial Hospital",       type: "Mission Hospital",   budget: 1100, travel: 12, wait: 30, rating: 4.5, tags: ["Rehab"] },
-  { id: 5, best: false, name: "Davao Regional Medical Center",       type: "Government Hospital",budget: 600,  travel: 22, wait: 60, rating: 4.2, tags: ["PhilHealth"] },
-  { id: 6, best: false, name: "Metro Davao Medical Center",          type: "Private Hospital",   budget: 1200, travel: 10, wait: 25, rating: 4.7, tags: ["Cancer Care"] },
-  { id: 7, best: false, name: "Mindanao Sanitarium Hospital",        type: "Private Hospital",   budget: 950,  travel: 18, wait: 50, rating: 4.3, tags: ["General"] },
-  { id: 8, best: false, name: "Davao Central Clinic",                type: "Clinic",             budget: 500,  travel: 8,  wait: 20, rating: 4.1, tags: ["GP", "Checkup"] },
+  { id: 1, best: true,  name: "Southern Philippines Medical Center", type: "Government Hospital", budget: 800,  travel: 15, wait: 45, rating: 4.5, tags: ["PhilHealth", "ER"], address: "Davao City, Mindanao Ave", phone: "(082) 227-0000", services: ["Emergency", "General Consultation", "ER Visit", "Pediatrics", "OB-GYN"] },
+  { id: 2, best: false, name: "San Pedro Hospital",                  type: "Private Hospital",   budget: 900,  travel: 14, wait: 40, rating: 4.5, tags: ["Pediatrics", "OB-GYN"], address: "Davao City, San Pedro St", phone: "(082) 123-4567", services: ["Pediatrics", "OB-GYN", "General Consultation", "Dental"] },
+  { id: 3, best: false, name: "Davao Doctors Hospital",              type: "Private Hospital",   budget: 1000, travel: 13, wait: 35, rating: 4.5, tags: ["Cardiology"], address: "Davao City, Cardio Ave", phone: "(082) 234-5678", services: ["Cardiology", "General Consultation", "Diagnostics", "X-Ray", "ECG"] },
+  { id: 4, best: false, name: "Brokenshire Memorial Hospital",       type: "Mission Hospital",   budget: 1100, travel: 12, wait: 30, rating: 4.5, tags: ["Rehab"], address: "Davao City, Rehab Lane", phone: "(082) 345-6789", services: ["Physical Therapy", "Rehabilitation", "General Consultation", "Speech Therapy"] },
+  { id: 5, best: false, name: "Davao Regional Medical Center",       type: "Government Hospital",budget: 600,  travel: 22, wait: 60, rating: 4.2, tags: ["PhilHealth"], address: "Davao City, Regional St", phone: "(082) 456-7890", services: ["Emergency", "General Consultation", "Diagnostics", "Vaccination"] },
+  { id: 6, best: false, name: "Metro Davao Medical Center",          type: "Private Hospital",   budget: 1200, travel: 10, wait: 25, rating: 4.7, tags: ["Cancer Care"], address: "Davao City, Metro Ave", phone: "(082) 567-8901", services: ["Oncology", "Cancer Care", "General Consultation", "Diagnostics", "MRI Scan", "CT Scan"] },
+  { id: 7, best: false, name: "Mindanao Sanitarium Hospital",        type: "Private Hospital",   budget: 950,  travel: 18, wait: 50, rating: 4.3, tags: ["General"], address: "Davao City, Sanitarium Rd", phone: "(082) 678-9012", services: ["General Consultation", "Psychiatry", "Mental Health", "Vaccination"] },
+  { id: 8, best: false, name: "Davao Central Clinic",                type: "Clinic",             budget: 500,  travel: 8,  wait: 20, rating: 4.1, tags: ["GP", "Checkup"], address: "Davao City, Central St", phone: "(082) 789-0123", services: ["General Consultation", "Check-up", "Vaccination", "Dental Check-up"] },
 ];
 
 const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
@@ -332,6 +332,9 @@ function FacilityCard({ facility, selected, onClick, animDelay }) {
       className={`hp-card${selected ? " selected" : ""}`}
       style={{ animationDelay: `${animDelay}s` }}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick()}
     >
       <div className="hp-card-accent" />
       {facility.best && (
@@ -357,7 +360,7 @@ function FacilityCard({ facility, selected, onClick, animDelay }) {
 }
 
 /* ── Main Component ─────────────────────────────────── */
-export default function HomePage({ activePage = "Home", setActivePage = () => {} }) {
+export default function HomePage({ activePage = "Home", setActivePage = () => {}, selectedFacilityData = null, setSelectedFacilityData = () => {} }) {
   const [budget,          setBudget]          = useState(1500);
   const [travel,          setTravel]          = useState(20);
   const [waiting,         setWaiting]         = useState(60);
@@ -382,6 +385,13 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   function handleFacilitySelect(facility) {
     setSelectedFacility(facility);
     if (facility) setSelectedId(facility.id);
+  }
+
+  // Navigate to facility details page
+  function handleFacilityCardClick(facility) {
+    setSelectedId(facility.id);
+    setSelectedFacilityData(facility);
+    setActivePage("FacilityDetails");
   }
 
   const filtered = FACILITIES.filter(f => {
@@ -524,7 +534,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
                       key={f.id}
                       facility={f}
                       selected={selectedId === f.id}
-                      onClick={() => setSelectedId(f.id)}
+                      onClick={() => handleFacilityCardClick(f)}
                       animDelay={i * 0.055 + 0.05}
                     />
                   ))

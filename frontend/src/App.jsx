@@ -5,18 +5,21 @@ import PreferencesPage from "./PreferencesPage";
 import HomePage from "./HomePage";
 import AuthPage from "./AuthPage";
 import SettingsPage from "./SettingsPage";
+import FacilityDetails from "./FacilityDetails";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("Auth");
+  const [activePage, setActivePage] = useState("Home");
+  const [selectedFacilityData, setSelectedFacilityData] = useState(null);
 
   const renderPage = () => {
     switch (activePage) {
-      case "Home": return <HomePage activePage={activePage} setActivePage={setActivePage} />;
+      case "Home": return <HomePage activePage={activePage} setActivePage={setActivePage} selectedFacilityData={selectedFacilityData} setSelectedFacilityData={setSelectedFacilityData} />;
       case "About": return <AboutPage activePage={activePage} setActivePage={setActivePage} />;
       case "Help":  return <HelpPage activePage={activePage} setActivePage={setActivePage} />;
       case "Preferences": return <PreferencesPage activePage={activePage} setActivePage={setActivePage} />;
       case "Auth": return <AuthPage activePage={activePage} setActivePage={setActivePage} />;
       case "Settings": return <SettingsPage activePage={activePage} setActivePage={setActivePage} />;
+      case "FacilityDetails": return <FacilityDetails facility={selectedFacilityData} setActivePage={setActivePage} />;
       default: return <AboutPage activePage={activePage} setActivePage={setActivePage} />;
     }
   };
