@@ -7,6 +7,8 @@ import { serialize } from "node:v8";
 import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
+import { authenticateToken } from "../auth/authgate";
+
 const router: Router = Router();
 router.get('/', async (req, res) => {
     try {

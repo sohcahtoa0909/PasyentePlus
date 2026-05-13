@@ -65,46 +65,53 @@ const IconX = () => (
 
 /* ── Service Data ───────────────────────────────────── */
 // Each service has: name, category emoji, suggested budget, and a hint label
-const SERVICES = [
-  // Emergency
-  { name: "Emergency / ER Visit",         emoji: "🚨", category: "Emergency",     suggestedBudget: 2500 },
-  { name: "Ambulance Transport",           emoji: "🚑", category: "Emergency",     suggestedBudget: 1800 },
-  // Consultations
-  { name: "General Consultation (GP)",     emoji: "🩺", category: "Consultation",  suggestedBudget: 500  },
-  { name: "Pediatrics Consultation",       emoji: "👶", category: "Consultation",  suggestedBudget: 600  },
-  { name: "OB-GYN Consultation",           emoji: "🤰", category: "Consultation",  suggestedBudget: 700  },
-  { name: "Cardiology Consultation",       emoji: "❤️", category: "Consultation",  suggestedBudget: 1200 },
-  { name: "Orthopedics Consultation",      emoji: "🦴", category: "Consultation",  suggestedBudget: 900  },
-  { name: "Dermatology Consultation",      emoji: "🧴", category: "Consultation",  suggestedBudget: 800  },
-  { name: "Neurology Consultation",        emoji: "🧠", category: "Consultation",  suggestedBudget: 1500 },
-  { name: "Psychiatry / Mental Health",    emoji: "🧘", category: "Consultation",  suggestedBudget: 1000 },
-  { name: "ENT Consultation",              emoji: "👂", category: "Consultation",  suggestedBudget: 700  },
-  { name: "Ophthalmology / Eye Check",     emoji: "👁️", category: "Consultation",  suggestedBudget: 750  },
-  { name: "Dental Check-up & Cleaning",    emoji: "🦷", category: "Dental",        suggestedBudget: 400  },
-  { name: "Tooth Extraction",              emoji: "🦷", category: "Dental",        suggestedBudget: 600  },
-  { name: "Dental Braces / Orthodontics",  emoji: "😬", category: "Dental",        suggestedBudget: 2800 },
-  // Diagnostics
-  { name: "Blood Test / CBC",              emoji: "🩸", category: "Diagnostics",   suggestedBudget: 400  },
-  { name: "Urinalysis",                    emoji: "🧪", category: "Diagnostics",   suggestedBudget: 200  },
-  { name: "X-Ray",                         emoji: "🔬", category: "Diagnostics",   suggestedBudget: 500  },
-  { name: "Ultrasound",                    emoji: "📡", category: "Diagnostics",   suggestedBudget: 900  },
-  { name: "MRI Scan",                      emoji: "🧲", category: "Diagnostics",   suggestedBudget: 2500 },
-  { name: "CT Scan",                       emoji: "💻", category: "Diagnostics",   suggestedBudget: 2200 },
-  { name: "ECG / EKG",                     emoji: "📈", category: "Diagnostics",   suggestedBudget: 600  },
-  // Preventive
-  { name: "Annual Physical Exam (APE)",    emoji: "📋", category: "Preventive",    suggestedBudget: 800  },
-  { name: "Vaccination / Immunization",    emoji: "💉", category: "Preventive",    suggestedBudget: 500  },
-  { name: "Prenatal Check-up",             emoji: "🤱", category: "Preventive",    suggestedBudget: 700  },
-  { name: "Family Planning",              emoji: "👨‍👩‍👧", category: "Preventive",  suggestedBudget: 600  },
-  // Therapy
-  { name: "Physical Therapy / Rehab",      emoji: "🏋️", category: "Therapy",       suggestedBudget: 900  },
-  { name: "Speech Therapy",                emoji: "🗣️", category: "Therapy",       suggestedBudget: 1000 },
-  // Surgical
-  { name: "Minor Surgical Procedure",      emoji: "🔪", category: "Surgical",      suggestedBudget: 2000 },
-  { name: "Circumcision",                  emoji: "⚕️", category: "Surgical",      suggestedBudget: 1000 },
-];
+// const SERVICES = [
+//   // Emergency
+//   { name: "Emergency / ER Visit",         emoji: "🚨", category: "Emergency",     suggestedBudget: 2500 },
+//   { name: "Ambulance Transport",           emoji: "🚑", category: "Emergency",     suggestedBudget: 1800 },
+//   // Consultations
+//   { name: "General Consultation (GP)",     emoji: "🩺", category: "Consultation",  suggestedBudget: 500  },
+//   { name: "Pediatrics Consultation",       emoji: "👶", category: "Consultation",  suggestedBudget: 600  },
+//   { name: "OB-GYN Consultation",           emoji: "🤰", category: "Consultation",  suggestedBudget: 700  },
+//   { name: "Cardiology Consultation",       emoji: "❤️", category: "Consultation",  suggestedBudget: 1200 },
+//   { name: "Orthopedics Consultation",      emoji: "🦴", category: "Consultation",  suggestedBudget: 900  },
+//   { name: "Dermatology Consultation",      emoji: "🧴", category: "Consultation",  suggestedBudget: 800  },
+//   { name: "Neurology Consultation",        emoji: "🧠", category: "Consultation",  suggestedBudget: 1500 },
+//   { name: "Psychiatry / Mental Health",    emoji: "🧘", category: "Consultation",  suggestedBudget: 1000 },
+//   { name: "ENT Consultation",              emoji: "👂", category: "Consultation",  suggestedBudget: 700  },
+//   { name: "Ophthalmology / Eye Check",     emoji: "👁️", category: "Consultation",  suggestedBudget: 750  },
+//   { name: "Dental Check-up & Cleaning",    emoji: "🦷", category: "Dental",        suggestedBudget: 400  },
+//   { name: "Tooth Extraction",              emoji: "🦷", category: "Dental",        suggestedBudget: 600  },
+//   { name: "Dental Braces / Orthodontics",  emoji: "😬", category: "Dental",        suggestedBudget: 2800 },
+//   // Diagnostics
+//   { name: "Blood Test / CBC",              emoji: "🩸", category: "Diagnostics",   suggestedBudget: 400  },
+//   { name: "Urinalysis",                    emoji: "🧪", category: "Diagnostics",   suggestedBudget: 200  },
+//   { name: "X-Ray",                         emoji: "🔬", category: "Diagnostics",   suggestedBudget: 500  },
+//   { name: "Ultrasound",                    emoji: "📡", category: "Diagnostics",   suggestedBudget: 900  },
+//   { name: "MRI Scan",                      emoji: "🧲", category: "Diagnostics",   suggestedBudget: 2500 },
+//   { name: "CT Scan",                       emoji: "💻", category: "Diagnostics",   suggestedBudget: 2200 },
+//   { name: "ECG / EKG",                     emoji: "📈", category: "Diagnostics",   suggestedBudget: 600  },
+//   // Preventive
+//   { name: "Annual Physical Exam (APE)",    emoji: "📋", category: "Preventive",    suggestedBudget: 800  },
+//   { name: "Vaccination / Immunization",    emoji: "💉", category: "Preventive",    suggestedBudget: 500  },
+//   { name: "Prenatal Check-up",             emoji: "🤱", category: "Preventive",    suggestedBudget: 700  },
+//   { name: "Family Planning",              emoji: "👨‍👩‍👧", category: "Preventive",  suggestedBudget: 600  },
+//   // Therapy
+//   { name: "Physical Therapy / Rehab",      emoji: "🏋️", category: "Therapy",       suggestedBudget: 900  },
+//   { name: "Speech Therapy",                emoji: "🗣️", category: "Therapy",       suggestedBudget: 1000 },
+//   // Surgical
+//   { name: "Minor Surgical Procedure",      emoji: "🔪", category: "Surgical",      suggestedBudget: 2000 },
+//   { name: "Circumcision",                  emoji: "⚕️", category: "Surgical",      suggestedBudget: 1000 },
+// ];
 
-const CATEGORY_ORDER = ["Emergency", "Consultation", "Dental", "Diagnostics", "Preventive", "Therapy", "Surgical"];
+const SERVICE_MISC_LOOKUP = {
+  "dentist-extract":        { suggestedBudget: 2500, emoji: "🦷" },
+  "dentist-cleaning":       { suggestedBudget: 1000, emoji: "🫧" },
+  "dialysis-hemodialysis":  { suggestedBudget: 4500, emoji: "🫘" },
+  "dialysis-hemofiltration":  { suggestedBudget: 5500, emoji: "🫘" },
+};
+
+const CATEGORY_ORDER = ["Dentistry", "Renal Dialysis"];
 
 /* ── Other Data ─────────────────────────────────────── */
 const NAV = [
@@ -128,7 +135,40 @@ const FACILITIES = [
 const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
 
 /* ── ServiceSearch Component ────────────────────────── */
-function ServiceSearch({ onServiceSelect, selectedService }) {
+function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities }) {
+
+  const [loading, setLoading] = useState(true);
+  const [SERVICES, setServices] = useState([]);  
+
+  useEffect(() => {    
+    const fillInServices = async () => {
+      try {
+        const response = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/getsearchfilters`);
+        const json = await response.json();
+
+        const mapped = json.map((f) => {
+          return {
+            name: f.displayName,
+            emoji: SERVICE_MISC_LOOKUP[f.name].emoji,
+            category: f.facilityType.displayName,
+            suggestedBudget: SERVICE_MISC_LOOKUP[f.name].suggestedBudget,
+            facilityType: f.facilityType.name,
+            serviceType: f.name
+          };
+        });
+        
+        setServices(mapped);              
+      } catch (error) {
+        console.error("The exact error is:", error);
+        alert("Error: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fillInServices();
+  }, []);
+
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(-1);
@@ -162,6 +202,36 @@ function ServiceSearch({ onServiceSelect, selectedService }) {
       width: rect.width,
       zIndex: 9999,
     });
+  }
+
+  async function queryHospitals(svc) {
+    try {      
+      const response = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search2?${
+        new URLSearchParams({ facility_type: svc.facilityType })
+      }`);
+      const json = await response.json();
+
+      const mapped = json.map((x) => {
+        const recognizedServices = x.services.map((y) => {
+          return y.service.displayName
+        });
+
+        return {
+          facilityName: x.facilityName,
+          hospitalName: x.hospital.hospitalName,
+          priceRange: 5000,
+          distance: 50,
+          waitTime: 50,
+          stars: 5,
+          services: recognizedServices
+        }
+      });
+      handleQueryFacilities(mapped);
+    } catch(err) {
+      console.log("An error occured! " + err);
+    } finally {
+
+    }
   }
 
   useEffect(() => {
@@ -204,6 +274,7 @@ function ServiceSearch({ onServiceSelect, selectedService }) {
     setQuery("");
     setIsOpen(false);
     setHighlighted(-1);
+    queryHospitals(svc);
   }
 
   function clearService() {
@@ -242,6 +313,7 @@ function ServiceSearch({ onServiceSelect, selectedService }) {
     document.body
   );
 
+  if(loading) return <div>Loading...</div>;
   return (
     <div className="hp-service-search">
       <div className="hp-section-label">I'm Looking For</div>
@@ -326,7 +398,7 @@ function PrefSlider({ label, value, min, max, unit = "", prefix = "", onChange }
   );
 }
 
-function FacilityCard({ facility, selected, onClick, animDelay }) {
+function FacilityCard({ facility, selected, onClick, animDelay }) {  
   return (
     <div
       className={`hp-card${selected ? " selected" : ""}`}
@@ -334,25 +406,54 @@ function FacilityCard({ facility, selected, onClick, animDelay }) {
       onClick={onClick}
     >
       <div className="hp-card-accent" />
-      {facility.best && (
+      {/* {facility.best && (
         <div className="hp-best-badge">★ Best Match</div>
-      )}
-      <div className="hp-card-name">{facility.name}</div>
-      <div className="hp-card-type">{facility.type}</div>
+      )} */}
+      <div className="hp-card-name">{facility.facilityName}</div>
+      <div className="hp-card-type">{facility.hospitalName}</div>
       <div className="hp-card-stats">
-        <span className="hp-stat budget">₱{facility.budget}</span>
-        <span className="hp-stat"><IconMapPin />{facility.travel}m</span>
-        <span className="hp-stat"><IconClock />{facility.wait}m wait</span>
+        <span className="hp-stat budget">₱{facility.priceRange}</span>
+        <span className="hp-stat"><IconMapPin />{facility.distance}km</span>
+        <span className="hp-stat"><IconClock />{facility.waitTime}m wait</span>
       </div>
       <div className="hp-card-bottom">
-        <Stars rating={facility.rating} />
+        <Stars rating="5" />
         <div className="hp-tags">
-          {facility.tags.slice(0, 2).map(tag => (
+          {/* {facility.tags.slice(0, 2).map(tag => (
             <span key={tag} className="hp-tag">{tag}</span>
-          ))}
+          ))} */}
+          {facility.services.map(s => (
+            <span key={s} className="hp-tag">{s}</span>
+          ))
+          }
         </div>
       </div>
     </div>
+    // <div
+    //   className={`hp-card${selected ? " selected" : ""}`}
+    //   style={{ animationDelay: `${animDelay}s` }}
+    //   onClick={onClick}
+    // >
+    //   <div className="hp-card-accent" />
+    //   {facility.best && (
+    //     <div className="hp-best-badge">★ Best Match</div>
+    //   )}
+    //   <div className="hp-card-name">{facility.name}</div>
+    //   <div className="hp-card-type">{facility.type}</div>
+    //   <div className="hp-card-stats">
+    //     <span className="hp-stat budget">₱{facility.budget}</span>
+    //     <span className="hp-stat"><IconMapPin />{facility.travel}m</span>
+    //     <span className="hp-stat"><IconClock />{facility.wait}m wait</span>
+    //   </div>
+    //   <div className="hp-card-bottom">
+    //     <Stars rating={facility.rating} />
+    //     <div className="hp-tags">
+    //       {facility.tags.slice(0, 2).map(tag => (
+    //         <span key={tag} className="hp-tag">{tag}</span>
+    //       ))}
+    //     </div>
+    //   </div>
+    // </div>
   );
 }
 
@@ -365,6 +466,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   const [filterTab,       setFilterTab]       = useState("All");
   const [selectedService, setSelectedService] = useState(null);
   const [selectedFacility, setSelectedFacility] = useState(null);
+  const [dynamicFacilities, setDynamicFacilities] = useState([]);
 
   const panelOpen = activePage === "Home";
 
@@ -464,6 +566,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
               <ServiceSearch
                 selectedService={selectedService}
                 onServiceSelect={handleServiceSelect}
+                handleQueryFacilities={(facis) => {setDynamicFacilities(facis)}}
               />
             </div>
 
@@ -513,13 +616,13 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
               </div>
 
               <div className="hp-facility-list">
-                {filtered.length === 0 ? (
+                {dynamicFacilities.length === 0 ? (
                   <div className="hp-empty">
                     No facilities match your filters.<br />
                     <span>Try adjusting your preferences above.</span>
                   </div>
                 ) : (
-                  filtered.map((f, i) => (
+                  dynamicFacilities.map((f, i) => (
                     <FacilityCard
                       key={f.id}
                       facility={f}

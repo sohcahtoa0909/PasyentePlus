@@ -77,7 +77,8 @@ Object: Service
 */
 model ServiceType {
   id              String        @id @default(uuid())
-  name            String
+  name            String        @unique
+  displayName     String        @unique
 
   facilityType    FacilityType  @relation(fields: [facilityTypeId], references: [id])
   facilityTypeId  String
@@ -94,6 +95,7 @@ model ServiceType {
 model FacilityType {
   id          String @id @default(uuid())
   name        String @unique
+  displayName String @unique
 
   services    ServiceType[]
   facilities  Facility[]
