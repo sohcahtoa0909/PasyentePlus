@@ -5,7 +5,7 @@ import LogoSrc from './Logo.png';
 
 /* ── Icons ─────────────────────────────────── */
 const IconHome = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
   </svg>
@@ -41,13 +41,13 @@ const IconSettings = () => (
 );
 
 const IconArrowLeft = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
 
 const IconMapPin = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
@@ -70,18 +70,19 @@ const IconDollar = () => (
 
 const IconPhone = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M2.25 6.75c0 18.683 15.567 21 9.75 21s21-2.317 21-21V4.5L21 2.25H4.5L2.25 4.5v2.25z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 9h18" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5h18" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18" />
-  </svg>
-);
-
-const IconPhone2 = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M2.25 6.75c0 18.683 15.567 21 9.75 21s21-2.317 21-21V4.5L21 2.25H4.5L2.25 4.5v2.25z" />
+    <path strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M22 16.92v3a2 2 0 0 1-2.18 2
+         19.79 19.79 0 0 1-8.63-3.07
+         19.5 19.5 0 0 1-6-6
+         19.79 19.79 0 0 1-3.07-8.67
+         A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72
+         12.84 12.84 0 0 0 .7 2.81
+         2 2 0 0 1-.45 2.11L8.09 9.91
+         a16 16 0 0 0 6 6l1.27-1.27
+         a2 2 0 0 1 2.11-.45
+         12.84 12.84 0 0 0 2.81.7
+         A2 2 0 0 1 22 16.92z"/>
   </svg>
 );
 
@@ -313,7 +314,7 @@ const FacilityDetails = ({ facility, setActivePage }) => {
           {/* Contact Information */}
           <div className="fd-section">
             <h2 className="fd-section-title">
-              <IconPhone2 />
+              <IconPhone />
               Contact Information
             </h2>
             <div className="fd-contact-item">

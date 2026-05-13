@@ -184,8 +184,13 @@
 }
 
 .fd-back-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
+}
+
+.fd-panel-header svg {
+  display: block;
+  line-height: 0;
 }
 
 .fd-header-top {
@@ -226,8 +231,8 @@
 }
 
 .fd-favorite-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 1.2em;
+  height: 1.2em;
 }
 
 .fd-rating {
@@ -243,8 +248,8 @@
 }
 
 .fd-stars svg {
-  width: 16px;
-  height: 16px;
+  width: 1em;
+  height: 1em;
 }
 
 /* ── Map Preview ── */
@@ -348,12 +353,14 @@
   color: var(--c-text-mid);
   font-size: 12px;
   margin-bottom: 8px;
+  line-height: 1;
 }
 
 .fd-info-card-label svg {
-  width: 14px;
-  height: 14px;
+  width: 1em;
+  height: 1em;
   color: var(--c-teal);
+  flex-shrink: 0;
 }
 
 .fd-info-card-value {
@@ -374,23 +381,34 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  line-height: 1;
 }
 
 .fd-section-title svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
   color: var(--c-teal);
+  flex-shrink: 0;
 }
 
 .fd-contact-item {
   display: flex;
+  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
 }
 
+.fd-contact-item svg {
+    width: 20px;
+    height: 20px;
+}
+
 .fd-contact-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   color: var(--c-teal);
   flex-shrink: 0;
 }
@@ -475,8 +493,21 @@
 }
 
 .fd-action-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 1em;
+  height: 1em;
+}
+
+.fd-rating,
+.fd-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fd-stars svg {
+  width: 1em;
+  height: 1em;
+  color: var(--c-teal);
 }
 
 /* ── Scrollbar styling ── */
