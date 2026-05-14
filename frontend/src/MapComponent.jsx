@@ -10,41 +10,72 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, markers = [] }) {
+export default function MapComponent({
+  center = [7.1907, 125.4553],
+  zoom = 12,
+  markers = [],
+  clickable = false,
+  onMapClick = null,
+}) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
+  const clickHandlerRef = useRef(null);
 
+  // Map initialization - only runs once
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Initialize the map
     mapInstanceRef.current = L.map(mapRef.current).setView(center, zoom);
 
-    // Add tile layer (OpenStreetMap)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(mapInstanceRef.current);
 
-    // Cleanup on unmount
+      const handleLocationFound = (e) => {
+    mapInstanceRef.current.setView(e.latlng, 15);
+    
+    L.marker(e.latlng)
+      .addTo(mapInstanceRef.current)
+      .bindPopup("You are here!")
+      .openPopup();
+  };
+
+  const handleLocationError = (e) => {
+    console.log("Location error:", e.message);
+  };
+
+  mapInstanceRef.current.on('locationfound', handleLocationFound);
+  mapInstanceRef.current.on('locationerror', handleLocationError);
+  
+  mapInstanceRef.current.locate({
+    setView: false,
+    maxZoom: 16,
+    watch: false,
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 0
+  });
+
     return () => {
       if (mapInstanceRef.current) {
+        mapInstanceRef.current.off('locationfound', handleLocationFound);
+        mapInstanceRef.current.off('locationerror', handleLocationError);
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [center, zoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - initialization only
 
   // Update markers when markers prop changes
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    // Clear existing markers
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    // Add new markers
     markers.forEach((markerData) => {
       const marker = L.marker(markerData.position)
         .addTo(mapInstanceRef.current)
@@ -64,6 +95,33 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
       mapInstanceRef.current.setView(center, zoom);
     }
   }, [center, zoom]);
+
+  // Wire up / tear down click handler
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    if (clickHandlerRef.current) {
+      mapInstanceRef.current.off("click", clickHandlerRef.current);
+      clickHandlerRef.current = null;
+    }
+
+    if (clickable && onMapClick) {
+      const handler = (e) => onMapClick(e.latlng);
+      mapInstanceRef.current.on("click", handler);
+      clickHandlerRef.current = handler;
+      mapInstanceRef.current.getContainer().style.cursor = "crosshair";
+    } else {
+      if (mapInstanceRef.current.getContainer()) {
+        mapInstanceRef.current.getContainer().style.cursor = "";
+      }
+    }
+
+    return () => {
+      if (clickHandlerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.off("click", clickHandlerRef.current);
+      }
+    };
+  }, [clickable, onMapClick]);
 
   return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
 }

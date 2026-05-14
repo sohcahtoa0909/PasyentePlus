@@ -60,7 +60,39 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
 
-/* Save button */
+/* Budget tier buttons */
+.prefs-budget-tiers {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.prefs-budget-tier-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: 1.5px solid var(--c-border);
+  border-radius: 7px;
+  background: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--c-text-mid);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+
+.prefs-budget-tier-btn:hover {
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+  background: var(--c-teal-lt);
+}
+
+.prefs-budget-tier-btn.active {
+  border-color: var(--c-teal-dk);
+  background: var(--c-teal-dk);
+  color: #fff;
+}
+
 .prefs-save-btn {
   width: 100%;
   padding: 11px;
@@ -281,4 +313,265 @@ input[type="range"]::-webkit-slider-thumb:hover {
   border-radius: 6px;
   color: var(--c-teal-dk);
   padding: 4px 8px;
+}
+
+/* ─── Search tab: 50/50 split ─────────────────────────────── */
+
+.prefs-search-split {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.prefs-split-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.prefs-split-col:first-child {
+  padding-right: 13px;
+}
+
+.prefs-split-col:last-child {
+  padding-left: 13px;
+}
+
+.prefs-split-divider {
+  width: 1px;
+  background: var(--c-border);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* ─── Mini map (square with rounded corners) ─────────────── */
+
+.prefs-mini-map {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  position: relative;
+  cursor: pointer;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  margin-bottom: 9px;
+  /* Disable pointer events on the map itself so clicks hit the overlay */
+}
+
+.prefs-mini-map:hover {
+  border-color: var(--c-teal);
+  box-shadow: 0 2px 10px rgba(0, 95, 107, 0.12);
+}
+
+/* Disable interaction on the leaflet map inside the mini-map */
+.prefs-mini-map .leaflet-container {
+  pointer-events: none;
+}
+
+.prefs-mini-map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 6px;
+  background: linear-gradient(to top, rgba(0,0,0,0.08) 0%, transparent 60%);
+  transition: background 0.18s;
+}
+
+.prefs-mini-map:hover .prefs-mini-map-overlay {
+  background: linear-gradient(to top, rgba(0,95,107,0.13) 0%, transparent 60%);
+}
+
+.prefs-mini-map-expand-icon {
+  background: rgba(255,255,255,0.9);
+  border-radius: 5px;
+  padding: 3px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-teal-dk);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* ─── Current location display ───────────────────────────── */
+
+.prefs-location-current {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--c-teal-dk);
+  margin-bottom: 8px;
+}
+
+.prefs-location-pin {
+  color: var(--c-teal);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.prefs-location-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Change location button ─────────────────────────────── */
+
+.prefs-change-loc-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--c-teal-mid);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+  width: 100%;
+  justify-content: center;
+}
+
+.prefs-change-loc-btn:hover {
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+  background: var(--c-teal-lt);
+}
+
+/* ─── Location picker (shown when changing) ──────────────── */
+
+.prefs-location-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prefs-location-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.prefs-location-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prefs-location-option {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-text-mid);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+  text-align: left;
+}
+
+.prefs-location-option:hover {
+  border-color: #9dd7ef;
+  background: #f5fbfd;
+  color: var(--c-teal-dk);
+}
+
+.prefs-location-option.active {
+  border-color: var(--c-teal);
+  background: var(--c-teal-lt);
+  color: var(--c-teal-dk);
+}
+
+/* ─── Expand map button ──────────────────────────────────── */
+
+.prefs-expand-map-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: 1px dashed var(--c-teal);
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--c-teal-mid);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.18s, color 0.18s;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.prefs-expand-map-btn:hover {
+  background: var(--c-teal-lt);
+  color: var(--c-teal-dk);
+}
+
+/* ─── Expanded map modal ─────────────────────────────────── */
+
+.prefs-map-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: prefs-fade-in 0.2s ease;
+}
+
+@keyframes prefs-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.prefs-map-modal {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  width: 520px;
+  max-width: calc(100vw - 40px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  animation: prefs-slide-up 0.22s ease;
+}
+
+@keyframes prefs-slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.prefs-map-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.prefs-map-modal-body {
+  width: 100%;
+  height: 340px;
+  position: relative;
+}
+
+.prefs-map-modal-body .leaflet-container {
+  width: 100%;
+  height: 100%;
 }

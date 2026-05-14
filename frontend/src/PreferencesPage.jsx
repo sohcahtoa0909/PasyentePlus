@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import "./AboutPage.css";
 import "./PreferencesPage.css";
 import MapComponent from "./MapComponent";
@@ -14,6 +14,44 @@ const NAV = [
 
 const IconSettings = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 
+const IconLocation = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="12" height="12"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>;
+
+const IconExpand = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="11" height="11"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>;
+
+const IconClose = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
+
+const IconEdit = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="11" height="11"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>;
+
+const IconHome = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="12" height="12"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" /></svg>;
+
+// Reverse geocode using Nominatim (free, no key needed)
+// Returns address string on success, null on failure
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      { headers: { "Accept-Language": "en" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Use road + suburb + city, or fall back to display_name trimmed
+    const a = data.address || {};
+    const parts = [
+      a.road || a.pedestrian || a.footway,
+      a.suburb || a.neighbourhood || a.village,
+      a.city || a.town || a.municipality,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : data.display_name?.split(",").slice(0, 3).join(",").trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+// Format coords as fallback label
+function coordLabel(lat, lng) {
+  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+}
+
 const initialFacilities = [
   { id: 1, name: "Lorem Ipsum Medical Center", type: "Hospital", budget: 800,  travel: 15, rating: 4.5, saved: false },
   { id: 2, name: "Dolor Sit Hospital",          type: "Hospital", budget: 900,  travel: 12, rating: 4.5, saved: false },
@@ -26,10 +64,13 @@ const initialHistory = [
   { id: 3, date: "2026-04-15", budget: 1000, travel: 10, wait: 30, results: 3 },
 ];
 
+// Fallback center (Davao City) used when no location is set yet
+const DEFAULT_CENTER = [7.1907, 125.4553];
 
 export default function PreferencesPage({ activePage, setActivePage }) {
   const [tab, setTab]               = useState("Search");
-  const [budget, setBudget]         = useState(1500);
+  const [budget, setBudget]         = useState(1); // 0=Low, 1=Mid, 2=High
+  const BUDGET_TIERS = ["Low", "Mid", "High"];
   const [travel, setTravel]         = useState(20);
   const [wait, setWait]             = useState(60);
   const [facilities, setFacilities] = useState(initialFacilities);
@@ -39,6 +80,18 @@ export default function PreferencesPage({ activePage, setActivePage }) {
   const toastTimer                  = useRef(null);
   const [selectedFacility, setSelectedFacility] = useState(null);
   const panelOpen = activePage === "Preferences";
+
+  // ── Location state ────────────────────────────────────────────────────────
+  // activeLocation: { type: "current"|"home", coords: [lat,lng], label: string }
+  const [activeLocation, setActiveLocation] = useState(null);
+  // homeLocation: persisted home pin { coords, label }
+  const [homeLocation, setHomeLocation]     = useState(null);
+
+  const [isChangingLocation, setIsChangingLocation] = useState(false);
+  // mapExpanded modes: false | "view" | "setHome"
+  const [mapExpanded, setMapExpanded] = useState(false);
+  // geocoding spinner inside the modal
+  const [geocoding, setGeocoding]     = useState(false);
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
@@ -58,21 +111,85 @@ export default function PreferencesPage({ activePage, setActivePage }) {
   const toggleFacility = (id) =>
     setFacilities((prev) => prev.map((f) => f.id === id ? { ...f, saved: !f.saved } : f));
 
+  const deleteCheckedFavorites = () => {
+    const checkedCount = facilities.filter(f => f.saved).length;
+    if (checkedCount === 0) return;
+    setFacilities((prev) => prev.filter((f) => !f.saved));
+    triggerToast(`✓ Removed ${checkedCount} favorite${checkedCount > 1 ? "s" : ""}`);
+  };
+
   const getFill = (value, min, max) => `${((value - min) / (max - min)) * 100}%`;
+
+  // ── Use Current Location ─────────────────────────────────────────────────
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      triggerToast("Geolocation not supported");
+      return;
+    }
+    triggerToast("Locating…");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const address = await reverseGeocode(lat, lng);
+        const label = address || coordLabel(lat, lng);
+        setActiveLocation({ type: "current", coords: [lat, lng], label });
+        setIsChangingLocation(false);
+        triggerToast(`✓ Using current location`);
+      },
+      () => triggerToast("Could not get location")
+    );
+  };
+
+  // ── Open "Set Home" map modal ────────────────────────────────────────────
+  const handleOpenSetHome = () => {
+    setMapExpanded("setHome");
+    setIsChangingLocation(false);
+  };
+
+  // ── Handle map click in "setHome" mode ──────────────────────────────────
+  const handleMapClick = useCallback(async (latlng) => {
+    const { lat, lng } = latlng;
+    setGeocoding(true);
+    const address = await reverseGeocode(lat, lng);
+    const label = address || coordLabel(lat, lng);
+    const newHome = { coords: [lat, lng], label };
+    setHomeLocation(newHome);
+    setActiveLocation({ type: "home", coords: [lat, lng], label });
+    setGeocoding(false);
+    setMapExpanded(false);
+    triggerToast(`✓ Home set to ${label}`);
+  }, []);
+
+  // ── Select home as active (if already set) ───────────────────────────────
+  const handleSelectHome = () => {
+    if (homeLocation) {
+      setActiveLocation({ type: "home", ...homeLocation });
+      setIsChangingLocation(false);
+      triggerToast(`✓ Using home location`);
+    } else {
+      handleOpenSetHome();
+    }
+  };
+
+  // Derived display values
+  const displayCenter  = activeLocation?.coords ?? DEFAULT_CENTER;
+  const displayLabel   = activeLocation?.label  ?? "No location set";
+  const displayMarkers = activeLocation
+    ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>${activeLocation.label}</strong>` }]
+    : [];
+
+  // Center for the modal: if setHome mode use home if set, else current/default
+  const modalCenter = mapExpanded === "setHome"
+    ? (homeLocation?.coords ?? activeLocation?.coords ?? DEFAULT_CENTER)
+    : displayCenter;
 
   return (
     <div className="app-shell">
       <div className="map-full">
-        <MapComponent 
-          center={[7.1907, 125.4553]}
+        <MapComponent
+          center={DEFAULT_CENTER}
           zoom={12}
-          markers={[
-            {
-              position: [7.1907, 125.4553],
-              name: "Davao City",
-              popupContent: "<strong>Davao City</strong>"
-            }
-          ]}
+          markers={[{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
         />
       </div>
 
@@ -125,39 +242,138 @@ export default function PreferencesPage({ activePage, setActivePage }) {
 
               {tab === "Search" && (
                 <div className="section-block">
-                  <div className="section-label">Default Search Preferences</div>
-                  <div className="prefs-slider-group">
-                    <div className="prefs-slider-item">
-                      <div className="prefs-slider-label">
-                        Budget <span>₱{budget.toLocaleString()}</span>
+                <div className="prefs-search-split">
+
+                  {/* LEFT: Default Location */}
+                  <div className="prefs-split-col">
+                    <div className="section-label" style={{ marginBottom: 10 }}>Default Location</div>
+
+                    {/* Mini map */}
+                    <div
+                      className="prefs-mini-map"
+                      onClick={() => setMapExpanded("view")}
+                      title="Click to expand map"
+                    >
+                      <MapComponent
+                        center={displayCenter}
+                        zoom={13}
+                        markers={displayMarkers}
+                      />
+                      <div className="prefs-mini-map-overlay">
+                        <span className="prefs-mini-map-expand-icon"><IconExpand /></span>
                       </div>
-                      <input type="range" min={500} max={5000} step={100}
-                        value={budget}
-                        style={{ "--fill": getFill(budget, 500, 5000) }}
-                        onChange={(e) => setBudget(Number(e.target.value))} />
                     </div>
-                    <div className="prefs-slider-item">
-                      <div className="prefs-slider-label">
-                        Max Travel Time <span>{travel} mins</span>
+
+                    {/* Current location label */}
+                    <div className="prefs-location-current">
+                      <span className="prefs-location-pin">
+                        {activeLocation?.type === "home" ? <IconHome /> : <IconLocation />}
+                      </span>
+                      <span className="prefs-location-name">{displayLabel}</span>
+                    </div>
+
+                    {/* Change location button / picker */}
+                    {!isChangingLocation ? (
+                      <button
+                        className="prefs-change-loc-btn"
+                        onClick={() => setIsChangingLocation(true)}
+                      >
+                        <IconEdit /> Change Location
+                      </button>
+                    ) : (
+                      <div className="prefs-location-picker">
+                        <div className="prefs-location-picker-header">
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--c-text-mid)", letterSpacing: "0.03em" }}>SELECT LOCATION</span>
+                          <button
+                            className="prefs-clear-btn"
+                            onClick={() => setIsChangingLocation(false)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        <div className="prefs-location-options">
+
+                          {/* Option 1: Current Location */}
+                          <button
+                            className={`prefs-location-option ${activeLocation?.type === "current" ? "active" : ""}`}
+                            onClick={handleUseCurrentLocation}
+                          >
+                            <span className="prefs-location-pin" style={{ marginRight: 5 }}><IconLocation /></span>
+                            Use Current Location
+                          </button>
+
+                          {/* Option 2: Home */}
+                          <button
+                            className={`prefs-location-option ${activeLocation?.type === "home" ? "active" : ""}`}
+                            onClick={handleSelectHome}
+                          >
+                            <span className="prefs-location-pin" style={{ marginRight: 5 }}><IconHome /></span>
+                            {homeLocation ? `Home — ${homeLocation.label}` : "Set Home on Map…"}
+                          </button>
+
+                        </div>
+
+                        {/* Re-pin home shortcut (only shown if home already set) */}
+                        {homeLocation && (
+                          <button
+                            className="prefs-expand-map-btn"
+                            onClick={handleOpenSetHome}
+                            style={{ marginTop: 4 }}
+                          >
+                            <IconEdit /> Move Home Pin
+                          </button>
+                        )}
                       </div>
-                      <input type="range" min={5} max={120} step={5}
-                        value={travel}
-                        style={{ "--fill": getFill(travel, 5, 120) }}
-                        onChange={(e) => setTravel(Number(e.target.value))} />
-                    </div>
-                    <div className="prefs-slider-item">
-                      <div className="prefs-slider-label">
-                        Max Waiting Time <span>{wait} mins</span>
-                      </div>
-                      <input type="range" min={10} max={180} step={5}
-                        value={wait}
-                        style={{ "--fill": getFill(wait, 10, 180) }}
-                        onChange={(e) => setWait(Number(e.target.value))} />
-                    </div>
+                    )}
                   </div>
-                  <button className="prefs-save-btn" onClick={() => triggerToast("✓ Preferences saved!")}>
-                    Save Preferences
-                  </button>
+
+                  {/* Vertical divider */}
+                  <div className="prefs-split-divider" />
+
+                  {/* RIGHT: Default Search Preferences */}
+                  <div className="prefs-split-col">
+                    <div className="section-label" style={{ marginBottom: 10 }}>Search Preferences</div>
+                    <div className="prefs-slider-group">
+                      <div className="prefs-slider-item">
+                        <div className="prefs-slider-label">
+                          Budget <span>{BUDGET_TIERS[budget]}</span>
+                        </div>
+                        <div className="prefs-budget-tiers">
+                          {BUDGET_TIERS.map((tier, i) => (
+                            <button
+                              key={tier}
+                              className={`prefs-budget-tier-btn ${budget === i ? "active" : ""}`}
+                              onClick={() => setBudget(i)}
+                            >
+                              {tier}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="prefs-slider-item">
+                        <div className="prefs-slider-label">
+                          Max Travel Time <span>{travel} mins</span>
+                        </div>
+                        <input type="range" min={5} max={120} step={5}
+                          value={travel}
+                          style={{ "--fill": getFill(travel, 5, 120) }}
+                          onChange={(e) => setTravel(Number(e.target.value))} />
+                      </div>
+                      <div className="prefs-slider-item">
+                        <div className="prefs-slider-label">
+                          Max Waiting Time <span>{wait} mins</span>
+                        </div>
+                        <input type="range" min={10} max={180} step={5}
+                          value={wait}
+                          style={{ "--fill": getFill(wait, 10, 180) }}
+                          onChange={(e) => setWait(Number(e.target.value))} />
+                      </div>
+                    </div>
+                    <button className="prefs-save-btn" onClick={() => triggerToast("✓ Preferences saved!")}>
+                      Save Preferences
+                    </button>
+                  </div>
+                </div>
                 </div>
               )}
 
@@ -166,6 +382,12 @@ export default function PreferencesPage({ activePage, setActivePage }) {
                   <div className="section-label">
                     Favorite Facilities
                     <span className="section-count">{facilities.filter(f => f.saved).length} saved</span>
+                    {facilities.some(f => f.saved) && (
+                      <button className="prefs-clear-btn" style={{ color: "#e05555" }}
+                        onClick={deleteCheckedFavorites}>
+                        Delete
+                      </button>
+                    )}
                   </div>
                   <div className="prefs-facility-list">
                     {facilities.map((f) => (
@@ -225,6 +447,53 @@ export default function PreferencesPage({ activePage, setActivePage }) {
           </div>
         </div>
       </div>
+
+      {/* Map modal — view or setHome */}
+      {mapExpanded && (
+        <div className="prefs-map-modal-backdrop" onClick={() => setMapExpanded(false)}>
+          <div className="prefs-map-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="prefs-map-modal-header">
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--c-teal-dk)", display: "flex", alignItems: "center", gap: 5 }}>
+                {mapExpanded === "setHome" ? (
+                  <>
+                    <IconHome />
+                    {geocoding ? "Getting address…" : "Tap to set your home"}
+                  </>
+                ) : (
+                  <>
+                    <IconLocation /> {displayLabel}
+                  </>
+                )}
+              </span>
+              <button className="prefs-clear-btn" style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setMapExpanded(false)}>
+                <IconClose /> Close
+              </button>
+            </div>
+
+            {mapExpanded === "setHome" && (
+              <div style={{ padding: "6px 16px", background: "var(--c-teal-lt)", borderBottom: "1px solid var(--c-border)" }}>
+                <span style={{ fontSize: 10.5, color: "var(--c-teal-dk)", fontWeight: 600 }}>
+                  Click anywhere on the map to drop your home pin
+                </span>
+              </div>
+            )}
+
+            <div className="prefs-map-modal-body">
+              <MapComponent
+                center={modalCenter}
+                zoom={13}
+                markers={
+                  mapExpanded === "setHome" && homeLocation
+                    ? [{ position: homeLocation.coords, name: homeLocation.label, popupContent: `<strong>${homeLocation.label}</strong>` }]
+                    : displayMarkers
+                }
+                clickable={mapExpanded === "setHome"}
+                onMapClick={mapExpanded === "setHome" ? handleMapClick : null}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={`prefs-toast ${showToast ? "show" : ""}`}>{toast}</div>
     </div>
