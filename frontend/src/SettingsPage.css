@@ -260,3 +260,107 @@
 }
 
 .settings-modal-actions .settings-btn { margin: 0; }
+
+/* ══════════════════════════════════════════════════════
+   DARK MODE — applied when <html class="dark">
+   ══════════════════════════════════════════════════════ */
+html.dark {
+  /* ── Core palette overrides ── */
+  --c-bg:        #0f1117;
+  --c-surface:   #1a1d27;
+  --c-border:    #2e3147;
+  --c-text:      #e8eaf0;
+  --c-text-mute: #8b90a8;
+  --c-teal-dk:   #38bdf8;
+}
+
+/* App shell & map overlay */
+html.dark .app-shell          { background: var(--c-bg); }
+html.dark .panel              { background: var(--c-surface); border-color: var(--c-border); }
+html.dark .panel-inner        { background: var(--c-surface); }
+html.dark .panel-header       { background: var(--c-surface); }
+html.dark .panel-eyebrow,
+html.dark .panel-title,
+html.dark .panel-subtitle     { color: var(--c-text); }
+html.dark .panel-divider      { background: var(--c-border); }
+
+/* Side nav */
+html.dark .side-nav           { background: var(--c-surface); border-color: var(--c-border); }
+html.dark .nav-item           { color: var(--c-text-mute); }
+html.dark .nav-item:hover,
+html.dark .nav-item.active    { background: rgba(56,189,248,0.12); color: var(--c-teal-dk); }
+html.dark .nav-divider        { background: var(--c-border); }
+
+/* Tabs */
+html.dark .panel-tab          { color: var(--c-text-mute); }
+html.dark .panel-tab.active   { background: var(--c-border); color: var(--c-teal-dk); border-color: var(--c-border); }
+
+/* Section labels */
+html.dark .section-label      { color: var(--c-text-mute); }
+html.dark .section-block      { background: transparent; }
+
+/* Inputs */
+html.dark .settings-field input {
+  background: #12151f;
+  border-color: var(--c-border);
+  color: var(--c-text);
+}
+html.dark .settings-field input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+}
+html.dark .settings-field input:disabled {
+  background: #1a1d27;
+  color: var(--c-text-mute);
+}
+
+/* Profile header card */
+html.dark .settings-profile-header {
+  background: #12151f;
+  border-color: var(--c-border);
+}
+html.dark .settings-profile-name  { color: var(--c-text); }
+html.dark .settings-profile-email { color: var(--c-text-mute); }
+html.dark .settings-avatar        { background: #0e7490; }
+
+/* Toggle row */
+html.dark .settings-toggle-row {
+  background: #12151f;
+  border-color: var(--c-border);
+}
+html.dark .settings-toggle-title { color: var(--c-text); }
+html.dark .settings-toggle-desc  { color: var(--c-text-mute); }
+
+/* Buttons */
+html.dark .settings-btn-primary  { background: #0e7490; }
+html.dark .settings-btn-danger   { background: #2d1515; color: #fca5a5; border-color: #5b2020; }
+html.dark .settings-btn-danger:hover { background: #3b1a1a; }
+html.dark .settings-btn[style*="border"]  { background: #1a1d27; color: var(--c-text); border-color: var(--c-border) !important; }
+
+/* Back button */
+html.dark .settings-back-btn { color: var(--c-teal-dk); }
+
+/* Divider */
+html.dark .settings-divider { background: var(--c-border); }
+
+/* Feedback banners */
+html.dark .settings-feedback.success { background: #0d2818; color: #4ade80; border-color: #166534; }
+html.dark .settings-feedback.error   { background: #2d1515; color: #fca5a5; border-color: #5b2020; }
+
+/* Logout modal */
+html.dark .settings-modal-backdrop { background: rgba(0,0,0,0.6); }
+html.dark .settings-modal          { background: #1a1d27; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+html.dark .settings-modal-title    { color: var(--c-text); }
+html.dark .settings-modal-body     { color: var(--c-text-mute); }
+
+/* Search bar (NavSearchBar) */
+html.dark .nav-search-input {
+  background: #12151f;
+  border-color: var(--c-border);
+  color: var(--c-text);
+}
+html.dark .nav-search-results {
+  background: #1a1d27;
+  border-color: var(--c-border);
+}
+html.dark .nav-search-result-item:hover { background: #242840; }

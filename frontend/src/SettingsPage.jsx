@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./AboutPage.css";
 import "./SettingsPage.css";
 import MapComponent from "./MapComponent";
@@ -41,6 +41,11 @@ export default function SettingsPage({ activePage, setActivePage }) {
 
   // Dark mode
   const [darkMode, setDarkMode] = useState(false);
+
+  // Dark mode — toggle class on <html> so all CSS vars flip app-wide
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   // Logout modal
   const [showLogout, setShowLogout] = useState(false);

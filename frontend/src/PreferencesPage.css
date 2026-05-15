@@ -575,3 +575,122 @@ input[type="range"]::-webkit-slider-thumb:hover {
   width: 100%;
   height: 100%;
 }
+/* ══════════════════════════════════════════════════════
+   DARK MODE — applied when <html class="dark">
+   ══════════════════════════════════════════════════════ */
+
+/* Budget tier buttons */
+html.dark .prefs-budget-tier-btn {
+  background: #12151f;
+  border-color: #2e3147;
+  color: var(--c-text-mid);
+}
+html.dark .prefs-budget-tier-btn:hover {
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+  background: #1e4a5c;
+}
+html.dark .prefs-budget-tier-btn.active {
+  border-color: var(--c-teal-dk);
+  background: #0e4a5c;
+  color: #e8eaf0;
+}
+
+/* Facility cards */
+html.dark .prefs-facility-card {
+  background: #1a1d27;
+  border-color: #2e3147;
+}
+html.dark .prefs-facility-card:hover {
+  border-color: #38bdf8;
+  background: #12151f;
+}
+html.dark .prefs-facility-name { color: var(--c-teal-dk); }
+html.dark .prefs-facility-type { color: var(--c-text-mute); }
+html.dark .prefs-facility-meta { color: var(--c-text-mid); }
+
+/* Checkbox */
+html.dark .prefs-checkbox        { border-color: #2e3147; background: #12151f; }
+html.dark .prefs-checkbox:checked { background: #0e4a5c; border-color: var(--c-teal-dk); }
+
+/* History items */
+html.dark .prefs-history-item {
+  background: #1a1d27;
+  border-color: #2e3147;
+}
+html.dark .prefs-history-item:hover {
+  border-color: #38bdf8;
+  background: #12151f;
+}
+html.dark .prefs-history-date   { color: var(--c-teal-dk); }
+html.dark .prefs-history-params { color: var(--c-text-mid); }
+html.dark .prefs-history-results{ color: var(--c-text-mute); }
+
+/* Section count badge */
+html.dark .section-count {
+  background: #1e4a5c;
+  color: var(--c-teal-dk);
+}
+
+/* Mini map */
+html.dark .prefs-mini-map        { border-color: #2e3147; }
+html.dark .prefs-mini-map:hover  { border-color: var(--c-teal); }
+html.dark .prefs-mini-map-expand-icon {
+  background: rgba(26,29,39,0.9);
+  color: var(--c-teal-dk);
+}
+
+/* Location option buttons */
+html.dark .prefs-location-option {
+  background: #12151f;
+  border-color: #2e3147;
+  color: var(--c-text-mid);
+}
+html.dark .prefs-location-option:hover {
+  border-color: #38bdf8;
+  background: #0e2535;
+  color: var(--c-teal-dk);
+}
+html.dark .prefs-location-option.active {
+  border-color: var(--c-teal);
+  background: #1e4a5c;
+  color: var(--c-teal-dk);
+}
+
+/* Change location button */
+html.dark .prefs-change-loc-btn {
+  border-color: #2e3147;
+  color: var(--c-text-mid);
+}
+html.dark .prefs-change-loc-btn:hover {
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+  background: #1e4a5c;
+}
+
+/* Expand map button */
+html.dark .prefs-expand-map-btn {
+  border-color: var(--c-teal);
+  color: var(--c-text-mute);
+}
+html.dark .prefs-expand-map-btn:hover {
+  background: #1e4a5c;
+  color: var(--c-teal-dk);
+}
+
+/* Split divider */
+html.dark .prefs-split-divider { background: #2e3147; }
+
+/* Map modal */
+html.dark .prefs-map-modal-backdrop { background: rgba(0,0,0,0.6); }
+html.dark .prefs-map-modal          { background: #1a1d27; }
+html.dark .prefs-map-modal-header   { border-bottom-color: #2e3147; }
+
+/* Leaflet tooltips */
+html.dark .leaflet-tooltip {
+  background-color: rgba(26,29,39,0.97);
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+}
+html.dark .leaflet-popup-content-wrapper { background: #1a1d27; color: var(--c-text); }
+html.dark .leaflet-popup-tip            { background: #1a1d27; }
