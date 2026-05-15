@@ -54,6 +54,10 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
         marker.bindTooltip(markerData.name, { permanent: false, direction: "top" });
       }
 
+      if (markerData.onClick) {
+        marker.on('click', () => markerData.onClick(markerData));
+      }
+
       markersRef.current.push(marker);
     });
   }, [markers]);

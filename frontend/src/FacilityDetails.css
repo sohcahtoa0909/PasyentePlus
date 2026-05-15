@@ -135,7 +135,7 @@
 /* ── Panel ── */
 .fd-panel {
   position: absolute;
-  top: var(--gap);
+  top: calc(50% + var(--gap));
   left: calc(var(--nav-w) + var(--gap) * 2);
   bottom: var(--gap);
   right: var(--gap);
@@ -148,7 +148,11 @@
   opacity: 0;
   transform: translateX(20px);
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease, top 0.3s ease;
+}
+
+.fd-panel.expanded {
+  top: var(--gap);
 }
 
 .fd-panel.open {

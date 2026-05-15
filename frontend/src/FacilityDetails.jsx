@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './FacilityDetails.css';
 import MapComponent from './MapComponent';
 import LogoSrc from './Logo.png';
@@ -125,7 +125,29 @@ const NAV = [
 
 const FacilityDetails = ({ facility, setActivePage }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const panelBodyRef = useRef(null);
   const panelOpen = true;
+
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [facility?.id]);
+
+  useEffect(() => {
+    const panelBody = panelBodyRef.current;
+    if (!panelBody) return;
+
+    const handleScroll = () => {
+      if (panelBody.scrollTop > 30) {
+        setIsExpanded(true);
+      } else if (panelBody.scrollTop <= 20) {
+        setIsExpanded(false);
+      }
+    };
+
+    panelBody.addEventListener('scroll', handleScroll);
+    return () => panelBody.removeEventListener('scroll', handleScroll);
+  }, [panelBodyRef]);
 
   const handleNavClick = (key) => {
     setActivePage(key === "Home" ? "Home" : key);
@@ -166,7 +188,7 @@ const FacilityDetails = ({ facility, setActivePage }) => {
           </button>
         </nav>
 
-        <div className={`fd-panel${panelOpen ? " open" : ""}`}>
+        <div className={`fd-panel${panelOpen ? " open" : ""}${isExpanded ? " expanded" : ""}`}>
           <div className="fd-empty">
             <IconBuilding />
             <h2>Facility Not Found</h2>
@@ -185,11 +207,10 @@ const FacilityDetails = ({ facility, setActivePage }) => {
       {/* Map */}
       <div className="fd-map">
         <MapComponent
-          center={[7.1907, 125.4553]}
-          zoom={12}
+          center={facility.position || [7.1907, 125.4553]}
+          zoom={13}
           markers={[
-            { position: [7.1907, 125.4553], name: "Davao City", popupContent: "<strong>Davao City</strong><br/>Healthcare Hub" },
-            { position: [7.0833, 125.6], name: facility.name, popupContent: `<strong>${facility.name}</strong><br/>${facility.type}` },
+            { position: facility.position || [7.1907, 125.4553], name: facility.name, popupContent: `<strong>${facility.name}</strong><br/>${facility.type}` },
           ]}
         />
       </div>
@@ -218,7 +239,7 @@ const FacilityDetails = ({ facility, setActivePage }) => {
       </nav>
 
       {/* Panel */}
-      <div className={`fd-panel${panelOpen ? " open" : ""}`}>
+      <div className={`fd-panel${panelOpen ? " open" : ""}${isExpanded ? " expanded" : ""}`}>
         
         {/* Header */}
         <div className="fd-panel-header">
@@ -275,7 +296,7 @@ const FacilityDetails = ({ facility, setActivePage }) => {
         </div>
 
         {/* Body */}
-        <div className="fd-panel-body">
+        <div ref={panelBodyRef} className="fd-panel-body">
           {/* Info Cards */}
           <div className="fd-info-grid">
             <div className="fd-info-card">
