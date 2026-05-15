@@ -4,6 +4,7 @@ import "./PreferencesPage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
 import NavSearchBar from "./NavSearchBar";
+import FacilityDetailsModal from "./FacilityDetailsModal";
 
 const NAV = [
   { key: "Home", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" /></svg> },
@@ -67,7 +68,12 @@ const initialHistory = [
 // Fallback center (Davao City) used when no location is set yet
 const DEFAULT_CENTER = [7.1907, 125.4553];
 
-export default function PreferencesPage({ activePage, setActivePage }) {
+export default function PreferencesPage({ 
+  activePage, 
+  setActivePage,
+  selectedFacility: propSelectedFacility,
+  onFacilitySelect 
+}) {
   const [tab, setTab]               = useState("Search");
   const [budget, setBudget]         = useState(1); // 0=Low, 1=Mid, 2=High
   const BUDGET_TIERS = ["Low", "Mid", "High"];
@@ -78,7 +84,7 @@ export default function PreferencesPage({ activePage, setActivePage }) {
   const [toast, setToast]           = useState("");
   const [showToast, setShowToast]   = useState(false);
   const toastTimer                  = useRef(null);
-  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [modalFacility, setModalFacility] = useState(null);
   const panelOpen = activePage === "Preferences";
 
   // ── Location state ────────────────────────────────────────────────────────
@@ -97,8 +103,22 @@ export default function PreferencesPage({ activePage, setActivePage }) {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
+  // Handle facility selection and open modal
   function handleFacilitySelect(facility) {
-    setSelectedFacility(facility);
+    if (facility) {
+      setModalFacility(facility);
+    }
+    if (onFacilitySelect) {
+      onFacilitySelect(facility);
+    }
+  }
+
+  // Close modal handler
+  function handleCloseModal() {
+    setModalFacility(null);
+    if (propSelectedFacility && onFacilitySelect) {
+      onFacilitySelect(null);
+    }
   }
 
   const triggerToast = (msg) => {
@@ -190,6 +210,24 @@ export default function PreferencesPage({ activePage, setActivePage }) {
           center={DEFAULT_CENTER}
           zoom={12}
           markers={[{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
+          onMarkerClick={(markerData) => {
+            // Convert marker to facility format
+            const facility = {
+              id: markerData.id || markerData.name,
+              hospitalName: markerData.name,
+              facilityName: "Healthcare Facility",
+              priceLow: 1000,
+              priceHigh: 5000,
+              distance: 5,
+              waitTime: 30,
+              services: ["General Care"],
+              rating: 4.5,
+              address: markerData.popupContent?.replace(/<[^>]*>/g, '') || "Address available upon request",
+              phone: "",
+              hours: "24/7"
+            };
+            handleFacilitySelect(facility);
+          }}
         />
       </div>
 
@@ -200,7 +238,7 @@ export default function PreferencesPage({ activePage, setActivePage }) {
           <span className="nav-logo-fallback">P+</span>
         </div>
         <NavSearchBar
-          selectedFacility={selectedFacility}
+          selectedFacility={propSelectedFacility}
           onFacilitySelect={handleFacilitySelect}
         />
         <div className="nav-divider" />
@@ -391,7 +429,28 @@ export default function PreferencesPage({ activePage, setActivePage }) {
                   </div>
                   <div className="prefs-facility-list">
                     {facilities.map((f) => (
-                      <div key={f.id} className="prefs-facility-card">
+                      <div 
+                        key={f.id} 
+                        className="prefs-facility-card"
+                        onClick={() => {
+                          // Convert facility to full format for modal
+                          const fullFacility = {
+                            id: f.id,
+                            hospitalName: f.name,
+                            facilityName: f.type,
+                            priceLow: f.budget,
+                            priceHigh: f.budget + 200,
+                            distance: f.travel,
+                            waitTime: 30,
+                            services: ["General Care"],
+                            rating: f.rating,
+                            address: "Address available upon request",
+                            phone: "",
+                            hours: "24/7"
+                          };
+                          handleFacilitySelect(fullFacility);
+                        }}
+                      >
                         <div className="prefs-facility-info">
                           <div className="prefs-facility-name">{f.name}</div>
                           <div className="prefs-facility-type">{f.type}</div>
@@ -401,9 +460,15 @@ export default function PreferencesPage({ activePage, setActivePage }) {
                             <span>★ {f.rating}</span>
                           </div>
                         </div>
-                        <input type="checkbox" className="prefs-checkbox"
+                        <input 
+                          type="checkbox" 
+                          className="prefs-checkbox"
                           checked={f.saved}
-                          onChange={() => toggleFacility(f.id)} />
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleFacility(f.id);
+                          }} 
+                        />
                       </div>
                     ))}
                   </div>
@@ -493,6 +558,14 @@ export default function PreferencesPage({ activePage, setActivePage }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Facility Details Modal */}
+      {modalFacility && (
+        <FacilityDetailsModal
+          facility={modalFacility}
+          onClose={handleCloseModal}
+        />
       )}
 
       <div className={`prefs-toast ${showToast ? "show" : ""}`}>{toast}</div>

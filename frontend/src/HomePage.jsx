@@ -1,12 +1,3 @@
-/**
- * HomePage.jsx — updated to wire FacilityDetailsModal into:
- *   1. Map pin clicks  (onMarkerClick → opens modal)
- *   2. NavSearchBar selection (handleFacilitySelect → opens modal)
- *   3. FacilityCard clicks  (onClick → opens modal)
- *
- * Only the modal-related additions are highlighted with ← NEW comments.
- * Everything else is unchanged from the original.
- */
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
@@ -14,7 +5,7 @@ import "./HomePage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
 import NavSearchBar from "./NavSearchBar";
-import FacilityDetailsModal from "./FacilityDetailsModal"; // ← NEW
+import FacilityDetailsModal from "./FacilityDetailsModal";
 import { getHospitalMarkers, transformFacilityData } from "./util/helper";
 import { IconHome, IconInfo, IconSliders, IconHelp, IconSettings, IconSearch, IconMapPin, IconClock, IconX } from "./icons/Icons";
 
@@ -36,7 +27,7 @@ const NAV = [
 
 const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
 
-/* ── ServiceSearch (unchanged) ────────────────────────── */
+/* ── ServiceSearch ────────────────────────── */
 function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities }) {
   const [loading, setLoading] = useState(true);
   const [SERVICES, setServices] = useState([]);
@@ -219,7 +210,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
   );
 }
 
-/* ── PrefSlider (unchanged) ── */
+/* ── PrefSlider ── */
 function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
@@ -238,7 +229,7 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
   );
 }
 
-/* ── Stars (unchanged) ── */
+/* ── Stars ── */
 function Stars({ rating }) {
   return (
     <span className="hp-stars">
@@ -250,7 +241,7 @@ function Stars({ rating }) {
   );
 }
 
-/* ── FacilityCard — now calls onOpenDetails ← NEW prop ── */
+/* ── FacilityCard ── */
 function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay }) {
   return (
     <div
@@ -258,7 +249,7 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
       style={{ animationDelay: `${animDelay}s` }}
       onClick={() => {
         onClick();
-        onOpenDetails(facility); // ← NEW: open modal on card click
+        onOpenDetails(facility);
       }}
     >
       <div className="hp-card-accent" />
@@ -284,18 +275,20 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
 /* ══════════════════════════════════════════════════════
    Main Component
    ══════════════════════════════════════════════════════ */
-export default function HomePage({ activePage = "Home", setActivePage = () => {} }) {
+export default function HomePage({
+  activePage = "Home",
+  setActivePage = () => {},
+  selectedFacility,       // ← lifted from App
+  onFacilitySelect,       // ← lifted from App
+}) {
   const [budget,            setBudget]            = useState(1500);
   const [travel,            setTravel]            = useState(20);
   const [waiting,           setWaiting]           = useState(60);
   const [selectedId,        setSelectedId]        = useState(1);
   const [filterTab,         setFilterTab]         = useState("All");
   const [selectedService,   setSelectedService]   = useState(null);
-  const [selectedFacility,  setSelectedFacility]  = useState(null);
   const [dynamicFacilities, setDynamicFacilities] = useState([]);
-
-  // ← NEW: which facility is shown in the modal (null = closed)
-  const [modalFacility, setModalFacility] = useState(null);
+  const [modalFacility,     setModalFacility]     = useState(null);
 
   const markers = useMemo(() =>
     getHospitalMarkers(dynamicFacilities)
@@ -312,18 +305,15 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
     if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
   }
 
+  // Wraps the App-level setter so we can also update local selectedId + open modal
   function handleFacilitySelect(facility) {
-    setSelectedFacility(facility);
+    onFacilitySelect(facility);
     if (facility) {
       setSelectedId(facility.id);
-      setModalFacility(facility); // ← NEW: nav-searchbar selection opens modal
+      setModalFacility(facility);
     }
-    // null case: just clearing the selection — no further action needed
   }
 
-  // ← NEW: called when a map marker / pin is clicked
-  // markers only carry minimal data from getHospitalMarkers, so we look up
-  // the full facility object by id from dynamicFacilities.
   function handleMarkerClick(markerData) {
     const full = dynamicFacilities.find(f => f.id === markerData.id) ?? markerData;
     setModalFacility(full);
@@ -338,7 +328,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           center={[7.1907, 125.4553]}
           zoom={12}
           markers={markers}
-          onMarkerClick={handleMarkerClick} /* ← NEW: pass handler to map */
+          onMarkerClick={handleMarkerClick}
         />
       </div>
 
@@ -348,6 +338,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           <img src={LogoSrc} alt="logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
 
+        {/* Pass App-level state down to NavSearchBar */}
         <NavSearchBar
           selectedFacility={selectedFacility}
           onFacilitySelect={handleFacilitySelect}
@@ -400,9 +391,9 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
 
             <div className="hp-section-block">
               <div className="hp-section-label">Your Preferences</div>
-              <PrefSlider label="Budget"          value={budget}  min={300}  max={3000} prefix="₱"     onChange={setBudget}  />
-              <PrefSlider label="Max Travel Time" value={travel}  min={5}    max={60}   unit=" mins"   onChange={setTravel}  />
-              <PrefSlider label="Max Waiting Time"value={waiting} min={10}   max={120}  unit=" mins"   onChange={setWaiting} />
+              <PrefSlider label="Budget"           value={budget}  min={300}  max={3000} prefix="₱"    onChange={setBudget}  />
+              <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={60}   unit=" mins"  onChange={setTravel}  />
+              <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={120}  unit=" mins"  onChange={setWaiting} />
             </div>
 
             <div className="hp-section-block grow">
@@ -435,7 +426,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
                       facility={f}
                       selected={selectedId === f.id}
                       onClick={() => setSelectedId(f.id)}
-                      onOpenDetails={setModalFacility} /* ← NEW */
+                      onOpenDetails={setModalFacility}
                       animDelay={i * 0.055 + 0.05}
                     />
                   ))
@@ -447,16 +438,14 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
         </div>
       </div>
 
-      {/* ── Facility Details Modal ← NEW ── */}
+      {/* ── Facility Details Modal ── */}
       {modalFacility && (
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={() => {
             setModalFacility(null);
-            // If the modal was opened via NavSearchBar, clear that selection
-            // so the green dot and selected-pill don't linger after dismiss.
             if (selectedFacility) {
-              handleFacilitySelect(null);
+              onFacilitySelect(null);
             }
           }}
         />

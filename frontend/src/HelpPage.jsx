@@ -4,6 +4,7 @@ import "./HelpPage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
 import NavSearchBar from "./NavSearchBar";
+import FacilityDetailsModal from "./FacilityDetailsModal";
 
 const NAV = [
   { key: "Home", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" /></svg> },
@@ -35,19 +36,37 @@ const contacts = [
   { icon: "💬", label: "Live Chat", value: "Mon–Fri, 8AM–5PM" },
 ];
 
-
-export default function HelpPage({ activePage, setActivePage }) {
+export default function HelpPage({ 
+  activePage, 
+  setActivePage,
+  selectedFacility: propSelectedFacility,
+  onFacilitySelect 
+}) {
   const [tab, setTab] = useState("How To");
   const [openFaq, setOpenFaq] = useState(null);
-  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [modalFacility, setModalFacility] = useState(null);
   const panelOpen = activePage === "Help";
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
+  // Handle facility selection and open modal
   function handleFacilitySelect(facility) {
-    setSelectedFacility(facility);
+    if (facility) {
+      setModalFacility(facility);
+    }
+    if (onFacilitySelect) {
+      onFacilitySelect(facility);
+    }
+  }
+
+  // Close modal handler
+  function handleCloseModal() {
+    setModalFacility(null);
+    if (propSelectedFacility && onFacilitySelect) {
+      onFacilitySelect(null);
+    }
   }
 
   return (
@@ -63,6 +82,24 @@ export default function HelpPage({ activePage, setActivePage }) {
               popupContent: "<strong>Davao City</strong>"
             }
           ]}
+          onMarkerClick={(markerData) => {
+            // Convert marker to facility format
+            const facility = {
+              id: markerData.id || markerData.name,
+              hospitalName: markerData.name,
+              facilityName: "Healthcare Facility",
+              priceLow: 1000,
+              priceHigh: 5000,
+              distance: 5,
+              waitTime: 30,
+              services: ["General Care"],
+              rating: 4.5,
+              address: markerData.popupContent?.replace(/<[^>]*>/g, '') || "Address available upon request",
+              phone: "",
+              hours: "24/7"
+            };
+            handleFacilitySelect(facility);
+          }}
         />
       </div>
 
@@ -73,7 +110,7 @@ export default function HelpPage({ activePage, setActivePage }) {
           <span className="nav-logo-fallback">P+</span>
         </div>
         <NavSearchBar
-          selectedFacility={selectedFacility}
+          selectedFacility={propSelectedFacility}
           onFacilitySelect={handleFacilitySelect}
         />
         <div className="nav-divider" />
@@ -172,6 +209,14 @@ export default function HelpPage({ activePage, setActivePage }) {
           </div>
         </div>
       </div>
+
+      {/* Facility Details Modal */}
+      {modalFacility && (
+        <FacilityDetailsModal
+          facility={modalFacility}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }

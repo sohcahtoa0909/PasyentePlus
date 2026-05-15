@@ -3,6 +3,7 @@ import "./AboutPage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
 import NavSearchBar from "./NavSearchBar";
+import FacilityDetailsModal from "./FacilityDetailsModal";
 
 /* ── Icons ─────────────────────────────────── */
 const IconHome = () => (
@@ -58,17 +59,36 @@ const problems = [
 ];
 
 /* ── Component ──────────────────────────────── */
-export default function AboutPage({ activePage, setActivePage }) {
+export default function AboutPage({ 
+  activePage, 
+  setActivePage,
+  selectedFacility: propSelectedFacility,  // Renamed prop to avoid conflict
+  onFacilitySelect 
+}) {
   const [tab, setTab] = useState("Overview");
-  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [modalFacility, setModalFacility] = useState(null);  // Separate state for modal
   const panelOpen = activePage === "About";
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
+  // Handle facility selection and open modal
   function handleFacilitySelect(facility) {
-    setSelectedFacility(facility);
+    if (facility) {
+      setModalFacility(facility);  // Open modal with the facility
+    }
+    if (onFacilitySelect) {
+      onFacilitySelect(facility);   // Pass up to parent if needed
+    }
+  }
+
+  // Close modal handler
+  function handleCloseModal() {
+    setModalFacility(null);
+    if (propSelectedFacility && onFacilitySelect) {
+      onFacilitySelect(null);  // Clear selection in parent if needed
+    }
   }
 
   return (
@@ -96,6 +116,24 @@ export default function AboutPage({ activePage, setActivePage }) {
               popupContent: "<strong>Davao Medical Center</strong><br/>Southern Philippines Medical Center"
             }
           ]}
+          onMarkerClick={(markerData) => {
+            // Convert marker to facility format if needed
+            const facility = {
+              id: markerData.id || markerData.name,
+              hospitalName: markerData.name,
+              facilityName: markerData.type || "Healthcare Facility",
+              priceLow: 1000,
+              priceHigh: 5000,
+              distance: markerData.distance || 5,
+              waitTime: markerData.waitTime || 30,
+              services: ["General Care"],
+              rating: 4.5,
+              address: markerData.popupContent?.replace(/<[^>]*>/g, '') || "Address available upon request",
+              phone: markerData.phone || "",
+              hours: markerData.hours || "24/7"
+            };
+            handleFacilitySelect(facility);
+          }}
         />
       </div>
 
@@ -114,7 +152,7 @@ export default function AboutPage({ activePage, setActivePage }) {
         </div>
 
         <NavSearchBar
-          selectedFacility={selectedFacility}
+          selectedFacility={propSelectedFacility}
           onFacilitySelect={handleFacilitySelect}
         />
 
@@ -226,6 +264,14 @@ export default function AboutPage({ activePage, setActivePage }) {
 
         </div>
       </div>
+
+      {/* Facility Details Modal */}
+      {modalFacility && (
+        <FacilityDetailsModal
+          facility={modalFacility}
+          onClose={handleCloseModal}
+        />
+      )}
 
     </div>
   );
