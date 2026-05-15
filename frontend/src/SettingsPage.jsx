@@ -300,6 +300,7 @@ export default function SettingsPage({ activePage, setActivePage }) {
                 style={{ flex: 1 }}
                 onClick={() => {
                   setShowLogout(false);
+                  document.documentElement.classList.remove("dark");
                   setActivePage("Auth");
                 }}>
                 Log Out
