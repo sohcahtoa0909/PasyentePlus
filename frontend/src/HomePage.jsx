@@ -216,15 +216,31 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
           return y.service.displayName
         });
 
+        let priceLow = Infinity;
+        let priceHigh = -Infinity;
+
+        x.services.forEach((z) => {
+          if(z.minCost < priceLow) priceLow = z.minCost;
+          if(z.maxCost > priceHigh) priceHigh = z.maxCost;
+        });
+
         return {
           facilityName: x.facilityName,
-          hospitalName: x.hospital.hospitalName,
-          priceRange: 5000,
+
+          hospitalId: x.hospitalId,
+          hospitalName: x.hospital.hospitalName,      
+          locLat: x.hospital.locLat,
+          locLng: x.hospital.locLng,
+
+          priceLow,
+          priceHigh,
+
           distance: 50,
           waitTime: 50,
+
           stars: 5,
           services: recognizedServices
-        }
+        };
       });
       handleQueryFacilities(mapped);
     } catch(err) {
@@ -409,10 +425,10 @@ function FacilityCard({ facility, selected, onClick, animDelay }) {
       {/* {facility.best && (
         <div className="hp-best-badge">★ Best Match</div>
       )} */}
-      <div className="hp-card-name">{facility.facilityName}</div>
-      <div className="hp-card-type">{facility.hospitalName}</div>
+      <div className="hp-card-name">{facility.hospitalName}</div>
+      <div className="hp-card-type">{facility.facilityName}</div>
       <div className="hp-card-stats">
-        <span className="hp-stat budget">₱{facility.priceRange}</span>
+        <span className="hp-stat budget">₱{facility.priceLow}-₱{facility.priceHigh}</span>
         <span className="hp-stat"><IconMapPin />{facility.distance}km</span>
         <span className="hp-stat"><IconClock />{facility.waitTime}m wait</span>
       </div>
@@ -504,11 +520,22 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
         <MapComponent
           center={[7.1907, 125.4553]}
           zoom={12}
-          markers={[
-            { position: [7.1907, 125.4553], name: "Davao City",            popupContent: "<strong>Davao City</strong><br/>Healthcare Hub" },
-            { position: [7.0833, 125.6],    name: "San Pedro Hospital",    popupContent: "<strong>San Pedro Hospital</strong><br/>📞 (082) 123-4567" },
-            { position: [7.1167, 125.6167], name: "Davao Medical Center",  popupContent: "<strong>Davao Medical Center</strong><br/>Southern Philippines Medical Center" },
-          ]}
+          // markers={[
+          //   { position: [7.1907, 125.4553], name: "Davao City",            popupContent: "<strong>Davao City</strong><br/>Healthcare Hub" },
+          //   { position: [7.0833, 125.6],    name: "San Pedro Hospital",    popupContent: "<strong>San Pedro Hospital</strong><br/>📞 (082) 123-4567" },
+          //   { position: [7.1167, 125.6167], name: "Davao Medical Center",  popupContent: "<strong>Davao Medical Center</strong><br/>Southern Philippines Medical Center" },
+          // ]}
+          markers={
+            dynamicFacilities.length > 0
+              ? Array.from(
+                new Map(dynamicFacilities.map((i) => [i.hospitalId, i])).values()
+              ).map((j) => ({                
+                position: [Number(j.locLat), Number(j.locLng)],
+                name: j.hospitalName,
+                popupContent: `<strong>${j.hospitalName}</strong>`
+              }))
+              : []
+          }
         />
       </div>
 
