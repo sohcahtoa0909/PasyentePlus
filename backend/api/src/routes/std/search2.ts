@@ -75,15 +75,7 @@ router.get('/', async (req, res) => {
             include: {
                 hospital: true,
                 type: true,
-                services: { 
-                    where: service ? {
-                        service: {
-                            name: {
-                                contains: service as string,
-                                mode: 'insensitive'
-                            }
-                        }
-                    } : {},
+                services: {                     
                     include: { service: true }
                 }
             }

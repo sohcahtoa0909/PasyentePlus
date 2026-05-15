@@ -207,7 +207,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
   async function queryHospitals(svc) {
     try {      
       const response = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search2?${
-        new URLSearchParams({ facility_type: svc.facilityType })
+        new URLSearchParams({ facility_type: svc.facilityType, service: svc.serviceType })
       }`);
       const json = await response.json();
 
