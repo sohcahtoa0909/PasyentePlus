@@ -239,3 +239,65 @@
   color: #9a9a9a;
   font-style: italic;
 }
+/* ══════════════════════════════════════════════════════
+   DARK MODE — applied when <html class="dark">
+   ══════════════════════════════════════════════════════ */
+
+/* Floating bar */
+html.dark .nsb-bar {
+  background: rgba(26,29,39,0.98);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Input wrapper */
+html.dark .nsb-input-wrap {
+  background: #12151f;
+  border-color: #2e3147;
+}
+html.dark .nsb-input-wrap:focus-within,
+html.dark .nsb-input-wrap.nsb-input-wrap--open {
+  background: #1a1d27;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
+}
+html.dark .nsb-input             { color: #e8eaf0; }
+html.dark .nsb-input::placeholder{ color: #606480; }
+html.dark .nsb-input-clear       { color: #606480; }
+html.dark .nsb-input-clear:hover { color: #a0a8c0; }
+
+/* Selected pill */
+html.dark .nsb-selected {
+  background: linear-gradient(135deg, #0e2a35 0%, #0f2030 100%);
+  border-color: #1e4a5c;
+}
+html.dark .nsb-selected-name { color: #7dd8f8; }
+html.dark .nsb-selected-meta { color: #60c8f0; }
+html.dark .nsb-selected-meta svg { stroke: #60c8f0; }
+html.dark .nsb-clear         { color: #606480; }
+
+/* Hint */
+html.dark .nsb-hint {
+  background: rgba(56,189,248,0.06);
+  border-left-color: #1e4a5c;
+  color: #a0a8c0;
+}
+html.dark .nsb-hint strong { color: #7dd8f8; }
+
+/* Dropdown */
+html.dark .nsb-dropdown {
+  background: #1a1d27;
+  border-color: #2e3147;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+  scrollbar-color: #2e3147 transparent;
+}
+html.dark .nsb-dropdown::-webkit-scrollbar-thumb { background: #2e3147; }
+
+/* Option rows */
+html.dark .nsb-option:hover,
+html.dark .nsb-option.highlighted { background: #242840; }
+html.dark .nsb-name  { color: #e8eaf0; }
+html.dark .nsb-type  { color: #606480; }
+html.dark .nsb-empty { color: #606480; }
+
+/* Green dot border matches dark nav */
+html.dark .nsb-dot { border-color: #0d0f18; }

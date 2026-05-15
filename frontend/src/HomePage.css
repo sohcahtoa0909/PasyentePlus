@@ -659,3 +659,131 @@
   .hp-card-stats { flex-wrap: wrap; gap: 6px; }
   .hp-filter-tabs { justify-content: flex-start; }
 }
+/* ══════════════════════════════════════════════════════
+   DARK MODE — applied when <html class="dark">
+   ══════════════════════════════════════════════════════ */
+html.dark .hp-shell {
+  --c-panel:     #1a1d27;
+  --c-teal:      #38bdf8;
+  --c-teal-mid:  #60c8f0;
+  --c-teal-lt:   #1e4a5c;
+  --c-teal-dk:   #7dd8f8;
+  --c-text:      #e8eaf0;
+  --c-text-mid:  #a0a8c0;
+  --c-text-mute: #606480;
+  --c-border:    #2e3147;
+  --c-bg-card:   #12151f;
+}
+
+/* Shell background */
+html.dark .hp-shell        { background: #0f1117; }
+
+/* Side nav stays dark — it already is, but deepen it */
+html.dark .hp-side-nav     { background: #0d0f18; }
+html.dark .hp-nav-logo     { background: #1a1d27; }
+
+/* Panel */
+html.dark .hp-panel-inner  {
+  background: rgba(26, 29, 39, 0.98);
+}
+html.dark .hp-panel-header { background: transparent; }
+html.dark .hp-panel-title  { color: var(--c-text); }
+html.dark .hp-panel-subtitle { color: var(--c-text-mute); }
+html.dark .hp-panel-divider { background: var(--c-border); }
+
+/* Section blocks */
+html.dark .hp-section-block {
+  background: var(--c-bg-card);
+  border-color: var(--c-border);
+}
+
+/* Facility cards */
+html.dark .hp-card {
+  background: #1a1d27;
+  border-color: var(--c-border);
+}
+html.dark .hp-card:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 5px 14px rgba(56,189,248,0.1);
+}
+html.dark .hp-card.selected {
+  border-color: var(--c-teal);
+  background: #141929;
+}
+html.dark .hp-card-name   { color: var(--c-teal-dk); }
+html.dark .hp-card-type   { color: var(--c-teal-mid); }
+html.dark .hp-card-stats  { color: var(--c-text-mid); }
+html.dark .hp-stars-score { color: var(--c-text-mid); }
+
+/* Tags */
+html.dark .hp-tag {
+  background: #1e2535;
+  color: var(--c-teal-dk);
+}
+
+/* Filter tabs */
+html.dark .hp-filter-tab {
+  color: var(--c-text-mute);
+}
+html.dark .hp-filter-tab:hover:not(.active) {
+  background: #1e2535;
+  color: var(--c-text-mid);
+}
+html.dark .hp-filter-tab.active {
+  background: var(--c-text);
+  color: #0f1117;
+}
+
+/* Service search input */
+html.dark .hp-service-input-wrap {
+  background: #12151f;
+  border-color: var(--c-border);
+}
+html.dark .hp-service-input      { color: var(--c-text); }
+
+/* Service dropdown */
+html.dark .hp-service-dropdown {
+  background: #1a1d27;
+  border-color: var(--c-border);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+}
+html.dark .hp-service-option:hover,
+html.dark .hp-service-option.highlighted {
+  background: #242840;
+}
+html.dark .hp-svc-name { color: var(--c-text); }
+
+/* Selected service pill */
+html.dark .hp-service-selected {
+  background: linear-gradient(135deg, #0e2a35 0%, #0f2030 100%);
+  border-color: #1e4a5c;
+}
+
+/* Service hint */
+html.dark .hp-service-hint {
+  background: rgba(56,189,248,0.06);
+  border-left-color: #1e4a5c;
+  color: var(--c-text-mid);
+}
+html.dark .hp-service-hint strong { color: var(--c-teal-dk); }
+
+/* Scrollbars */
+html.dark .hp-facility-list {
+  scrollbar-color: #2e3147 transparent;
+}
+html.dark .hp-facility-list::-webkit-scrollbar-track { background: #1a1d27; }
+html.dark .hp-facility-list::-webkit-scrollbar-thumb { background: #2e3147; }
+
+/* Empty state */
+html.dark .hp-empty       { color: var(--c-text-mute); }
+html.dark .hp-empty span  { color: var(--c-text-mid); }
+
+/* Slider track */
+html.dark .hp-slider-track { background: #2e3147; }
+html.dark .hp-slider-thumb { border-color: #1a1d27; }
+
+/* Count badge */
+html.dark .hp-count-badge {
+  background: #1e4a5c;
+  color: var(--c-teal-dk);
+}

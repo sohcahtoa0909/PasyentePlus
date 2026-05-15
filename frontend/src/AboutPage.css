@@ -283,3 +283,69 @@ body, html {
   color: var(--c-teal-dk);
   padding: 4px 8px;
 }
+/* ══════════════════════════════════════════════════════
+   DARK MODE — applied when <html class="dark">
+   ══════════════════════════════════════════════════════ */
+html.dark {
+  --c-panel:     #1a1d27;
+  --c-teal:      #38bdf8;
+  --c-teal-mid:  #60c8f0;
+  --c-teal-lt:   #1e4a5c;
+  --c-teal-dk:   #7dd8f8;
+  --c-text:      #e8eaf0;
+  --c-text-mid:  #a0a8c0;
+  --c-text-mute: #606480;
+  --c-border:    #2e3147;
+  --c-bg-card:   #12151f;
+}
+
+/* Shell & body */
+html.dark body,
+html.dark html          { background: #0f1117; }
+html.dark .app-shell    { background: #0f1117; }
+
+/* Side nav stays dark already, just deepen */
+html.dark .side-nav     { background: #0d0f18; }
+html.dark .nav-logo     { background: #1a1d27; }
+
+/* Panel */
+html.dark .panel-inner  { background: rgba(26,29,39,0.98); }
+html.dark .panel-title  { color: var(--c-text); }
+html.dark .panel-subtitle { color: var(--c-text-mute); }
+html.dark .panel-divider { background: var(--c-border); }
+
+/* Tabs */
+html.dark .panel-tab:hover:not(.active) { background: #1e2535; color: var(--c-text-mid); }
+html.dark .panel-tab.active             { background: var(--c-text); color: #0f1117; }
+
+/* Section blocks */
+html.dark .section-block { background: var(--c-bg-card); border-color: var(--c-border); }
+html.dark .section-text  { color: var(--c-text-mid); }
+
+/* Tags */
+html.dark .tag-blue { background: #0e2a40; color: #7dd8f8; }
+html.dark .tag-teal { background: #0e2a2e; color: var(--c-teal-dk); }
+
+/* Bullet list */
+html.dark .bullet-item { color: var(--c-text-mid); }
+
+/* Solution cards */
+html.dark .sol-card {
+  background: #1a1d27;
+  border-color: var(--c-border);
+}
+html.dark .sol-card:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 5px 14px rgba(56,189,248,0.1);
+}
+html.dark .sol-card-title { color: var(--c-teal-dk); }
+html.dark .sol-card-desc  { color: var(--c-text-mute); }
+
+/* Leaflet tooltips */
+html.dark .leaflet-tooltip {
+  background-color: rgba(26,29,39,0.97);
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+}
+html.dark .leaflet-popup-content-wrapper { background: #1a1d27; color: var(--c-text); }
+html.dark .leaflet-popup-tip            { background: #1a1d27; }

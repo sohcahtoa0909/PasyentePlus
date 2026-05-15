@@ -194,3 +194,47 @@
   color: var(--c-teal-dk);
   padding: 4px 8px;
 }
+/* ══════════════════════════════════════════════════════
+   DARK MODE — applied when <html class="dark">
+   ══════════════════════════════════════════════════════ */
+
+/* Help steps */
+html.dark .help-step {
+  background: #1a1d27;
+  border-color: #2e3147;
+}
+html.dark .help-step:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 3px 10px rgba(56,189,248,0.08);
+}
+html.dark .help-step-title { color: var(--c-teal-dk); }
+html.dark .help-step-desc  { color: var(--c-text-mute); }
+
+/* FAQ */
+html.dark .faq-item          { background: #1a1d27; border-color: #2e3147; }
+html.dark .faq-item.open     { border-color: #38bdf8; }
+html.dark .faq-trigger:hover { background: #12151f; }
+html.dark .faq-item.open .faq-trigger { background: #0e2535; }
+html.dark .faq-question      { color: var(--c-text); }
+html.dark .faq-answer        { color: var(--c-text-mid); border-top-color: #2e3147; }
+
+/* Contact cards */
+html.dark .contact-card {
+  background: #1a1d27;
+  border-color: #2e3147;
+}
+html.dark .contact-card:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 5px 14px rgba(56,189,248,0.09);
+}
+html.dark .contact-label { color: var(--c-teal-dk); }
+html.dark .contact-value { color: var(--c-text-mute); }
+
+/* Leaflet tooltips */
+html.dark .leaflet-tooltip {
+  background-color: rgba(26,29,39,0.97);
+  border-color: var(--c-teal);
+  color: var(--c-teal-dk);
+}
+html.dark .leaflet-popup-content-wrapper { background: #1a1d27; color: var(--c-text); }
+html.dark .leaflet-popup-tip            { background: #1a1d27; }
