@@ -24,7 +24,7 @@ export const transformFacilityData = (rawData) => {
             distance: 50,
             waitTime: 50,
 
-            stars: 5,
+            rating: x.rating,
             services: recognizedServices
         }
     });

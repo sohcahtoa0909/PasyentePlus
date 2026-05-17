@@ -261,7 +261,10 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
         <span className="hp-stat"><IconClock />{facility.waitTime}m wait</span>
       </div>
       <div className="hp-card-bottom">
-        <Stars rating="5" />
+        {facility.rating ?
+          <Stars rating={facility.rating} /> :
+          <span className="hp-stat">No ratings yet.</span>
+        }        
         <div className="hp-tags">
           {facility.services.map(s => (
             <span key={s} className="hp-tag">{s}</span>

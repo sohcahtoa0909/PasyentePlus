@@ -8,6 +8,7 @@ import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
 import { authenticateToken } from "../auth/authgate";
+import { calculateAverageRating } from "../../lib/feedback";
 
 const router: Router = Router();
 router.get('/', async (req, res) => {
@@ -79,10 +80,19 @@ router.get('/', async (req, res) => {
                     include: { service: true }
                 }
             }
-        });
+        });        
+
+        const facilitiesWithRating = await Promise.all(facilities.map(async (f) => {
+            const [ratingExists, ratingValue] = await calculateAverageRating(f.id);
+            
+            return {
+                ...f,
+                ...(ratingExists && { rating: ratingValue })
+            };
+        }));        
 
         if (lat && lng) {
-            const results = facilities.map((f) => {
+            const results = await Promise.all(facilitiesWithRating.map(async (f) => {
                 const hospital = f.hospital;
 
                 const d = getDistance(
@@ -90,16 +100,17 @@ router.get('/', async (req, res) => {
                     parseInt(lng as string),
                     hospital.locLat, hospital.locLng);
 
+
                 return {
                     ...f,
-                    distance: d
+                    distance: d,                    
                 }
-            });
+            }));
             results.sort((a, b) => a.distance - b.distance);
 
             res.json(results);
         } else {
-            res.json(facilities);
+            res.json(facilitiesWithRating);
         }
     } catch (err) {
         res.status(500).json({error: 'Error!' });
