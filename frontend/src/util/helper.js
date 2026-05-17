@@ -25,6 +25,8 @@ export const transformFacilityData = (rawData) => {
             waitTime: 50,
 
             rating: x.rating,
+            ratingCount: x.ratingCount,
+
             services: recognizedServices
         }
     });

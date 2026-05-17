@@ -230,13 +230,13 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
 }
 
 /* ── Stars ── */
-function Stars({ rating }) {
+function Stars({ rating, ratingCount }) {
   return (
     <span className="hp-stars">
       {[1, 2, 3, 4, 5].map(i => (
         <span key={i} className={`hp-star${parseFloat(rating) >= i ? " on" : ""}`}>★</span>
       ))}
-      <span className="hp-stars-score">{rating}</span>
+      <span className="hp-stars-score">{rating} ({ratingCount})</span>
     </span>
   );
 }
@@ -262,7 +262,7 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
       </div>
       <div className="hp-card-bottom">
         {facility.rating ?
-          <Stars rating={facility.rating} /> :
+          <Stars rating={facility.rating} ratingCount={facility.ratingCount}/> :
           <span className="hp-stat">No ratings yet.</span>
         }        
         <div className="hp-tags">

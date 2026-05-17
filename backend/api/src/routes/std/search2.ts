@@ -83,11 +83,11 @@ router.get('/', async (req, res) => {
         });        
 
         const facilitiesWithRating = await Promise.all(facilities.map(async (f) => {
-            const [ratingExists, ratingValue] = await calculateAverageRating(f.id);
+            const [ratingCount, ratingValue] = await calculateAverageRating(f.id);
             
             return {
                 ...f,
-                ...(ratingExists && { rating: ratingValue })
+                ...(ratingCount! > 0 && { rating: ratingValue, ratingCount })
             };
         }));        
 
@@ -99,7 +99,6 @@ router.get('/', async (req, res) => {
                     parseInt(lat as string),
                     parseInt(lng as string),
                     hospital.locLat, hospital.locLng);
-
 
                 return {
                     ...f,
