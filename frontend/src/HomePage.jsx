@@ -256,7 +256,9 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
       <div className="hp-card-name">{facility.hospitalName}</div>
       <div className="hp-card-type">{facility.facilityName}</div>
       <div className="hp-card-stats">
-        <span className="hp-stat budget">₱{facility.priceLow}-₱{facility.priceHigh}</span>
+        {facility.priceLow &&
+          <span className="hp-stat budget">₱{facility.priceLow}-₱{facility.priceHigh}</span>
+        }        
         <span className="hp-stat"><IconMapPin />{facility.distance}km</span>
         {facility.waitTime &&
           <span className="hp-stat"><IconClock />{formatDynamicWaitTime(facility.waitTime)} wait</span>

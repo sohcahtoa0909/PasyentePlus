@@ -67,6 +67,36 @@ export async function calculateWait(facilityId: string) {
 }
 
 /**
+ *  Calculates the least and most expensive cost of the facility
+ * 
+ * @param facilityId Facility by facilityID in database in which to get the rating
+ * @returns {[boolean, number, number]} Returns triple [x, y, z] where x is whether there is a valid calculation, x is the lower bound cost, and z is the higher bound cost
+ */
+export async function calculatePriceRange(facilityId: string) {
+    // Get all report items
+    const reportsFiltered = await prisma.feedbackReport.findMany({
+        where: {
+            facilityId: facilityId as string
+        }
+    });   
+
+    // If no reports exists
+    if(reportsFiltered.length <= 0) {
+        return [false, -1, -1];
+    }
+
+    let moneySpent = reportsFiltered
+    .filter(f => f.moneySpent != null)
+    .map(f => f.moneySpent!);
+
+    moneySpent = moneySpent.sort((a, b) => a-b);
+    const minMoney = moneySpent[0];
+    const maxMoney = moneySpent[moneySpent.length - 1];
+
+    return [true, minMoney, maxMoney];
+}
+
+/**
  * Gets the median time of waitTime instances
  * 
  * @param {{waitTime: number, reportAge: number}[]} Array of instances of waitTimes

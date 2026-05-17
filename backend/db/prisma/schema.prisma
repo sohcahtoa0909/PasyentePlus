@@ -117,8 +117,6 @@ model FacilityService {
 
   notes       String?
 
-  reports     FeedbackReport[]
-
   @@unique([facilityId, serviceId])
 }
 
@@ -153,9 +151,6 @@ model FeedbackReport {
 
   facility          Facility        @relation(fields: [facilityId], references: [id])
   facilityId        String
-
-  facilityService   FacilityService @relation(fields: [facilityServiceId], references: [id])
-  facilityServiceId String
 
   reporter          User            @relation(fields: [reporterId], references: [id])
   reporterId        String

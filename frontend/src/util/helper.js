@@ -10,12 +10,6 @@ export const transformFacilityData = (rawData) => {
             return y.service.displayName
         });
 
-        const minPrices = x.services.map(z => z.minCost);
-        const maxPrices = x.services.map(z => z.maxCost);
-
-        const priceLow = Math.min(...minPrices);
-        const priceHigh = Math.max(...maxPrices);
-
         return {
             facilityName: x.facilityName,
 
@@ -25,10 +19,11 @@ export const transformFacilityData = (rawData) => {
             locLat: x.hospital.locLat,
             locLng: x.hospital.locLng,
 
-            priceLow, priceHigh,
-
             distance: 50,
             waitTime: x.waitTime,
+
+            priceLow: x.minCost,
+            priceHigh: x.maxCost,
 
             rating: x.rating,
             ratingCount: x.ratingCount,

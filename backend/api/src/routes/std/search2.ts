@@ -7,7 +7,7 @@ import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
 import { authenticateToken } from "../auth/authgate";
-import { calculateRating, calculateWait } from "../../lib/feedback";
+import { calculatePriceRange, calculateRating, calculateWait } from "../../lib/feedback";
 
 const router: Router = Router();
 router.get('/', async (req, res) => {
@@ -15,7 +15,6 @@ router.get('/', async (req, res) => {
         const {
             facility_type, //Required
             service, //Optional
-            max_price, //Price
             lat, lng //Location
         } = req.query;
 
@@ -31,14 +30,9 @@ router.get('/', async (req, res) => {
             }
         };
 
-        if (service || max_price) {
+        if (service) {
             whereClause.services = {
-                some: {
-                    AND: [
-                        service ? { service: { name: { contains: service as string, mode: 'insensitive' } } } : {},
-                        max_price ? { minCost: { lte: parseInt(max_price as string) } } : {},
-                    ]
-                }
+                some: { service: { name: { contains: service as string, mode: 'insensitive' } } }
             };
         }
 
@@ -53,22 +47,12 @@ router.get('/', async (req, res) => {
 
                 services: {
                     some: {
-                        AND: [
-                            service ? {
-                                service: {
-                                    name: {
-                                        contains: service as string,
-                                        mode: 'insensitive'
-                                    }
-                                }
-                            } : {},
-
-                            max_price ? {
-                                minCost: {
-                                    lte: parseInt(max_price as string)
-                                }
-                            } : {}
-                        ]
+                        service: {
+                            name: {
+                                contains: service as string,
+                                mode: 'insensitive'
+                            }
+                        }
                     }
                 }
             },
@@ -99,6 +83,16 @@ router.get('/', async (req, res) => {
             return {
                 ...f,
                 ...(hasWaitTime && { waitTime: waitTime })
+            }
+        }));
+
+        //
+        facilities = await Promise.all(facilities.map(async(f) => {
+            const [hasCostRange, minCost, maxCost] = await calculatePriceRange(f.id);
+
+            return {
+                ...f,
+                ...(hasCostRange && { minCost: minCost, maxCost: maxCost })
             }
         }));
 
