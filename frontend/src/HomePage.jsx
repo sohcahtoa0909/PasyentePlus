@@ -236,7 +236,7 @@ function Stars({ rating, ratingCount }) {
       {[1, 2, 3, 4, 5].map(i => (
         <span key={i} className={`hp-star${parseFloat(rating) >= i ? " on" : ""}`}>★</span>
       ))}
-      <span className="hp-stars-score">{rating} ({ratingCount})</span>
+      <span className="hp-stars-score">{parseFloat(rating).toFixed(1)} ({ratingCount})</span>
     </span>
   );
 }
