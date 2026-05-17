@@ -1,5 +1,17 @@
 import { prisma } from "./prismaclient";
 
+interface Report {
+    id: string,
+    facilityId: string,
+    reporterId: string,
+    rating: number,
+    timeIn: Date | null,
+    timeOut: Date | null,
+    moneySpent: number | null,
+    textComment: string | null,
+    createdAt: Date
+};
+
 /**
  * Calculates the star-rating value of a Facility in a hospital.
  * 
@@ -21,6 +33,28 @@ export async function calculateRating(facilityId: string) {
 
     // Create array of just ratings
     const ratings = reportsFiltered.map(f => f.rating);
+
+    // Get average
+    const average = ratings.reduce((a, b) => a + b) / ratings.length;
+
+    return [ratings.length, average];
+}
+
+/**
+ * Calculates the star-rating value of a Facility in a hospital.
+ * 
+ * @param {Report[]} reports Array of reports filtered from prisma query
+ * @returns {[number, number]} Returns tuple [x, y] - x is how many ratings total, and y is the star-rating value
+ */
+export function calculateRatingFromReports(reports: Report[]) {  
+
+    // If no reports exists
+    if(reports.length <= 0) {
+        return [0, 0];
+    }
+
+    // Create array of just ratings
+    const ratings = reports.map(f => f.rating);
 
     // Get average
     const average = ratings.reduce((a, b) => a + b) / ratings.length;
@@ -66,6 +100,38 @@ export async function calculateWait(facilityId: string) {
     return [true, getWaitTimeMedian(waitTimes)];
 }
 
+
+/**
+ * Calculates the median wait time of a facility.
+ * 
+ * @todo Improve the implementation of this function to be weighted-median based on reportAge (in minutes) property
+ * 
+ * @param {Report[]} reports Array of reports filtered from prisma query
+ * @returns {[boolean, number]} Returns tuple [x, y] where x is if there is a valid calculation and y is the Median wait time
+ */
+export function calculateWaitFromReports(reports: Report[]) {
+    // If no reports exists
+    if(reports.length <= 0) {
+        return [false, -1];
+    }
+
+    //Get all times
+    const waitTimes = reports
+    .filter(f => f.timeIn !== null && f.timeOut !== null)
+    .filter(f => f.timeOut! > f.timeIn!)
+    .map(f => {
+        const waitTimeInMins = (f.timeOut!.getTime() - f.timeIn!.getTime()) / (1000 * 60);
+        const reportAge = (Date.now() - f.createdAt.getTime()) / (1000 * 60);
+
+        return {
+            waitTime: waitTimeInMins,
+            reportAge        
+        }
+    });
+
+    return [true, getWaitTimeMedian(waitTimes)];
+}
+
 /**
  *  Calculates the least and most expensive cost of the facility
  * 
@@ -88,6 +154,40 @@ export async function calculatePriceRange(facilityId: string) {
     let moneySpent = reportsFiltered
     .filter(f => f.moneySpent != null)
     .map(f => f.moneySpent!);
+
+    // If no moneySpent entries
+    if(moneySpent.length <= 0) {
+        return [false, -1, -1];
+    }
+
+    moneySpent = moneySpent.sort((a, b) => a-b);
+    const minMoney = moneySpent[0];
+    const maxMoney = moneySpent[moneySpent.length - 1];
+
+    return [true, minMoney, maxMoney];
+}
+
+
+/**
+ *  Calculates the least and most expensive cost of the facility
+ * 
+ * @param {Report[]} reports Array of reports filtered from prisma query
+ * @returns {[boolean, number, number]} Returns triple [x, y, z] where x is whether there is a valid calculation, x is the lower bound cost, and z is the higher bound cost
+ */
+export function calculatePriceRangeFromReports(reports: Report[]) {
+    // If no reports exists
+    if(reports.length <= 0) {
+        return [false, -1, -1];
+    }
+
+    let moneySpent = reports
+    .filter(f => f.moneySpent != null)
+    .map(f => f.moneySpent!);
+
+    // If no moneySpent entries
+    if(moneySpent.length <= 0) {
+        return [false, -1, -1];
+    }
 
     moneySpent = moneySpent.sort((a, b) => a-b);
     const minMoney = moneySpent[0];

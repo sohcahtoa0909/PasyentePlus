@@ -7,7 +7,7 @@ import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
 import { authenticateToken } from "../auth/authgate";
-import { calculatePriceRange, calculateRating, calculateWait } from "../../lib/feedback";
+import { calculatePriceRange, calculatePriceRangeFromReports, calculateRating, calculateRatingFromReports, calculateWait, calculateWaitFromReports } from "../../lib/feedback";
 
 const router: Router = Router();
 router.get('/', async (req, res) => {
@@ -65,36 +65,24 @@ router.get('/', async (req, res) => {
             }
         });        
 
-        //@todo For calculate rating and wait we poll and retrieve reports TWICE, find a way to do it in one go
-        // Add star-rating to response
         facilities = await Promise.all(facilities.map(async (f) => {
-            const [ratingCount, ratingValue] = await calculateRating(f.id);
+            const reportsFiltered = await prisma.feedbackReport.findMany({
+                where: {
+                    facilityId: f.id
+                }
+            });     
             
-            return {
-                ...f,
-                ...(ratingCount! > 0 && { rating: ratingValue, ratingCount })
-            };
-        }));       
-        
-        // Add waiting times to response
-        facilities = await Promise.all(facilities.map(async (f) => {
-            const [hasWaitTime, waitTime] = await calculateWait(f.id);
+            const [ratingCount, ratingValue] = calculateRatingFromReports(reportsFiltered);
+            const [hasWaitTime, waitTime] = calculateWaitFromReports(reportsFiltered);
+            const [hasCostRange, minCost, maxCost] = calculatePriceRangeFromReports(reportsFiltered);
 
             return {
                 ...f,
-                ...(hasWaitTime && { waitTime: waitTime })
-            }
-        }));
-
-        //
-        facilities = await Promise.all(facilities.map(async(f) => {
-            const [hasCostRange, minCost, maxCost] = await calculatePriceRange(f.id);
-
-            return {
-                ...f,
+                ...(ratingCount! > 0 && { rating: ratingValue, ratingCount }),
+                ...(hasWaitTime && { waitTime: waitTime }),
                 ...(hasCostRange && { minCost: minCost, maxCost: maxCost })
-            }
-        }));
+            };
+        }));        
 
         if (lat && lng) {
             const results = await Promise.all(facilities.map(async (f) => {
