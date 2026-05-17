@@ -8,7 +8,7 @@ import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
 import { authenticateToken } from "../auth/authgate";
-import { calculateAverageRating } from "../../lib/feedback";
+import { calculateRating } from "../../lib/feedback";
 
 const router: Router = Router();
 router.get('/', async (req, res) => {
