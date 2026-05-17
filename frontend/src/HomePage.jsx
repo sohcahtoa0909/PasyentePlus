@@ -6,7 +6,7 @@ import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
 import NavSearchBar from "./NavSearchBar";
 import FacilityDetailsModal from "./FacilityDetailsModal";
-import { getHospitalMarkers, transformFacilityData } from "./util/helper";
+import { formatDynamicWaitTime, getHospitalMarkers, transformFacilityData } from "./util/helper";
 import { IconHome, IconInfo, IconSliders, IconHelp, IconSettings, IconSearch, IconMapPin, IconClock, IconX } from "./icons/Icons";
 
 const SERVICE_MISC_LOOKUP = {
@@ -258,7 +258,9 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
       <div className="hp-card-stats">
         <span className="hp-stat budget">₱{facility.priceLow}-₱{facility.priceHigh}</span>
         <span className="hp-stat"><IconMapPin />{facility.distance}km</span>
-        <span className="hp-stat"><IconClock />{facility.waitTime}m wait</span>
+        {facility.waitTime &&
+          <span className="hp-stat"><IconClock />{formatDynamicWaitTime(facility.waitTime)} wait</span>
+        }        
       </div>
       <div className="hp-card-bottom">
         {facility.rating ?

@@ -7,7 +7,7 @@ import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
 import { authenticateToken } from "../auth/authgate";
-import { calculateRating } from "../../lib/feedback";
+import { calculateRating, calculateWait } from "../../lib/feedback";
 
 const router: Router = Router();
 router.get('/', async (req, res) => {
@@ -81,17 +81,29 @@ router.get('/', async (req, res) => {
             }
         });        
 
-        const facilitiesWithRating = await Promise.all(facilities.map(async (f) => {
+        //@todo For calculate rating and wait we poll and retrieve reports TWICE, find a way to do it in one go
+        // Add star-rating to response
+        facilities = await Promise.all(facilities.map(async (f) => {
             const [ratingCount, ratingValue] = await calculateRating(f.id);
             
             return {
                 ...f,
                 ...(ratingCount! > 0 && { rating: ratingValue, ratingCount })
             };
-        }));        
+        }));       
+        
+        // Add waiting times to response
+        facilities = await Promise.all(facilities.map(async (f) => {
+            const [hasWaitTime, waitTime] = await calculateWait(f.id);
+
+            return {
+                ...f,
+                ...(hasWaitTime && { waitTime: waitTime })
+            }
+        }));
 
         if (lat && lng) {
-            const results = await Promise.all(facilitiesWithRating.map(async (f) => {
+            const results = await Promise.all(facilities.map(async (f) => {
                 const hospital = f.hospital;
 
                 const d = getDistance(
@@ -108,7 +120,7 @@ router.get('/', async (req, res) => {
 
             res.json(results);
         } else {
-            res.json(facilitiesWithRating);
+            res.json(facilities);
         }
     } catch (err) {
         res.status(500).json({error: 'Error!' });
