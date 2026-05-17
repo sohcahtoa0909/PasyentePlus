@@ -162,8 +162,8 @@ model FeedbackReport {
   rating      Int
 
   //Time entered and exited
-  timeIn      DateTime
-  timeOut     DateTime
+  timeIn      DateTime?
+  timeOut     DateTime?
 
   //Money spent by user
   moneySpent  Int?

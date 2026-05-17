@@ -14,13 +14,15 @@ export async function calculateRating(facilityId: string) {
         }
     });    
 
-    // 
+    // If no reports exists
     if(reportsFiltered.length <= 0) {
         return [0, 0];
     }
 
+    // Create array of just ratings
     const ratings = reportsFiltered.map(f => f.rating);
 
+    // Get average
     const average = ratings.reduce((a, b) => a + b) / ratings.length;
 
     return [ratings.length, average];

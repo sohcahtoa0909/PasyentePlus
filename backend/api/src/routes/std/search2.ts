@@ -3,7 +3,6 @@ export const pathOverride: String | null = "/search2";
 //Set if you don't want this file to be read 
 export const exclude: boolean = false;
 
-import { serialize } from "node:v8";
 import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
@@ -83,7 +82,7 @@ router.get('/', async (req, res) => {
         });        
 
         const facilitiesWithRating = await Promise.all(facilities.map(async (f) => {
-            const [ratingCount, ratingValue] = await calculateAverageRating(f.id);
+            const [ratingCount, ratingValue] = await calculateRating(f.id);
             
             return {
                 ...f,
