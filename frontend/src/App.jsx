@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AboutPage from "./AboutPage";
 import HelpPage from "./HelpPage";
 import PreferencesPage from "./PreferencesPage";
@@ -8,15 +8,67 @@ import SettingsPage from "./SettingsPage";
 
 export default function App() {
   const [activePage, setActivePage] = useState("Home");
-  const [selectedFacility, setSelectedFacility] = useState(null); // ← moved inside
+  const [selectedFacility, setSelectedFacility] = useState(null);
 
+  // ── Auth state ────────────────────────────────────────────────────────────
+  const [isLoggedIn,  setIsLoggedIn]  = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  // currentUser shape: { displayName, username, email, token }
+
+  // On mount: restore session from localStorage if a token was previously saved
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    const savedUser  = localStorage.getItem("user");
+    if (savedToken && savedUser) {
+      try {
+        setIsLoggedIn(true);
+        setCurrentUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
+  /** Called by AuthPage after a successful login response */
+  function handleLoginSuccess(user) {
+    setIsLoggedIn(true);
+    setCurrentUser(user);
+    localStorage.setItem("token", user.token);
+    localStorage.setItem("user",  JSON.stringify(user));
+    setActivePage("Home");
+  }
+
+  /** Called by SettingsPage when the user saves profile changes */
+  function handleUserUpdate(updatedUser) {
+    setCurrentUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  }
+
+  /** Wraps setActivePage — intercepts "Auth" when logged in to mean Log Out */
+  function handleSetActivePage(page) {
+    if (page === "Auth" && isLoggedIn) {
+      // Logging out — clear everything then send to Home as guest
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("darkMode");
+      document.documentElement.classList.remove("dark");
+      setActivePage("Home");
+    } else {
+      setActivePage(page);
+    }
+  }
+
+  // ── Page rendering ────────────────────────────────────────────────────────
   const renderPage = () => {
     switch (activePage) {
       case "Home":
         return (
           <HomePage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
           />
@@ -25,7 +77,7 @@ export default function App() {
         return (
           <AboutPage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
           />
@@ -34,7 +86,7 @@ export default function App() {
         return (
           <HelpPage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
           />
@@ -43,7 +95,7 @@ export default function App() {
         return (
           <PreferencesPage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
           />
@@ -52,21 +104,27 @@ export default function App() {
         return (
           <AuthPage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
+            onLoginSuccess={handleLoginSuccess}
           />
         );
       case "Settings":
         return (
           <SettingsPage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
+            selectedFacility={selectedFacility}
+            onFacilitySelect={setSelectedFacility}
+            isLoggedIn={isLoggedIn}
+            currentUser={currentUser}
+            onUserUpdate={handleUserUpdate}
           />
         );
       default:
         return (
           <AboutPage
             activePage={activePage}
-            setActivePage={setActivePage}
+            setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
           />

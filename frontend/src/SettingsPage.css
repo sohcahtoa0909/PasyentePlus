@@ -364,3 +364,33 @@ html.dark .nav-search-results {
   border-color: var(--c-border);
 }
 html.dark .nav-search-result-item:hover { background: #242840; }
+/* ══════════════════════════════════════════════════════
+   AUTH PAGE — force light mode regardless of html.dark
+   Prevents dark mode CSS vars from bleeding into the
+   login / register screen.
+   ══════════════════════════════════════════════════════ */
+html.dark .auth-shell,
+html.dark .auth-shell * {
+  color: revert;
+}
+
+html.dark .auth-shell              { background: #fff; }
+html.dark .auth-form-panel         { background: #fff; }
+html.dark .auth-field              { background: #fff; border-color: #e5e7eb; }
+html.dark .auth-field-label        { color: #6b7280; }
+html.dark .auth-field-input        { color: #111827; background: transparent; }
+html.dark .auth-field-icon         { color: #9ca3af; }
+html.dark .auth-field-right        { color: #9ca3af; }
+html.dark .auth-eyebrow            { color: #6b7280; }
+html.dark .auth-title              { color: #111827; }
+html.dark .auth-title-dot          { color: #38bdf8; }
+html.dark .auth-sub                { color: #6b7280; }
+html.dark .auth-sub-red            { color: #b91c1c; }
+html.dark .auth-switch-link        { color: #0ea5e9; }
+html.dark .auth-forgot-link        { color: #0ea5e9; }
+html.dark .auth-logo-name          { color: #111827; }
+html.dark .auth-btn-primary        { background: #0ea5e9; color: #fff; }
+html.dark .auth-btn-secondary      { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+html.dark .auth-divider            { color: #9ca3af; }
+html.dark .auth-divider::before,
+html.dark .auth-divider::after     { background: #e5e7eb; }
