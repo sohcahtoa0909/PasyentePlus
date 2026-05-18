@@ -15,14 +15,23 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   // currentUser shape: { displayName, username, email, token }
 
-  // On mount: restore session from localStorage if a token was previously saved
+  // On mount: restore session and dark mode before first render
   useEffect(() => {
+    // Apply dark mode immediately so there's no flash of light mode
+    const savedDark = localStorage.getItem("darkMode") === "true";
+    if (savedDark) document.documentElement.classList.add("dark");
+
     const savedToken = localStorage.getItem("token");
     const savedUser  = localStorage.getItem("user");
     if (savedToken && savedUser) {
       try {
+        const user = JSON.parse(savedUser);
         setIsLoggedIn(true);
-        setCurrentUser(JSON.parse(savedUser));
+        setCurrentUser(user);
+        // User's saved preference overrides localStorage
+        if (user.darkMode !== undefined) {
+          document.documentElement.classList.toggle("dark", user.darkMode);
+        }
       } catch {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
