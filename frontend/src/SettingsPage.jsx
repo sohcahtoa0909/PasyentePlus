@@ -30,28 +30,89 @@ export default function SettingsPage({
   activePage, 
   setActivePage,
   selectedFacility: propSelectedFacility,
-  onFacilitySelect 
+  onFacilitySelect,
+  isLoggedIn = false,
+  currentUser = null,
+  onUserUpdate = null,
 }) {
   const panelOpen = activePage === "Settings";
 
   const [tab, setTab] = useState("Profile");
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  // Profile state
-  const [profile, setProfile] = useState({ username: "juan_delacruz", email: "juan@example.com" });
+  // Profile state — seeded from currentUser when logged in
+  const [profile, setProfile] = useState({
+    displayName: currentUser?.displayName ?? "",
+    username:    currentUser?.userName    ?? "",
+    email:       currentUser?.email       ?? "",
+  });
+  // Track whether the user has manually typed in the username field
+  const [usernameEdited, setUsernameEdited] = useState(false);
   const [profileFeedback, setProfileFeedback] = useState({ msg: "", type: "" });
+
+  // Sync profile whenever currentUser changes (e.g. right after login)
+  useEffect(() => {
+    if (currentUser) {
+      setProfile({
+        displayName: currentUser.displayName ?? "",
+        username:    currentUser.userName    ?? "",
+        email:       currentUser.email       ?? "",
+      });
+      setUsernameEdited(false);
+    }
+  }, [currentUser]);
 
   // Password state
   const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
   const [pwFeedback, setPwFeedback] = useState({ msg: "", type: "" });
 
-  // Dark mode
-  const [darkMode, setDarkMode] = useState(false);
+  // Dark mode — seeded from: logged-in user preference, then localStorage, then false
+  const [darkMode, setDarkMode] = useState(() => {
+    if (currentUser?.darkMode !== undefined) return currentUser.darkMode;
+    return localStorage.getItem("darkMode") === "true";
+  });
 
-  // Dark mode — toggle class on <html> so all CSS vars flip app-wide
+  // Apply dark class to <html> whenever darkMode changes
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
+    // Always keep localStorage in sync (works for guests too)
+    localStorage.setItem("darkMode", String(darkMode));
   }, [darkMode]);
+
+  // When the logged-in user object changes (e.g. after login), sync dark mode
+  useEffect(() => {
+    if (currentUser?.darkMode !== undefined) {
+      setDarkMode(currentUser.darkMode);
+    }
+  }, [currentUser]);
+
+  // Save dark mode preference to backend (logged-in) or just localStorage (guest)
+  const handleDarkModeToggle = async (value) => {
+    setDarkMode(value);
+    if (!isLoggedIn) return; // localStorage already updated by the effect above
+
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/profile`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ darkMode: value }),
+        }
+      );
+      if (res.ok && onUserUpdate) {
+        const updatedUser = { ...currentUser, darkMode: value };
+        onUserUpdate(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+    } catch {
+      // Silent fail — the UI already toggled, localStorage is updated
+    }
+  };
 
   // Logout modal
   const [showLogout, setShowLogout] = useState(false);
@@ -81,18 +142,59 @@ export default function SettingsPage({
     }
   }
 
-  // Profile save
-  const handleProfileSave = () => {
-    if (!profile.username.trim()) {
-      setProfileFeedback({ msg: "Username is required.", type: "error" });
+  // Profile save — calls backend if username was changed
+  const handleProfileSave = async () => {
+    const newUsername = usernameEdited ? profile.username.trim() : (currentUser?.userName ?? "");
+
+    if (!newUsername) {
+      setProfileFeedback({ msg: "Username cannot be empty.", type: "error" });
       return;
     }
-    setProfileFeedback({ msg: "Profile updated successfully.", type: "success" });
+
+    const token = localStorage.getItem("token");
+    const endpoint = `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/profile`;
+
+    console.log("[ProfileSave] endpoint:", endpoint);
+    console.log("[ProfileSave] token:", token ? "present" : "MISSING");
+    console.log("[ProfileSave] payload:", { userName: newUsername });
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userName: newUsername }),
+      });
+
+      console.log("[ProfileSave] status:", res.status);
+      const data = await res.json().catch(() => ({}));
+      console.log("[ProfileSave] response body:", data);
+
+      if (res.ok) {
+        setProfile(p => ({ ...p, username: newUsername }));
+        setUsernameEdited(false);
+        setProfileFeedback({ msg: "Profile updated successfully.", type: "success" });
+        // Update App-level state and localStorage so refresh doesn't revert
+        if (onUserUpdate) {
+          const updatedUser = { ...currentUser, userName: newUsername };
+          onUserUpdate(updatedUser);
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+      } else {
+        setProfileFeedback({ msg: data.message ?? `Error ${res.status}`, type: "error" });
+      }
+    } catch (err) {
+      console.error("[ProfileSave] fetch error:", err);
+      setProfileFeedback({ msg: "Network error. Please try again.", type: "error" });
+    }
+
     setTimeout(() => setProfileFeedback({ msg: "", type: "" }), 3000);
   };
 
-  // Password save
-  const handlePasswordSave = () => {
+  // Password save — validates locally then calls backend
+  const handlePasswordSave = async () => {
     if (!passwords.current) {
       setPwFeedback({ msg: "Please enter your current password.", type: "error" });
       return;
@@ -105,8 +207,37 @@ export default function SettingsPage({
       setPwFeedback({ msg: "Passwords do not match.", type: "error" });
       return;
     }
-    setPwFeedback({ msg: "Password changed successfully.", type: "success" });
-    setPasswords({ current: "", next: "", confirm: "" });
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(
+        `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/auth/password`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            currentPassword: passwords.current,
+            newPassword:     passwords.next,
+          }),
+        }
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        setPasswords({ current: "", next: "", confirm: "" });
+        setPwFeedback({ msg: "Password changed successfully.", type: "success" });
+      } else {
+        setPwFeedback({ msg: data.message ?? `Error ${res.status}`, type: "error" });
+      }
+    } catch {
+      setPwFeedback({ msg: "Network error. Please try again.", type: "error" });
+    }
+
     setTimeout(() => setPwFeedback({ msg: "", type: "" }), 3000);
   };
 
@@ -199,55 +330,79 @@ export default function SettingsPage({
                   <div className="section-block">
                     <div className="section-label">Profile Information</div>
 
-                    <div className="settings-profile-header">
-                      <div className="settings-avatar">{getInitials(profile.username || "?")}</div>
-                      <div style={{ flex: 1 }}>
-                        <div className="settings-profile-name">{profile.username || "—"}</div>
-                        <div className="settings-profile-email">{profile.email}</div>
-                      </div>
-                      <button
-                        className="settings-btn"
-                        style={{ width: "auto", border: "1px solid var(--c-border)", whiteSpace: "nowrap" }}
-                        onClick={() => { setShowPasswordForm(true); setPwFeedback({ msg: "", type: "" }); setPasswords({ current: "", next: "", confirm: "" }); }}>
-                        Change Password
-                      </button>
-                    </div>
-
-                    <div className="settings-section">
-                      <div className="settings-field">
-                        <div className="settings-field-label">Username</div>
-                        <input
-                          type="text"
-                          value={profile.username}
-                          onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-                          placeholder="Enter your username"
-                        />
-                      </div>
-                      {profileFeedback.msg && (
-                        <div className={`settings-feedback show ${profileFeedback.type}`}>
-                          {profileFeedback.msg}
+                    {isLoggedIn ? (
+                      /* ── Logged-in: full editable profile ── */
+                      <>
+                        <div className="settings-profile-header">
+                          <div className="settings-avatar">{getInitials(profile.username || "?")}</div>
+                          <div style={{ flex: 1 }}>
+                            <div className="settings-profile-name">{profile.username || "—"}</div>
+                            <div className="settings-profile-email">{profile.email}</div>
+                          </div>
+                          <button
+                            className="settings-btn"
+                            style={{ width: "auto", border: "1px solid var(--c-border)", whiteSpace: "nowrap" }}
+                            onClick={() => { setShowPasswordForm(true); setPwFeedback({ msg: "", type: "" }); setPasswords({ current: "", next: "", confirm: "" }); }}>
+                            Change Password
+                          </button>
                         </div>
-                      )}
 
-                      <button className="settings-btn settings-btn-primary" onClick={handleProfileSave}>
-                        Save Changes
-                      </button>
-                    </div>
+                        <div className="settings-section">
+                          <div className="settings-field">
+                            <div className="settings-field-label">Username</div>
+                            <input
+                              type="text"
+                              value={profile.username}
+                              placeholder={profile.displayName || "Enter your username"}
+                              onChange={(e) => {
+                                setUsernameEdited(true);
+                                setProfile({ ...profile, username: e.target.value });
+                              }}
+                            />
+                          </div>
+                          {profileFeedback.msg && (
+                            <div className={`settings-feedback show ${profileFeedback.type}`}>
+                              {profileFeedback.msg}
+                            </div>
+                          )}
+                          <button className="settings-btn settings-btn-primary" onClick={handleProfileSave}>
+                            Save Changes
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      /* ── Guest: read-only placeholder ── */
+                      <div className="settings-profile-header">
+                        <div className="settings-avatar" style={{ background: "var(--c-text-mute)" }}>G</div>
+                        <div style={{ flex: 1 }}>
+                          <div className="settings-profile-name">Guest</div>
+                          <div className="settings-profile-email">Not signed in</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="settings-divider" />
 
                   <div className="section-block">
                     <div className="section-label">Session</div>
-                    <button className="settings-btn settings-btn-danger" onClick={() => setShowLogout(true)}>
-                      Log Out
-                    </button>
+                    {isLoggedIn ? (
+                      <button className="settings-btn settings-btn-danger" onClick={() => setShowLogout(true)}>
+                        Log Out
+                      </button>
+                    ) : (
+                      <button
+                        className="settings-btn settings-btn-primary"
+                        onClick={() => setActivePage("Auth")}>
+                        Log In
+                      </button>
+                    )}
                   </div>
                 </>
               )}
 
-              {/* ── Change Password (inline slide-in) ── */}
-              {tab === "Profile" && showPasswordForm && (
+              {/* ── Change Password (inline slide-in) — logged-in only ── */}
+              {tab === "Profile" && showPasswordForm && isLoggedIn && (
                 <div className="section-block">
                   <button className="settings-back-btn" onClick={() => setShowPasswordForm(false)}>
                     ← Back to Profile
@@ -311,7 +466,7 @@ export default function SettingsPage({
                         <input
                           type="checkbox"
                           checked={darkMode}
-                          onChange={(e) => setDarkMode(e.target.checked)}
+                          onChange={(e) => handleDarkModeToggle(e.target.checked)}
                         />
                         <span className="toggle-track" />
                       </label>

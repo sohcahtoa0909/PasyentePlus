@@ -139,6 +139,7 @@ model User {
   hashedPassword  String
 
   isAdmin         Boolean @default(false)
+  darkMode        Boolean @default(false)
 
   reports         FeedbackReport[]
 }

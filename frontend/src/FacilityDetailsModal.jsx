@@ -64,7 +64,6 @@ const IconDirections = () => (
   </svg>
 );
 
-/* ── Placeholder images (gradient tiles as stand-ins) ── */
 const PLACEHOLDER_PHOTOS = [
   { id: 1, label: "Main Entrance", gradient: "linear-gradient(135deg,#a2dff7 0%,#007b8a 100%)" },
   { id: 2, label: "Emergency Wing", gradient: "linear-gradient(135deg,#c6f135 0%,#3a9ad9 100%)" },
@@ -72,7 +71,8 @@ const PLACEHOLDER_PHOTOS = [
   { id: 4, label: "Patient Rooms",  gradient: "linear-gradient(135deg,#005f6b 0%,#3a9ad9 100%)" },
 ];
 
-/* ── Type badge helper (mirrors NavSearchBar) ── */
+const STAR_LABELS = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+
 function typeLabel(type = "") {
   if (type.includes("Government")) return { letter: "G", color: "#2e7d32" };
   if (type.includes("Private"))    return { letter: "P", color: "#1565c0" };
@@ -80,7 +80,6 @@ function typeLabel(type = "") {
   return                                  { letter: "C", color: "#00838f" };
 }
 
-/* ── Star Rating Display ── */
 function StarDisplay({ rating, size = "md" }) {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
@@ -95,12 +94,10 @@ function StarDisplay({ rating, size = "md" }) {
   return <span className="fdm-stars">{stars}</span>;
 }
 
-/* ── Interactive Star Rating ── */
-function StarRater({ value, onChange, locked }) {
+function StarRater({ value, onChange, locked, size = "md" }) {
   const [hover, setHover] = useState(0);
-
   return (
-    <div className={`fdm-rater${locked ? " fdm-rater--locked" : ""}`}>
+    <div className={`fdm-rater fdm-rater--${size}${locked ? " fdm-rater--locked" : ""}`}>
       {[1, 2, 3, 4, 5].map(n => (
         <button
           key={n}
@@ -118,34 +115,23 @@ function StarRater({ value, onChange, locked }) {
   );
 }
 
-/* ── Photo Gallery ── */
 function PhotoGallery({ photos }) {
   const [active, setActive] = useState(0);
-
   function prev() { setActive(a => (a - 1 + photos.length) % photos.length); }
   function next() { setActive(a => (a + 1) % photos.length); }
-
   return (
     <div className="fdm-gallery">
       <div className="fdm-gallery-main" style={{ background: photos[active].gradient }}>
         <div className="fdm-gallery-label">{photos[active].label}</div>
         {photos.length > 1 && (
           <>
-            <button className="fdm-gallery-nav fdm-gallery-nav--prev" onClick={prev}>
-              <IconChevronLeft />
-            </button>
-            <button className="fdm-gallery-nav fdm-gallery-nav--next" onClick={next}>
-              <IconChevronRight />
-            </button>
+            <button className="fdm-gallery-nav fdm-gallery-nav--prev" onClick={prev}><IconChevronLeft /></button>
+            <button className="fdm-gallery-nav fdm-gallery-nav--next" onClick={next}><IconChevronRight /></button>
           </>
         )}
         <div className="fdm-gallery-dots">
           {photos.map((_, i) => (
-            <button
-              key={i}
-              className={`fdm-gallery-dot${i === active ? " active" : ""}`}
-              onClick={() => setActive(i)}
-            />
+            <button key={i} className={`fdm-gallery-dot${i === active ? " active" : ""}`} onClick={() => setActive(i)} />
           ))}
         </div>
       </div>
@@ -164,7 +150,6 @@ function PhotoGallery({ photos }) {
   );
 }
 
-/* ── Stat Card ── */
 function StatCard({ label, value, sub }) {
   return (
     <div className="fdm-stat-card">
@@ -178,44 +163,42 @@ function StatCard({ label, value, sub }) {
 /* ══════════════════════════════════════════
    Main Modal Component
    ══════════════════════════════════════════ */
-/**
- * FacilityDetailsModal
- *
- * Props:
- *   facility  — facility object (same shape as FACILITIES in NavSearchBar / FacilityCard)
- *   onClose   — () => void
- *
- * The component renders via a React portal so it floats above everything.
- */
 export default function FacilityDetailsModal({ facility, onClose }) {
-  const [userRating,  setUserRating]  = useState(0);
-  const [ratingLocked, setRatingLocked] = useState(false);
-  const [ratingMsg, setRatingMsg]     = useState("");
+  const [userRating,    setUserRating]    = useState(0);
+
+  /* Review panel */
+  const [reviewPanelOpen,  setReviewPanelOpen]  = useState(false);
+  const [pendingStars,     setPendingStars]     = useState(0);
+  const [timeIn,           setTimeIn]           = useState("");
+  const [timeOut,          setTimeOut]          = useState("");
+  const [serviceAvailed,   setServiceAvailed]   = useState("");
+  const [amountSpent,      setAmountSpent]      = useState("");
+  const [reviewComment,    setReviewComment]    = useState("");
+  const [reviewSubmitted,  setReviewSubmitted]  = useState(false);
+
   const overlayRef = useRef(null);
 
-  /* Restore saved rating from localStorage keyed by facility id */
   useEffect(() => {
     if (!facility) return;
-    const saved = localStorage.getItem(`fdm-rating-${facility.id}`);
-    if (saved) {
-      setUserRating(Number(saved));
-      setRatingLocked(true);
-      setRatingMsg("You've already rated this facility. You can update your rating.");
+    const reviews = JSON.parse(localStorage.getItem(`fdm-reviews-${facility.id}`) || "[]");
+    if (reviews.length > 0) {
+      setUserRating(reviews[reviews.length - 1].stars);
     } else {
       setUserRating(0);
-      setRatingLocked(false);
-      setRatingMsg("");
     }
+    setReviewPanelOpen(false);
+    setPendingStars(0);
+    setTimeIn(""); setTimeOut(""); setServiceAvailed("");
+    setAmountSpent(""); setReviewComment("");
+    setReviewSubmitted(false);
   }, [facility]);
 
-  /* Close on Escape */
   useEffect(() => {
     function onKey(e) { if (e.key === "Escape") onClose(); }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  /* Prevent body scroll while modal is open */
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
@@ -225,30 +208,51 @@ export default function FacilityDetailsModal({ facility, onClose }) {
 
   const tl = typeLabel(facility.type || facility.facilityName || "");
 
-  /* Stat values — support both data shapes */
   const costDisplay   = facility.budget
     ? `₱${facility.budget}`
     : facility.priceLow != null
       ? `₱${facility.priceLow}–₱${facility.priceHigh}`
       : "—";
-  const travelDisplay = facility.travel   != null ? `${facility.travel} min`  : facility.distance != null ? `${facility.distance} km` : "—";
-  const waitDisplay   = facility.wait     != null ? `${facility.wait} min`    : facility.waitTime  != null ? `${facility.waitTime} min` : "—";
-  const ratingDisplay = facility.rating   != null ? facility.rating.toFixed(1) : "—";
+  const travelDisplay = facility.travel  != null ? `${facility.travel} min`   : facility.distance != null ? `${facility.distance} km`  : "—";
+  const waitDisplay   = facility.wait    != null ? `${facility.wait} min`     : facility.waitTime  != null ? `${facility.waitTime} min`  : "—";
+  const ratingDisplay = facility.rating  != null ? facility.rating.toFixed(1) : "—";
 
-  const services = facility.tags || facility.services || [];
+  const services     = facility.tags || facility.services || [];
   const facilityName = facility.name || facility.hospitalName || "Facility";
   const facilityType = facility.type || facility.facilityName || "Healthcare Facility";
 
-  function handleRating(n) {
-    setUserRating(n);
-    localStorage.setItem(`fdm-rating-${facility.id}`, String(n));
-    setRatingLocked(true);
-    setRatingMsg(`Thanks! You rated this facility ${n} star${n !== 1 ? "s" : ""}.`);
+  function openReviewPanel(n) {
+    setPendingStars(n);
+    setReviewSubmitted(false);
+    setReviewPanelOpen(true);
   }
 
-  function handleChangeRating() {
-    setRatingLocked(false);
-    setRatingMsg("Select a new rating below.");
+  function handleSubmitReview() {
+    if (pendingStars === 0) return;
+    const key = `fdm-reviews-${facility.id}`;
+    const prev = JSON.parse(localStorage.getItem(key) || "[]");
+    prev.push({
+      stars: pendingStars,
+      timeIn, timeOut,
+      service: serviceAvailed,
+      amount: amountSpent,
+      comment: reviewComment,
+      date: new Date().toISOString(),
+    });
+    localStorage.setItem(key, JSON.stringify(prev));
+    setUserRating(pendingStars);
+    setReviewSubmitted(true);
+  }
+
+  function handleRateAgain() {
+    setPendingStars(0);
+    setTimeIn(""); setTimeOut(""); setServiceAvailed("");
+    setAmountSpent(""); setReviewComment("");
+    setReviewSubmitted(false);
+  }
+
+  function handleClosePanel() {
+    setReviewPanelOpen(false);
   }
 
   const modal = (
@@ -257,138 +261,257 @@ export default function FacilityDetailsModal({ facility, onClose }) {
       ref={overlayRef}
       onMouseDown={e => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className="fdm-modal" role="dialog" aria-modal="true" aria-label={facilityName}>
+      <div className={`fdm-shell${reviewPanelOpen ? " fdm-shell--expanded" : ""}`}>
 
-        {/* ── Header ── */}
-        <div className="fdm-header">
-          <div className="fdm-header-top">
-            <span className="fdm-type-badge" style={{ background: tl.color }}>{tl.letter}</span>
-            <div className="fdm-header-text">
-              <div className="fdm-eyebrow">PASYENTE+ · FACILITY DETAILS</div>
-              <h2 className="fdm-title">{facilityName}</h2>
-              <div className="fdm-subtitle">{facilityType}</div>
+        {/* ── Main modal ── */}
+        <div className="fdm-modal" role="dialog" aria-modal="true" aria-label={facilityName}>
+
+          <div className="fdm-header">
+            <div className="fdm-header-top">
+              <span className="fdm-type-badge" style={{ background: tl.color }}>{tl.letter}</span>
+              <div className="fdm-header-text">
+                <div className="fdm-eyebrow">PASYENTE+ · FACILITY DETAILS</div>
+                <h2 className="fdm-title">{facilityName}</h2>
+                <div className="fdm-subtitle">{facilityType}</div>
+              </div>
+              <button className="fdm-close" onClick={onClose} title="Close"><IconX /></button>
             </div>
-            <button className="fdm-close" onClick={onClose} title="Close"><IconX /></button>
-          </div>
-          <div className="fdm-header-rating">
-            <StarDisplay rating={parseFloat(ratingDisplay) || 0} size="sm" />
-            <span className="fdm-rating-score">{ratingDisplay}</span>
-            <span className="fdm-rating-count">community rating</span>
-          </div>
-        </div>
-
-        {/* ── Scrollable body ── */}
-        <div className="fdm-body">
-
-          {/* Photo Gallery */}
-          <div className="fdm-section">
-            <div className="fdm-section-label">Photos</div>
-            <PhotoGallery photos={PLACEHOLDER_PHOTOS} />
-          </div>
-
-          {/* Stats row */}
-          <div className="fdm-section">
-            <div className="fdm-section-label">At a Glance</div>
-            <div className="fdm-stats-grid">
-              <StatCard label="Cost" value={costDisplay} sub="estimated" />
-              <StatCard label="Travel Time" value={travelDisplay} />
-              <StatCard label="Wait Time" value={waitDisplay} />
-              <StatCard label="Rating" value={ratingDisplay} sub="/ 5.0" />
+            <div className="fdm-header-rating">
+              <StarDisplay rating={parseFloat(ratingDisplay) || 0} size="sm" />
+              <span className="fdm-rating-score">{ratingDisplay}</span>
+              <span className="fdm-rating-count">community rating</span>
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div className="fdm-section">
-            <div className="fdm-section-label">Contact Information</div>
-            <div className="fdm-info-block">
-              <div className="fdm-info-row">
-                <span className="fdm-info-icon"><IconMapPin /></span>
-                <div className="fdm-info-content">
-                  <div className="fdm-info-field">Address</div>
-                  <div className="fdm-info-value">
-                    {facility.address || "Davao City, Davao del Sur, Philippines"}
-                  </div>
-                </div>
-              </div>
-              <div className="fdm-info-row">
-                <span className="fdm-info-icon"><IconPhone /></span>
-                <div className="fdm-info-content">
-                  <div className="fdm-info-field">Phone</div>
-                  <div className="fdm-info-value">
-                    {facility.phone || "(082) 123-4567"}
-                  </div>
-                </div>
-              </div>
-              <div className="fdm-info-row">
-                <span className="fdm-info-icon"><IconClock /></span>
-                <div className="fdm-info-content">
-                  <div className="fdm-info-field">Hours</div>
-                  <div className="fdm-info-value">
-                    {facility.hours || "Open 24 hours · Emergency services available"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className="fdm-body">
 
-          {/* Services Offered */}
-          {services.length > 0 && (
             <div className="fdm-section">
-              <div className="fdm-section-label">Services Offered</div>
-              <div className="fdm-tags">
-                {services.map(s => (
-                  <span key={s} className="fdm-tag">{s}</span>
-                ))}
+              <div className="fdm-section-label">Photos</div>
+              <PhotoGallery photos={PLACEHOLDER_PHOTOS} />
+            </div>
+
+            <div className="fdm-section">
+              <div className="fdm-section-label">At a Glance</div>
+              <div className="fdm-stats-grid">
+                <StatCard label="Cost" value={costDisplay} sub="estimated" />
+                <StatCard label="Travel Time" value={travelDisplay} />
+                <StatCard label="Wait Time" value={waitDisplay} />
+                <StatCard label="Rating" value={ratingDisplay} sub="/ 5.0" />
               </div>
             </div>
-          )}
 
-          {/* User Rating */}
-          <div className="fdm-section fdm-section--rating">
-            <div className="fdm-section-label">Rate This Facility</div>
-            <div className="fdm-rate-wrap">
-              <StarRater value={userRating} onChange={handleRating} locked={ratingLocked} />
-              {ratingMsg && (
-                <div className="fdm-rate-msg">
-                  {ratingMsg}
-                  {ratingLocked && (
-                    <button className="fdm-rate-change" onClick={handleChangeRating}>
-                      Change rating
-                    </button>
-                  )}
+            <div className="fdm-section">
+              <div className="fdm-section-label">Contact Information</div>
+              <div className="fdm-info-block">
+                <div className="fdm-info-row">
+                  <span className="fdm-info-icon"><IconMapPin /></span>
+                  <div className="fdm-info-content">
+                    <div className="fdm-info-field">Address</div>
+                    <div className="fdm-info-value">{facility.address || "Davao City, Davao del Sur, Philippines"}</div>
+                  </div>
                 </div>
-              )}
-              {!ratingLocked && !ratingMsg && (
-                <div className="fdm-rate-hint">Tap a star to submit your rating.</div>
-              )}
+                <div className="fdm-info-row">
+                  <span className="fdm-info-icon"><IconPhone /></span>
+                  <div className="fdm-info-content">
+                    <div className="fdm-info-field">Phone</div>
+                    <div className="fdm-info-value">{facility.phone || "(082) 123-4567"}</div>
+                  </div>
+                </div>
+                <div className="fdm-info-row">
+                  <span className="fdm-info-icon"><IconClock /></span>
+                  <div className="fdm-info-content">
+                    <div className="fdm-info-field">Hours</div>
+                    <div className="fdm-info-value">{facility.hours || "Open 24 hours · Emergency services available"}</div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {services.length > 0 && (
+              <div className="fdm-section">
+                <div className="fdm-section-label">Services Offered</div>
+                <div className="fdm-tags">
+                  {services.map(s => <span key={s} className="fdm-tag">{s}</span>)}
+                </div>
+              </div>
+            )}
+
+            {/* Rate This Facility */}
+            <div className="fdm-section fdm-section--rating">
+              <div className="fdm-section-label">Rate This Facility</div>
+              <div className="fdm-rate-wrap">
+                <StarRater
+                  value={reviewPanelOpen ? pendingStars : userRating}
+                  onChange={openReviewPanel}
+                  locked={false}
+                />
+                {userRating > 0 ? (
+                  <div className="fdm-rate-msg">
+                    Your last rating: {userRating} star{userRating !== 1 ? "s" : ""}.
+                    <button className="fdm-rate-change" onClick={() => openReviewPanel(userRating)}>
+                      Rate again
+                    </button>
+                  </div>
+                ) : (
+                  <div className="fdm-rate-hint">Tap a star to write a review.</div>
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          <div className="fdm-footer">
+            <button
+              className="fdm-btn fdm-btn--primary"
+              onClick={() => {
+                const q = encodeURIComponent(facilityName + " Davao City");
+                window.open(`https://www.google.com/maps/search/${q}`, "_blank");
+              }}
+            >
+              <IconDirections />
+              Get Directions
+            </button>
+            <button
+              className="fdm-btn fdm-btn--secondary"
+              onClick={() => {
+                const num = (facility.phone || "+63821234567").replace(/\D/g, "");
+                window.open(`tel:${num}`);
+              }}
+            >
+              <IconPhone />
+              Call Now
+            </button>
           </div>
 
         </div>
 
-        {/* ── Footer actions ── */}
-        <div className="fdm-footer">
-          <button
-            className="fdm-btn fdm-btn--primary"
-            onClick={() => {
-              const q = encodeURIComponent(facilityName + " Davao City");
-              window.open(`https://www.google.com/maps/search/${q}`, "_blank");
-            }}
-          >
-            <IconDirections />
-            Get Directions
-          </button>
-          <button
-            className="fdm-btn fdm-btn--secondary"
-            onClick={() => {
-              const num = (facility.phone || "+63821234567").replace(/\D/g, "");
-              window.open(`tel:${num}`);
-            }}
-          >
-            <IconPhone />
-            Call Now
-          </button>
-        </div>
+        {/* ── Review Panel ── */}
+        {reviewPanelOpen && (
+          <div className="fdm-review-panel">
+
+            <div className="fdm-review-header">
+              <div className="fdm-review-panel-title">Write a Review</div>
+              <button className="fdm-close" onClick={handleClosePanel} title="Close review"><IconX /></button>
+            </div>
+
+            <div className="fdm-review-body">
+              {reviewSubmitted ? (
+                <div className="fdm-review-success">
+                  <div className="fdm-review-success-icon">✓</div>
+                  <p className="fdm-review-success-msg">Review submitted!</p>
+                  <StarDisplay rating={userRating} size="md" />
+                  <div className="fdm-review-success-actions">
+                    <button className="fdm-btn fdm-btn--primary fdm-review-action-btn" onClick={handleRateAgain}>
+                      Rate Again
+                    </button>
+                    <button className="fdm-btn fdm-btn--secondary fdm-review-action-btn" onClick={handleClosePanel}>
+                      Done
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Star rating */}
+                  <div className="fdm-review-field">
+                    <div className="fdm-review-label">Your Rating</div>
+                    <StarRater value={pendingStars} onChange={setPendingStars} locked={false} size="lg" />
+                    {pendingStars > 0 && (
+                      <div className="fdm-review-stars-hint">{STAR_LABELS[pendingStars]}</div>
+                    )}
+                  </div>
+
+                  {/* Time Spent */}
+                  <div className="fdm-review-field">
+                    <div className="fdm-review-label">Time Spent</div>
+                    <div className="fdm-review-time-row">
+                      <div className="fdm-review-time-slot">
+                        <span className="fdm-review-time-label">Time In</span>
+                        <input
+                          type="time"
+                          value={timeIn}
+                          onChange={e => setTimeIn(e.target.value)}
+                          className="fdm-review-input"
+                        />
+                      </div>
+                      <span className="fdm-review-time-sep">→</span>
+                      <div className="fdm-review-time-slot">
+                        <span className="fdm-review-time-label">Time Out</span>
+                        <input
+                          type="time"
+                          value={timeOut}
+                          onChange={e => setTimeOut(e.target.value)}
+                          className="fdm-review-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Service Availed */}
+                  <div className="fdm-review-field">
+                    <div className="fdm-review-label">Service Availed</div>
+                    <select
+                      value={serviceAvailed}
+                      onChange={e => setServiceAvailed(e.target.value)}
+                      className="fdm-review-select"
+                    >
+                      <option value="">Select a service…</option>
+                      {services.length > 0
+                        ? services.map(s => <option key={s} value={s}>{s}</option>)
+                        : <option disabled>No services listed</option>
+                      }
+                    </select>
+                  </div>
+
+                  {/* Amount Spent */}
+                  <div className="fdm-review-field">
+                    <div className="fdm-review-label">Amount Spent</div>
+                    <div className="fdm-review-peso-wrap">
+                      <span className="fdm-review-peso">₱</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={amountSpent}
+                        onChange={e => setAmountSpent(e.target.value)}
+                        className="fdm-review-input fdm-review-input--amount"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Comments */}
+                  <div className="fdm-review-field">
+                    <div className="fdm-review-label">
+                      Comments
+                      <span className="fdm-review-optional"> (optional)</span>
+                    </div>
+                    <textarea
+                      value={reviewComment}
+                      onChange={e => setReviewComment(e.target.value)}
+                      className="fdm-review-textarea"
+                      placeholder="Share your experience…"
+                      rows={4}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {!reviewSubmitted && (
+              <div className="fdm-review-footer">
+                <button
+                  className="fdm-btn fdm-btn--primary"
+                  onClick={handleSubmitReview}
+                  disabled={pendingStars === 0}
+                  style={pendingStars === 0 ? { opacity: 0.45, cursor: "not-allowed" } : {}}
+                >
+                  Submit Review
+                </button>
+              </div>
+            )}
+
+          </div>
+        )}
 
       </div>
     </div>
