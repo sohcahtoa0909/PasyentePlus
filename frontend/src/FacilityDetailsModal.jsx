@@ -229,6 +229,53 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     setReviewPanelOpen(true);
   }
 
+  function postReview() {
+    const requestJson = {
+      facilityId: facility.id,
+      rating: pendingStars,
+      timeIn, timeOut
+    };
+    console.log(facility);
+
+    if(reviewComment && reviewComment.trim() !== "") {
+      requestJson.textComment = reviewComment;
+    }
+
+    if(amountSpent !== undefined && amountSpent !== null) {
+      requestJson.moneySpent = amountSpent;
+    }
+
+    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/report/writeReport`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(requestJson),
+    })
+    .then(async (res) => {
+      const statusCode = res.status;
+      const data = await res.json();
+
+      switch(statusCode) {
+        case 403:
+          alert("Not logged in!");
+          break;
+
+        case 401:
+          alert(data.message);
+          break;
+
+        case 429:
+          alert("You've made a review too recently!");
+          break;
+          
+        default:
+          break;
+      }
+    })
+  }
+
   function handleSubmitReview() {
     if (pendingStars === 0) return;
     const key = `fdm-reviews-${facility.id}`;
@@ -244,6 +291,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     localStorage.setItem(key, JSON.stringify(prev));
     setUserRating(pendingStars);
     setReviewSubmitted(true);
+    postReview();
   }
 
   function handleRateAgain() {
@@ -474,6 +522,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                   {/* Amount Spent */}
                   <div className="fdm-review-field">
                     <div className="fdm-review-label">Amount Spent</div>
+                    <span className="fdm-review-optional"> (optional)</span>
                     <div className="fdm-review-peso-wrap">
                       <span className="fdm-review-peso">₱</span>
                       <input

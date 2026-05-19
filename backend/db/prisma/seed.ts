@@ -140,69 +140,51 @@ async function main2() {
             {
                 facilityId: CLINIC_DAVAODOC_DUMOY.id,
                 serviceId: SVC_DIALYSIS_HEMODIAFILTRATION.id,
-                minCost: 5000,
-                maxCost: 7500,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_FRESEN.id,
                 serviceId: SVC_DIALYSIS_HEMODIAFILTRATION.id,
-                minCost: 6000,
-                maxCost: 8500,
                 isAvailable: true,
             },
             {
                 facilityId: CLINIC_FRESEN.id,
                 serviceId: SVC_DIALYSIS_HEMODIALYSIS.id,
-                minCost: 3500,
-                maxCost: 4500,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_UNICARE_DIALYSIS.id,
                 serviceId: SVC_DIALYSIS_HEMODIALYSIS.id,
-                minCost: 4000,
-                maxCost: 5230,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_UNICARE_DENTIST.id,
                 serviceId: SVC_DENTIST_CLEANING.id,
-                minCost: 500,
-                maxCost: 1500,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_BKSH_DIALYSIS.id,
                 serviceId: SVC_DIALYSIS_HEMODIAFILTRATION.id,
-                minCost: 5000,
-                maxCost: 7350,
                 isAvailable: true,
             },
             {
                 facilityId: CLINIC_BKSH_DIALYSIS.id,
                 serviceId: SVC_DIALYSIS_HEMODIALYSIS.id,
-                minCost: 4500,
-                maxCost: 6200,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_BKSH_DENTIST.id,
                 serviceId: SVC_DENTIST_CLEANING.id,
-                minCost: 350,
-                maxCost: 1250,
                 isAvailable: true,
             },
             {
                 facilityId: CLINIC_BKSH_DENTIST.id,
                 serviceId: SVC_DENTIST_EXTRACTION.id,
-                minCost: 2500,
-                maxCost: 3500,
                 isAvailable: true,
             },
         ]
