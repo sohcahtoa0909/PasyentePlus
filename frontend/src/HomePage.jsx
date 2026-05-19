@@ -361,7 +361,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   const [selectedService, setSelectedService] = useState(null);
   const [selectedFacility, setSelectedFacility] = useState(null);
 
-  const panelOpen = activePage === "Home";
+  const panelOpen = activePage === "Home" || activePage === "FacilityDetails";
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);

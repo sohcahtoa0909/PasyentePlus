@@ -19,10 +19,27 @@ export default function App() {
       case "Preferences": return <PreferencesPage activePage={activePage} setActivePage={setActivePage} />;
       case "Auth": return <AuthPage activePage={activePage} setActivePage={setActivePage} />;
       case "Settings": return <SettingsPage activePage={activePage} setActivePage={setActivePage} />;
-      case "FacilityDetails": return <FacilityDetails facility={selectedFacilityData} setActivePage={setActivePage} />;
       default: return <AboutPage activePage={activePage} setActivePage={setActivePage} />;
     }
   };
+
+  if (activePage === "FacilityDetails") {
+    return (
+      <>
+        <HomePage
+          activePage={activePage}
+          setActivePage={setActivePage}
+          selectedFacilityData={selectedFacilityData}
+          setSelectedFacilityData={setSelectedFacilityData}
+        />
+        <FacilityDetails
+          facility={selectedFacilityData}
+          setActivePage={setActivePage}
+          overlay
+        />
+      </>
+    );
+  }
 
   return <>{renderPage()}</>;
 }

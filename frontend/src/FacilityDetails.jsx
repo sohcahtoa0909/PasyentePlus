@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './FacilityDetails.css';
-import MapComponent from './MapComponent';
 import LogoSrc from './Logo.png';
 
 /* ── Icons ─────────────────────────────────── */
@@ -54,7 +53,7 @@ const IconMapPin = () => (
   </svg>
 );
 
-const IconClock = () => (
+const IconClock = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -86,8 +85,8 @@ const IconPhone = () => (
   </svg>
 );
 
-const IconStar = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+const IconStar = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
   </svg>
@@ -123,7 +122,7 @@ const NAV = [
   { key: "Help", icon: <IconHelp /> },
 ];
 
-const FacilityDetails = ({ facility, setActivePage }) => {
+const FacilityDetails = ({ facility, setActivePage, overlay = false }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const panelBodyRef = useRef(null);
@@ -156,16 +155,6 @@ const FacilityDetails = ({ facility, setActivePage }) => {
   if (!facility) {
     return (
       <div className="fd-shell">
-        <div className="fd-map">
-          <MapComponent
-            center={[7.1907, 125.4553]}
-            zoom={12}
-            markers={[
-              { position: [7.1907, 125.4553], name: "Davao City", popupContent: "<strong>Davao City</strong><br/>Healthcare Hub" },
-            ]}
-          />
-        </div>
-
         <nav className="fd-side-nav">
           <div className="fd-nav-logo">
             <img src={LogoSrc} alt="logo" />
@@ -202,20 +191,141 @@ const FacilityDetails = ({ facility, setActivePage }) => {
     );
   }
 
+  if (overlay) {
+    return (
+      <div className="fd-panel-overlay-wrapper">
+        <div className={`fd-panel overlay${panelOpen ? " open" : ""}${isExpanded ? " expanded" : ""}`}>
+          <div className="fd-panel-header">
+            <button className="fd-back-btn" onClick={() => setActivePage("Home")}> 
+              <IconArrowLeft />
+              <span>Back</span>
+            </button>
+
+            <div className="fd-header-top">
+              <div className="fd-header-content">
+                <h1>{facility.name}</h1>
+                <p>{facility.type}</p>
+              </div>
+              <button
+                className="fd-favorite-btn"
+                onClick={() => setIsFavorite(!isFavorite)}
+              >
+                <IconHeart style={{ fill: isFavorite ? 'currentColor' : 'none' }} />
+              </button>
+            </div>
+
+            <div className="fd-rating">
+              <div className="fd-stars">
+                {[...Array(5)].map((_, i) => (
+                  <IconStar
+                    key={i}
+                    fill={i < Math.round(facility.rating) ? '#f59e0b' : 'none'}
+                    stroke="#f59e0b"
+                  />
+                ))}
+              </div>
+              <span>{facility.rating} / 5</span>
+            </div>
+          </div>
+
+          <div ref={panelBodyRef} className="fd-panel-body">
+            <div className="fd-info-grid">
+              <div className="fd-info-card">
+                <div className="fd-info-card-label">
+                  <IconDollar />
+                  Cost
+                </div>
+                <div className="fd-info-card-value">₱{facility.budget}</div>
+              </div>
+
+              <div className="fd-info-card">
+                <div className="fd-info-card-label">
+                  <IconMapPin />
+                  Travel
+                </div>
+                <div className="fd-info-card-value">{facility.travel}m</div>
+              </div>
+
+              <div className="fd-info-card">
+                <div className="fd-info-card-label">
+                  <IconClock />
+                  Wait
+                </div>
+                <div className="fd-info-card-value">{facility.wait}m</div>
+              </div>
+
+              <div className="fd-info-card">
+                <div className="fd-info-card-label">
+                  <IconStar />
+                  Rating
+                </div>
+                <div className="fd-info-card-value">{facility.rating}</div>
+              </div>
+            </div>
+
+            <div className="fd-section">
+              <h2 className="fd-section-title">
+                <IconPhone />
+                Contact Information
+              </h2>
+              <div className="fd-contact-item">
+                <IconMapPin className="fd-contact-icon" />
+                <div className="fd-contact-content">
+                  <p>Address</p>
+                  <p>{facility.address}</p>
+                </div>
+              </div>
+              <div className="fd-contact-item">
+                <IconPhone className="fd-contact-icon" />
+                <div className="fd-contact-content">
+                  <p>Phone</p>
+                  <p>{facility.phone}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="fd-section">
+              <h2 className="fd-section-title">
+                <IconStar />
+                Services Offered
+              </h2>
+              <div className="fd-services">
+                {facility.services && facility.services.map((service, index) => (
+                  <span key={index} className="fd-service-badge">
+                    {service}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="fd-section">
+              <h2 className="fd-section-title">About This Facility</h2>
+              <p className="fd-about-text">
+                {facility.name} is a {facility.type.toLowerCase()} located in Davao City,
+                providing quality healthcare services to the community. With an average rating of{' '}
+                {facility.rating} stars, patients have consistently reported positive experiences
+                with the medical staff and facilities.
+              </p>
+            </div>
+          </div>
+
+          <div className="fd-panel-footer">
+            <button className="fd-action-btn primary">
+              <IconNavigation />
+              Get Directions
+            </button>
+            <button className="fd-action-btn secondary">
+              <IconPhone />
+              Call Now
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fd-shell">
-      {/* Map */}
-      <div className="fd-map">
-        <MapComponent
-          center={facility.position || [7.1907, 125.4553]}
-          zoom={13}
-          markers={[
-            { position: facility.position || [7.1907, 125.4553], name: facility.name, popupContent: `<strong>${facility.name}</strong><br/>${facility.type}` },
-          ]}
-        />
-      </div>
-
-      {/* Side Nav */}
       <nav className="fd-side-nav">
         <div className="fd-nav-logo">
           <img src={LogoSrc} alt="logo" />
@@ -266,32 +376,12 @@ const FacilityDetails = ({ facility, setActivePage }) => {
               {[...Array(5)].map((_, i) => (
                 <IconStar
                   key={i}
-                  style={{ fill: i < Math.floor(facility.rating) ? 'currentColor' : 'none' }}
+                  fill={i < Math.round(facility.rating) ? '#f59e0b' : 'none'}
+                  stroke="#f59e0b"
                 />
               ))}
             </div>
             <span>{facility.rating} / 5</span>
-          </div>
-        </div>
-
-        {/* Map Preview */}
-        <div className="fd-map-preview">
-          <svg className="fd-map-grid" width="100%" height="100%">
-            <defs>
-              <pattern id="detail-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#detail-grid)" />
-          </svg>
-
-          <div className="fd-map-roads horizontal" />
-          <div className="fd-map-roads vertical" />
-
-          <div className="fd-map-marker">
-            <div className="fd-marker-pin">
-              <IconMapPin />
-            </div>
           </div>
         </div>
 
