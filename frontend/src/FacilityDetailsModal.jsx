@@ -169,6 +169,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
   /* Review panel */
   const [reviewPanelOpen,  setReviewPanelOpen]  = useState(false);
   const [pendingStars,     setPendingStars]     = useState(0);
+  const [visitDate,        setVisitDate]        = useState("");
   const [timeIn,           setTimeIn]           = useState("");
   const [timeOut,          setTimeOut]          = useState("");
   const [serviceAvailed,   setServiceAvailed]   = useState("");
@@ -191,6 +192,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
     setReviewSubmitted(false);
+    setVisitDate("");
   }, [facility]);
 
   useEffect(() => {
@@ -233,7 +235,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     const prev = JSON.parse(localStorage.getItem(key) || "[]");
     prev.push({
       stars: pendingStars,
-      timeIn, timeOut,
+      visitDate, timeIn, timeOut,
       service: serviceAvailed,
       amount: amountSpent,
       comment: reviewComment,
@@ -246,7 +248,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
 
   function handleRateAgain() {
     setPendingStars(0);
-    setTimeIn(""); setTimeOut(""); setServiceAvailed("");
+    setVisitDate(""); setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
     setReviewSubmitted(false);
   }
@@ -423,6 +425,13 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                   {/* Time Spent */}
                   <div className="fdm-review-field">
                     <div className="fdm-review-label">Time Spent</div>
+                    <input
+                      type="date"
+                      value={visitDate}
+                      onChange={e => setVisitDate(e.target.value)}
+                      className="fdm-review-input"
+                      style={{ marginBottom: "8px", width: "100%" }}
+                    />
                     <div className="fdm-review-time-row">
                       <div className="fdm-review-time-slot">
                         <span className="fdm-review-time-label">Time In</span>
