@@ -60,7 +60,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
         return res.status(200).json(newReport);
     } catch (err) {
-        console.log(`ERROR at (${err})`)
+        console.error(`ERROR at (${err})`)
         return res.status(500).json({
             message: err
         });        

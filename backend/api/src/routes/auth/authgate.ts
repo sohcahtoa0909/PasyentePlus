@@ -20,8 +20,7 @@ export const authenticateToken = (req: any, res: any, next: any) => {
             if (err) return res.status(403).json({
                 message: "Invalid session token!"
             });
-            req.user = decoded;
-            console.log(req.user);
+            req.user = decoded;            
             next();
         }
     );

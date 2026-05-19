@@ -47,8 +47,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
         }));
         setServices(mapped);
       } catch (error) {
-        console.error("The exact error is:", error);
-        alert("Error: " + error.message);
+        console.error("The exact error is:", error);        
       } finally {
         setLoading(false);
       }
