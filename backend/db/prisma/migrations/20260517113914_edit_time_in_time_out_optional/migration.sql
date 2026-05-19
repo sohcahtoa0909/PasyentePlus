@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "FeedbackReport" ALTER COLUMN "timeIn" DROP NOT NULL,
+ALTER COLUMN "timeOut" DROP NOT NULL;

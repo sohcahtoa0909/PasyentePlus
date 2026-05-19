@@ -113,9 +113,6 @@ model FacilityService {
   service     ServiceType @relation(fields: [serviceId], references: [id])
   serviceId   String
 
-  minCost     Int?
-  maxCost     Int?
-
   isAvailable Boolean?
 
   notes       String?
@@ -151,26 +148,26 @@ model User {
     This object is used whenever a user gives their rating (out of 5 stars), their waiting times, or their comments.
 */
 model FeedbackReport {
-  id          String    @id  @default(uuid())
+  id                String          @id  @default(uuid())
 
-  facility    Facility  @relation(fields: [facilityId], references: [id])
-  facilityId  String
+  facility          Facility        @relation(fields: [facilityId], references: [id])
+  facilityId        String
 
-  reporter    User      @relation(fields: [reporterId], references: [id])
-  reporterId  String
+  reporter          User            @relation(fields: [reporterId], references: [id])
+  reporterId        String
 
   //Rating is 1-5 Stars
-  rating      Int
+  rating            Int
 
   //Time entered and exited
-  timeIn      DateTime
-  timeOut     DateTime
+  timeIn            DateTime?
+  timeOut           DateTime?
 
   //Money spent by user
-  moneySpent  Int?
+  moneySpent        Int?
 
   //Additiona comments/remarks
-  textComment String?
+  textComment       String?
 
-  createdAt   DateTime  @default(now())
+  createdAt         DateTime  @default(now())
 }

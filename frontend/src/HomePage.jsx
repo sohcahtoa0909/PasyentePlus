@@ -6,7 +6,7 @@ import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
 import NavSearchBar from "./NavSearchBar";
 import FacilityDetailsModal from "./FacilityDetailsModal";
-import { getHospitalMarkers, transformFacilityData } from "./util/helper";
+import { formatDynamicWaitTime, getHospitalMarkers, transformFacilityData } from "./util/helper";
 import { IconHome, IconInfo, IconSliders, IconHelp, IconSettings, IconSearch, IconMapPin, IconClock, IconX } from "./icons/Icons";
 
 const SERVICE_MISC_LOOKUP = {
@@ -230,13 +230,13 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
 }
 
 /* ── Stars ── */
-function Stars({ rating }) {
+function Stars({ rating, ratingCount }) {
   return (
     <span className="hp-stars">
       {[1, 2, 3, 4, 5].map(i => (
         <span key={i} className={`hp-star${parseFloat(rating) >= i ? " on" : ""}`}>★</span>
       ))}
-      <span className="hp-stars-score">{rating}</span>
+      <span className="hp-stars-score">{parseFloat(rating).toFixed(1)} ({ratingCount})</span>
     </span>
   );
 }
@@ -256,12 +256,19 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
       <div className="hp-card-name">{facility.hospitalName}</div>
       <div className="hp-card-type">{facility.facilityName}</div>
       <div className="hp-card-stats">
-        <span className="hp-stat budget">₱{facility.priceLow}-₱{facility.priceHigh}</span>
+        {facility.priceLow &&
+          <span className="hp-stat budget">₱{facility.priceLow}-₱{facility.priceHigh}</span>
+        }        
         <span className="hp-stat"><IconMapPin />{facility.distance}km</span>
-        <span className="hp-stat"><IconClock />{facility.waitTime}m wait</span>
+        {facility.waitTime &&
+          <span className="hp-stat"><IconClock />{formatDynamicWaitTime(facility.waitTime)} wait</span>
+        }        
       </div>
       <div className="hp-card-bottom">
-        <Stars rating="5" />
+        {facility.rating ?
+          <Stars rating={facility.rating} ratingCount={facility.ratingCount}/> :
+          <span className="hp-stat">No ratings yet.</span>
+        }        
         <div className="hp-tags">
           {facility.services.map(s => (
             <span key={s} className="hp-tag">{s}</span>

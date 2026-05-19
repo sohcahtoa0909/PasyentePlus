@@ -213,9 +213,9 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     : facility.priceLow != null
       ? `₱${facility.priceLow}–₱${facility.priceHigh}`
       : "—";
-  const travelDisplay = facility.travel  != null ? `${facility.travel} min`   : facility.distance != null ? `${facility.distance} km`  : "—";
-  const waitDisplay   = facility.wait    != null ? `${facility.wait} min`     : facility.waitTime  != null ? `${facility.waitTime} min`  : "—";
-  const ratingDisplay = facility.rating  != null ? facility.rating.toFixed(1) : "—";
+  const travelDisplay = facility.travel   != null ? `${facility.travel} min`  : facility.distance != null ? `${facility.distance} km` : "—";
+  const waitDisplay   = facility.waitTime  != null ? `${parseInt(facility.waitTime)} min` : "—";
+  const ratingDisplay = facility.rating   != null ? facility.rating.toFixed(1) : "—";
 
   const services     = facility.tags || facility.services || [];
   const facilityName = facility.name || facility.hospitalName || "Facility";

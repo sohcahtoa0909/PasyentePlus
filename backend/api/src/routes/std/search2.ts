@@ -3,11 +3,11 @@ export const pathOverride: String | null = "/search2";
 //Set if you don't want this file to be read 
 export const exclude: boolean = false;
 
-import { serialize } from "node:v8";
 import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
 import { authenticateToken } from "../auth/authgate";
+import { calculatePriceRange, calculatePriceRangeFromReports, calculateRating, calculateRatingFromReports, calculateWait, calculateWaitFromReports } from "../../lib/feedback";
 
 const router: Router = Router();
 router.get('/', async (req, res) => {
@@ -15,7 +15,6 @@ router.get('/', async (req, res) => {
         const {
             facility_type, //Required
             service, //Optional
-            max_price, //Price
             lat, lng //Location
         } = req.query;
 
@@ -31,14 +30,9 @@ router.get('/', async (req, res) => {
             }
         };
 
-        if (service || max_price) {
+        if (service) {
             whereClause.services = {
-                some: {
-                    AND: [
-                        service ? { service: { name: { contains: service as string, mode: 'insensitive' } } } : {},
-                        max_price ? { minCost: { lte: parseInt(max_price as string) } } : {},
-                    ]
-                }
+                some: { service: { name: { contains: service as string, mode: 'insensitive' } } }
             };
         }
 
@@ -53,22 +47,12 @@ router.get('/', async (req, res) => {
 
                 services: {
                     some: {
-                        AND: [
-                            service ? {
-                                service: {
-                                    name: {
-                                        contains: service as string,
-                                        mode: 'insensitive'
-                                    }
-                                }
-                            } : {},
-
-                            max_price ? {
-                                minCost: {
-                                    lte: parseInt(max_price as string)
-                                }
-                            } : {}
-                        ]
+                        service: {
+                            name: {
+                                contains: service as string,
+                                mode: 'insensitive'
+                            }
+                        }
                     }
                 }
             },
@@ -79,10 +63,29 @@ router.get('/', async (req, res) => {
                     include: { service: true }
                 }
             }
-        });
+        });        
+
+        facilities = await Promise.all(facilities.map(async (f) => {
+            const reportsFiltered = await prisma.feedbackReport.findMany({
+                where: {
+                    facilityId: f.id
+                }
+            });     
+            
+            const [ratingCount, ratingValue] = calculateRatingFromReports(reportsFiltered);
+            const [hasWaitTime, waitTime] = calculateWaitFromReports(reportsFiltered);
+            const [hasCostRange, minCost, maxCost] = calculatePriceRangeFromReports(reportsFiltered);
+
+            return {
+                ...f,
+                ...(ratingCount! > 0 && { rating: ratingValue, ratingCount }),
+                ...(hasWaitTime && { waitTime: waitTime }),
+                ...(hasCostRange && { minCost: minCost, maxCost: maxCost })
+            };
+        }));        
 
         if (lat && lng) {
-            const results = facilities.map((f) => {
+            const results = await Promise.all(facilities.map(async (f) => {
                 const hospital = f.hospital;
 
                 const d = getDistance(
@@ -92,9 +95,9 @@ router.get('/', async (req, res) => {
 
                 return {
                     ...f,
-                    distance: d
+                    distance: d,                    
                 }
-            });
+            }));
             results.sort((a, b) => a.distance - b.distance);
 
             res.json(results);
