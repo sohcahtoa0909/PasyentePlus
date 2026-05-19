@@ -23,11 +23,50 @@ const steps = [
 ];
 
 const faqs = [
-  { q: "What is PASYENTE+ and who is it for?",   a: "PASYENTE+ is a healthcare facility finder designed for Filipinos. It helps patients locate, compare, and choose hospitals and clinics based on their personal needs, location, and preferences." },
-  { q: "Is PASYENTE+ free to use?",              a: "Yes, completely free for all users. No hidden charges or subscription fees are required to search and view healthcare facilities." },
-  { q: "How are facilities ranked in results?",  a: "Facilities are ranked based on your preferences, proximity, available services, and user ratings. Adjust preferences anytime to refine rankings." },
-  { q: "Can I save or bookmark facilities?",     a: "Yes! Tap the bookmark icon on any facility card. Saved facilities are accessible anytime from the Preferences tab." },
-  { q: "How do I update my preferences?",        a: "Go to the Preferences tab. From there update your location, healthcare priorities, insurance type, and other filters at any time." },
+  { 
+    q: "What is PASYENTE+ and who is it for?",   
+    a: "PASYENTE+ is a healthcare facility finder designed for Filipinos. It helps patients locate, compare, and choose hospitals and clinics based on their personal needs, location, and preferences." 
+  },
+  { 
+    q: "Is PASYENTE+ free to use?",              
+    a: "Yes, completely free for all users. No hidden charges or subscription fees are required to search and view healthcare facilities." 
+  },
+  { 
+    q: "How does PASYENTE+ recommend healthcare facilities?", 
+    a: "PASYENTE+ uses your preferences (budget, travel time, and waiting time) to filter and rank facilities. We calculate a match score based on how well each facility meets your criteria, then present you with the best options tailored to your needs. The facility that best balances all three factors will be marked as the best match." 
+  },
+  { 
+    q: "How are facilities ranked in results?",  
+    a: "Facilities are ranked based on your preferences, proximity, available services, and user ratings. Adjust preferences anytime to refine rankings." 
+  },
+  {
+    q: "Is the cost information accurate?",
+    a: "We strive to provide the most up-to-date and accurate cost information for each healthcare facility. However, prices may vary based on the services provided and other factors. We recommend confirming costs directly with the facility."
+  },
+  {
+    q: "How is waiting time estimated?",
+    a: "Waiting times are estimated based on typical patient flow at each facility. These are averages and actual waiting times may vary depending on the day, time, and number of patients. Emergency cases are prioritized and may affect waiting times."
+  },
+  {
+    q: "Can I book an appointment through PASYENTE+?",
+    a: "Currently, PASYENTE+ helps you find and compare facilities, but does not offer direct appointment booking. We provide contact information for each facility so you can easily reach out to them to schedule an appointment."
+  },
+  { 
+    q: "Can I save or bookmark facilities?",     
+    a: "Yes! Tap the bookmark icon on any facility card. Saved facilities are accessible anytime from the Preferences tab." 
+  },
+  { 
+    q: "How do I update my preferences?",        
+    a: "Go to the Preferences tab. From there update your location, healthcare priorities, insurance type, and other filters at any time." 
+  },
+  {
+    q: "What if no facilities match my criteria?",
+    a: "If no facilities match your criteria, try adjusting your preferences to be more flexible. You can also expand your search radius or consider nearby cities for more options."
+  },
+  {
+    q: "Are all Davao City healthcare facilities listed?",
+    a: "We aim to include as many healthcare facilities in Davao City as possible, but there may be some that are not yet listed. We are continuously working to expand our database and welcome suggestions for facilities to add."
+  }
 ];
 
 const contacts = [
