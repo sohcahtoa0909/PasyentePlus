@@ -230,12 +230,15 @@ export default function FacilityDetailsModal({ facility, onClose }) {
   }
 
   function postReview() {
+    const jsonTimeIn = new Date(`${visitDate}T${timeIn}`);
+    const jsonTimeOut = new Date(`${visitDate}T${timeOut}`);
+
     const requestJson = {
       facilityId: facility.id,
       rating: pendingStars,
-      timeIn, timeOut
-    };
-    console.log(facility);
+      timeIn: jsonTimeIn,
+      timeOut: jsonTimeOut
+    };    
 
     if(reviewComment && reviewComment.trim() !== "") {
       requestJson.textComment = reviewComment;

@@ -51,7 +51,9 @@ router.post('/', authenticateToken, async (req, res) => {
                 reporterId: reporterId,
                 timeIn, timeOut,
 
-                moneySpent: moneySpent !== undefined ? moneySpent : undefined,
+                moneySpent: (moneySpent !== undefined && moneySpent !== null && moneySpent !== "")
+                    ? Number(moneySpent)
+                    : null,
                 textComment: textComment || undefined,
             }
         });
