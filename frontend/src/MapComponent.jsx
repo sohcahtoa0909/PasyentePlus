@@ -10,7 +10,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, markers = [], selectedId = null, selectedZoom = 16, selectedPosition = null }) {
+export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, markers = [], selectedId = null, onMapReady = null }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -20,6 +20,9 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
 
     // Initialize the map
     mapInstanceRef.current = L.map(mapRef.current).setView(center, zoom);
+
+    // expose map instance to parent if requested
+    if (onMapReady && typeof onMapReady === 'function') onMapReady(mapInstanceRef.current);
 
     // Add tile layer (OpenStreetMap)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -101,17 +104,11 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
     });
   }, [markers, selectedId]);
 
-  // Update view when center/zoom or selectedPosition/selectedId changes
+  // Update view when center or zoom change
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-
-    if (selectedPosition) {
-      // If a specific facility is selected, zoom in and center on it
-      mapInstanceRef.current.setView(selectedPosition, selectedZoom);
-    } else {
-      mapInstanceRef.current.setView(center, zoom);
-    }
-  }, [center, zoom, selectedId, selectedPosition, selectedZoom]);
+    mapInstanceRef.current.setView(center, zoom);
+  }, [center, zoom]);
 
   return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
 }

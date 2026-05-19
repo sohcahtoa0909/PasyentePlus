@@ -96,6 +96,8 @@
   border-radius: 3px 0 0 3px;
 }
 .hp-nav-item svg { width: 18px; height: 18px; }
+.hp-nav-zoom { width: 40px; height: 40px; margin-top: 8px; }
+.hp-nav-zoom svg { width: 18px; height: 18px; }
 .hp-nav-spacer { flex: 1; }
 .hp-nav-divider { width: 28px; height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
 
@@ -173,6 +175,23 @@
   line-height: 1.5;
   font-style: italic;
 }
+
+.hp-zoom-btn {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 6px 10px;
+  background: #f59e0b;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.hp-zoom-btn:hover { opacity: 0.95; }
+
+/* Floating zoom FAB on map */
 .hp-panel-divider {
   height: 1px;
   background: var(--c-border);

@@ -45,6 +45,16 @@ const IconSearch = () => (
       d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
   </svg>
 );
+const IconZoom = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="11" cy="11" r="6" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.65 16.65l4.2 4.2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11 7v2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11 15v2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7 11h2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11h2" />
+  </svg>
+);
 const IconMapPin = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -360,6 +370,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   const [filterTab,       setFilterTab]       = useState("All");
   const [selectedService, setSelectedService] = useState(null);
   const [selectedFacility, setSelectedFacility] = useState(null);
+  const [mapInstance, setMapInstance] = useState(null);
 
   const panelOpen = activePage === "Home" || activePage === "FacilityDetails";
 
@@ -422,8 +433,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           zoom={12}
           markers={mapMarkers}
           selectedId={selectedFacilityData?.id}
-          selectedPosition={selectedFacilityData?.position}
-          selectedZoom={18}
+          onMapReady={(map) => setMapInstance(map)}
         />
       </div>
 
@@ -437,6 +447,28 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           selectedFacility={selectedFacility}
           onFacilitySelect={handleFacilitySelect}
         />
+        <button
+          className="hp-nav-item hp-nav-zoom"
+          onClick={() => {
+            if (!mapInstance) return;
+            if (selectedFacilityData && selectedFacilityData.position) {
+              mapInstance.setView(selectedFacilityData.position, 18);
+            } else if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition((pos) => {
+                mapInstance.setView([pos.coords.latitude, pos.coords.longitude], 16);
+              }, () => {
+                const c = mapInstance.getCenter();
+                mapInstance.setView(c, Math.min(mapInstance.getZoom() + 2, 18));
+              });
+            } else {
+              const c = mapInstance.getCenter();
+              mapInstance.setView(c, Math.min(mapInstance.getZoom() + 2, 18));
+            }
+          }}
+          title="Zoom to selected facility or current location"
+        >
+          <IconZoom />
+        </button>
         <div className="hp-nav-divider" />
 
         {NAV.map(n => (
