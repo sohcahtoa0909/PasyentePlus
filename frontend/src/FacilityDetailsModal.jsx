@@ -166,7 +166,7 @@ function StatCard({ label, value, sub }) {
 export default function FacilityDetailsModal({ facility, onClose }) {
   const [userRating,    setUserRating]    = useState(0);
 
-  /* Review panel */
+  /* Review panel status */
   const [reviewPanelOpen,  setReviewPanelOpen]  = useState(false);
   const [pendingStars,     setPendingStars]     = useState(0);
   const [visitDate,        setVisitDate]        = useState("");
@@ -175,7 +175,10 @@ export default function FacilityDetailsModal({ facility, onClose }) {
   const [serviceAvailed,   setServiceAvailed]   = useState("");
   const [amountSpent,      setAmountSpent]      = useState("");
   const [reviewComment,    setReviewComment]    = useState("");
-  const [reviewSubmitted,  setReviewSubmitted]  = useState(false);
+  
+  /* Submission State: "idle" | "submitting" | "success" | "error" */
+  const [submitStatus,     setSubmitStatus]     = useState("idle");
+  const [errorMessage,     setErrorMessage]     = useState("");
 
   const overlayRef = useRef(null);
 
@@ -191,7 +194,8 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     setPendingStars(0);
     setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
-    setReviewSubmitted(false);
+    setSubmitStatus("idle");
+    setErrorMessage("");
     setVisitDate("");
   }, [facility]);
 
@@ -225,11 +229,13 @@ export default function FacilityDetailsModal({ facility, onClose }) {
 
   function openReviewPanel(n) {
     setPendingStars(n);
-    setReviewSubmitted(false);
+    setSubmitStatus("idle");
+    setErrorMessage("");
     setReviewPanelOpen(true);
   }
 
-  function postReview() {
+  // Modified to use async/await and return a resolution status to the wrapper
+  async function postReview() {
     const jsonTimeIn = new Date(`${visitDate}T${timeIn}`);
     const jsonTimeOut = new Date(`${visitDate}T${timeOut}`);
 
@@ -240,68 +246,80 @@ export default function FacilityDetailsModal({ facility, onClose }) {
       timeOut: jsonTimeOut
     };    
 
-    if(reviewComment && reviewComment.trim() !== "") {
+    if (reviewComment && reviewComment.trim() !== "") {
       requestJson.textComment = reviewComment;
     }
 
-    if(amountSpent !== undefined && amountSpent !== null) {
-      requestJson.moneySpent = amountSpent;
+    if (amountSpent !== undefined && amountSpent !== null && amountSpent !== "") {
+      requestJson.moneySpent = Number(amountSpent);
     }
 
-    fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/report/writeReport`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(requestJson),
-    })
-    .then(async (res) => {
-      const statusCode = res.status;
+    try {
+      const res = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/report/writeReport`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(requestJson),
+      });
+
       const data = await res.json();
 
-      switch(statusCode) {
-        case 403:
-          alert("Not logged in!");
-          break;
-
-        case 401:
-          alert(data.message);
-          break;
-
-        case 429:
-          alert("You've made a review too recently!");
-          break;
-          
-        default:
-          break;
+      if (res.status === 200 || res.ok) {
+        return { success: true };
       }
-    })
+
+      // Route custom API error strings based on status code fallbacks
+      switch(res.status) {
+        case 403:
+          return { success: false, message: "Not logged in! Please log in to leave a review." };
+        case 401:
+          return { success: false, message: data.message || "Unauthorized access." };
+        case 429:
+          return { success: false, message: "You have submitted a review too recently! Please try again later." };
+        default:
+          return { success: false, message: data.message || `Server error occurred (Status ${res.status}).` };
+      }
+    } catch (err) {
+      return { success: false, message: "Network connection failure. Check your internet connection." };
+    }
   }
 
-  function handleSubmitReview() {
-    if (pendingStars === 0) return;
-    const key = `fdm-reviews-${facility.id}`;
-    const prev = JSON.parse(localStorage.getItem(key) || "[]");
-    prev.push({
-      stars: pendingStars,
-      visitDate, timeIn, timeOut,
-      service: serviceAvailed,
-      amount: amountSpent,
-      comment: reviewComment,
-      date: new Date().toISOString(),
-    });
-    localStorage.setItem(key, JSON.stringify(prev));
-    setUserRating(pendingStars);
-    setReviewSubmitted(true);
-    postReview();
+  async function handleSubmitReview() {
+    if (pendingStars === 0 || submitStatus === "submitting") return;
+    
+    setSubmitStatus("submitting");
+    setErrorMessage("");
+
+    const result = await postReview();
+
+    if (result.success) {
+      const key = `fdm-reviews-${facility.id}`;
+      const prev = JSON.parse(localStorage.getItem(key) || "[]");
+      prev.push({
+        stars: pendingStars,
+        visitDate, timeIn, timeOut,
+        service: serviceAvailed,
+        amount: amountSpent,
+        comment: reviewComment,
+        date: new Date().toISOString(),
+      });
+      localStorage.setItem(key, JSON.stringify(prev));
+      setUserRating(pendingStars);
+      setSubmitStatus("success");
+    } else {
+      setSubmitStatus("error");
+      setErrorMessage(result.message);
+    }
   }
 
   function handleRateAgain() {
     setPendingStars(0);
     setVisitDate(""); setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
-    setReviewSubmitted(false);
+    setSubmitStatus("idle");
+    setErrorMessage("");
   }
 
   function handleClosePanel() {
@@ -448,7 +466,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
             </div>
 
             <div className="fdm-review-body">
-              {reviewSubmitted ? (
+              {submitStatus === "success" && (
                 <div className="fdm-review-success">
                   <div className="fdm-review-success-icon">✓</div>
                   <p className="fdm-review-success-msg">Review submitted!</p>
@@ -462,12 +480,32 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                     </button>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {submitStatus === "error" && (
+                <div className="fdm-review-success fdm-review-error">
+                  <div className="fdm-review-success-icon" style={{ backgroundColor: "#ef5350" }}>✕</div>
+                  <p className="fdm-review-success-msg" style={{ color: "#c62828" }}>Submission Failed</p>
+                  <p className="fdm-review-error-text" style={{ margin: "8px 0 20px", fontSize: "14px", color: "#555" }}>
+                    {errorMessage}
+                  </p>
+                  <div className="fdm-review-success-actions">
+                    <button className="fdm-btn fdm-btn--primary fdm-review-action-btn" onClick={() => setSubmitStatus("idle")}>
+                      Try Again
+                    </button>
+                    <button className="fdm-btn fdm-btn--secondary fdm-review-action-btn" onClick={handleClosePanel}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {(submitStatus === "idle" || submitStatus === "submitting") && (
                 <>
                   {/* Star rating */}
                   <div className="fdm-review-field">
                     <div className="fdm-review-label">Your Rating</div>
-                    <StarRater value={pendingStars} onChange={setPendingStars} locked={false} size="lg" />
+                    <StarRater value={pendingStars} onChange={setPendingStars} locked={submitStatus === "submitting"} size="lg" />
                     {pendingStars > 0 && (
                       <div className="fdm-review-stars-hint">{STAR_LABELS[pendingStars]}</div>
                     )}
@@ -478,6 +516,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                     <div className="fdm-review-label">Time Spent</div>
                     <input
                       type="date"
+                      disabled={submitStatus === "submitting"}
                       value={visitDate}
                       onChange={e => setVisitDate(e.target.value)}
                       className="fdm-review-input"
@@ -488,6 +527,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                         <span className="fdm-review-time-label">Time In</span>
                         <input
                           type="time"
+                          disabled={submitStatus === "submitting"}
                           value={timeIn}
                           onChange={e => setTimeIn(e.target.value)}
                           className="fdm-review-input"
@@ -498,6 +538,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                         <span className="fdm-review-time-label">Time Out</span>
                         <input
                           type="time"
+                          disabled={submitStatus === "submitting"}
                           value={timeOut}
                           onChange={e => setTimeOut(e.target.value)}
                           className="fdm-review-input"
@@ -511,6 +552,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                     <div className="fdm-review-label">Service Availed</div>
                     <select
                       value={serviceAvailed}
+                      disabled={submitStatus === "submitting"}
                       onChange={e => setServiceAvailed(e.target.value)}
                       className="fdm-review-select"
                     >
@@ -532,6 +574,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                         type="number"
                         min="0"
                         step="1"
+                        disabled={submitStatus === "submitting"}
                         value={amountSpent}
                         onChange={e => setAmountSpent(e.target.value)}
                         className="fdm-review-input fdm-review-input--amount"
@@ -548,6 +591,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                     </div>
                     <textarea
                       value={reviewComment}
+                      disabled={submitStatus === "submitting"}
                       onChange={e => setReviewComment(e.target.value)}
                       className="fdm-review-textarea"
                       placeholder="Share your experience…"
@@ -558,15 +602,15 @@ export default function FacilityDetailsModal({ facility, onClose }) {
               )}
             </div>
 
-            {!reviewSubmitted && (
+            {(submitStatus === "idle" || submitStatus === "submitting") && (
               <div className="fdm-review-footer">
                 <button
                   className="fdm-btn fdm-btn--primary"
                   onClick={handleSubmitReview}
-                  disabled={pendingStars === 0}
-                  style={pendingStars === 0 ? { opacity: 0.45, cursor: "not-allowed" } : {}}
+                  disabled={pendingStars === 0 || submitStatus === "submitting"}
+                  style={pendingStars === 0 || submitStatus === "submitting" ? { opacity: 0.45, cursor: "not-allowed" } : {}}
                 >
-                  Submit Review
+                  {submitStatus === "submitting" ? "Submitting..." : "Submit Review"}
                 </button>
               </div>
             )}
