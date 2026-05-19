@@ -37,7 +37,7 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
         mapInstanceRef.current = null;
       }
     };
-  }, [center, zoom]);
+  }, [center, zoom, onMapReady]);
 
   // Update markers when markers prop changes
   useEffect(() => {

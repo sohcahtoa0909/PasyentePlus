@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import "./HomePage.css";
 import MapComponent from "./MapComponent";
@@ -371,6 +371,9 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   const [selectedService, setSelectedService] = useState(null);
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [mapInstance, setMapInstance] = useState(null);
+  const handleMapReady = useCallback((map) => {
+    setMapInstance(map);
+  }, []);
 
   const panelOpen = activePage === "Home" || activePage === "FacilityDetails";
 
@@ -437,7 +440,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           zoom={12}
           markers={mapMarkers}
           selectedId={selectedFacilityData?.id}
-          onMapReady={(map) => setMapInstance(map)}
+          onMapReady={handleMapReady}
         />
       </div>
 
