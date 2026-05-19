@@ -169,6 +169,25 @@
 }
 .fdm-close svg { width: 16px; height: 16px; }
 
+.fdm-fav-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--c-text-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.fdm-fav-btn svg { width: 18px; height: 18px; }
+.fdm-fav-btn:hover { background: rgba(224, 85, 85, 0.08); color: #e05555; }
+.fdm-fav-btn--active { color: #e05555; }
+.fdm-fav-btn--active:hover { background: rgba(224, 85, 85, 0.12); }
+
 .fdm-header-rating {
   display: flex;
   align-items: center;

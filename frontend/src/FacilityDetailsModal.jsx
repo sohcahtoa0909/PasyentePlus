@@ -63,6 +63,12 @@ const IconDirections = () => (
       d="M9 6.75V15m0-8.25L6 9.75M9 6.75L12 9.75M15 17.25V9m0 8.25l3-2.25M15 17.25l-3-2.25" />
   </svg>
 );
+const IconHeart = ({ filled }) => (
+  <svg viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+  </svg>
+);
 
 const PLACEHOLDER_PHOTOS = [
   { id: 1, label: "Main Entrance", gradient: "linear-gradient(135deg,#a2dff7 0%,#007b8a 100%)" },
@@ -163,8 +169,22 @@ function StatCard({ label, value, sub }) {
 /* ══════════════════════════════════════════
    Main Modal Component
    ══════════════════════════════════════════ */
+function readFavs() {
+  try { return JSON.parse(localStorage.getItem("pp_facilities") || "[]"); } catch { return []; }
+}
+function writeFavs(favs) {
+  try {
+    localStorage.setItem("pp_facilities", JSON.stringify(favs));
+    window.dispatchEvent(new CustomEvent("pp-favorites-changed", { detail: favs }));
+  } catch {}
+}
+
 export default function FacilityDetailsModal({ facility, onClose }) {
   const [userRating,    setUserRating]    = useState(0);
+  const [isFavorited,   setIsFavorited]   = useState(() => {
+    const id = facility?.id;
+    return id != null && readFavs().some(f => String(f.id) === String(id));
+  });
 
   /* Review panel */
   const [reviewPanelOpen,  setReviewPanelOpen]  = useState(false);
@@ -274,6 +294,30 @@ export default function FacilityDetailsModal({ facility, onClose }) {
                 <h2 className="fdm-title">{facilityName}</h2>
                 <div className="fdm-subtitle">{facilityType}</div>
               </div>
+              <button
+                className={`fdm-fav-btn${isFavorited ? " fdm-fav-btn--active" : ""}`}
+                onClick={() => {
+                  const id = facility.id;
+                  const favs = readFavs();
+                  const exists = favs.some(f => String(f.id) === String(id));
+                  const next = exists
+                    ? favs.filter(f => String(f.id) !== String(id))
+                    : [...favs, {
+                        id,
+                        name: facility.hospitalName || facility.name || "Facility",
+                        type: facility.facilityName || facility.type || "Healthcare Facility",
+                        budget: facility.priceLow || facility.budget || 0,
+                        travel: facility.distance || facility.travel || 0,
+                        rating: facility.rating || 0,
+                        saved: false,
+                      }];
+                  writeFavs(next);
+                  setIsFavorited(!exists);
+                }}
+                title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+              >
+                <IconHeart filled={isFavorited} />
+              </button>
               <button className="fdm-close" onClick={onClose} title="Close"><IconX /></button>
             </div>
             <div className="fdm-header-rating">

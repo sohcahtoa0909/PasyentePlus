@@ -170,6 +170,13 @@ export default function PreferencesPage({
     }
   }
 
+  // Keep facilities state in sync when the modal writes to pp_facilities directly
+  useEffect(() => {
+    function onFavChange(e) { setFacilities(e.detail); }
+    window.addEventListener("pp-favorites-changed", onFavChange);
+    return () => window.removeEventListener("pp-favorites-changed", onFavChange);
+  }, []);
+
   const triggerToast = (msg) => {
     clearTimeout(toastTimer.current);
     setToast(msg);
@@ -521,6 +528,7 @@ export default function PreferencesPage({
                             type="checkbox"
                             className="prefs-checkbox"
                             checked={f.saved}
+                            onClick={(e) => e.stopPropagation()}
                             onChange={(e) => {
                               e.stopPropagation();
                               toggleFacility(f.id);
