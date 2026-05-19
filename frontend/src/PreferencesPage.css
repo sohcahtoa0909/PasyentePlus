@@ -694,3 +694,29 @@ html.dark .leaflet-tooltip {
 }
 html.dark .leaflet-popup-content-wrapper { background: #1a1d27; color: var(--c-text); }
 html.dark .leaflet-popup-tip            { background: #1a1d27; }
+/* ─── Guest gate banner ──────────────────────────────── */
+
+.prefs-guest-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 16px;
+}
+
+.prefs-guest-gate-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--c-teal-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-teal-dk);
+  margin-bottom: 12px;
+}
+
+html.dark .prefs-guest-gate-icon {
+  background: #1e4a5c;
+  color: var(--c-teal-dk);
+}

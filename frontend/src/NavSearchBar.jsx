@@ -116,7 +116,8 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
     inputRef.current?.focus();
   }
 
-  function typeLabel(type) {
+  function typeLabel(type = "") {
+    if (!type) return { letter: "C", color: "#00838f" };
     if (type.includes("Government")) return { letter: "G", color: "#2e7d32" };
     if (type.includes("Private"))    return { letter: "P", color: "#1565c0" };
     if (type.includes("Mission"))    return { letter: "M", color: "#6a1b9a" };
