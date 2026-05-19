@@ -57,17 +57,18 @@ function coordLabel(lat, lng) {
   return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 }
 
-const initialFacilities = [
-  { id: 1, name: "Lorem Ipsum Medical Center", type: "Hospital", budget: 800,  travel: 15, rating: 4.5, saved: false },
-  { id: 2, name: "Dolor Sit Hospital",          type: "Hospital", budget: 900,  travel: 12, rating: 4.5, saved: false },
-  { id: 3, name: "Consectetur Clinic",          type: "Clinic",   budget: 1000, travel: 9,  rating: 4.5, saved: false },
-];
+const initialFacilities = [];
 
-const initialHistory = [
-  { id: 1, date: "2026-04-20", budget: 1200, travel: 15, wait: 45, results: 5 },
-  { id: 2, date: "2026-04-18", budget: 1500, travel: 20, wait: 60, results: 7 },
-  { id: 3, date: "2026-04-15", budget: 1000, travel: 10, wait: 30, results: 3 },
-];
+function formatViewedAt(iso) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const time = d.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit", hour12: true });
+  if (d.toDateString() === today.toDateString())     return `Today · ${time}`;
+  if (d.toDateString() === yesterday.toDateString()) return `Yesterday · ${time}`;
+  return d.toLocaleDateString("en-PH", { month: "short", day: "numeric" }) + ` · ${time}`;
+}
 
 const DEFAULT_CENTER = [7.1907, 125.4553];
 
@@ -126,11 +127,12 @@ export default function PreferencesPage({
   const [travel, setTravel]         = useState(() => loadPref("pp_travel", 20));
   const [wait, setWait]             = useState(() => loadPref("pp_wait", 60));
   const [facilities, setFacilities] = useState(() => loadPref("pp_facilities", initialFacilities));
-  const [history, setHistory]       = useState(() => loadPref("pp_history", initialHistory));
+  const [history, setHistory]       = useState(() => loadPref("pp_history", []));
   const [toast, setToast]           = useState("");
   const [showToast, setShowToast]   = useState(false);
   const toastTimer                  = useRef(null);
-  const [modalFacility, setModalFacility] = useState(null);
+  const [modalFacility,     setModalFacility]     = useState(null);
+  const [modalSkipHistory,  setModalSkipHistory]  = useState(false);
   const panelOpen = activePage === "Preferences";
 
   // ── Location state ────────────────────────────────────────────────────────
@@ -165,16 +167,22 @@ export default function PreferencesPage({
 
   function handleCloseModal() {
     setModalFacility(null);
+    setModalSkipHistory(false);
     if (propSelectedFacility && onFacilitySelect) {
       onFacilitySelect(null);
     }
   }
 
-  // Keep facilities state in sync when the modal writes to pp_facilities directly
+  // Keep facilities and history in sync when the modal writes to localStorage directly
   useEffect(() => {
-    function onFavChange(e) { setFacilities(e.detail); }
-    window.addEventListener("pp-favorites-changed", onFavChange);
-    return () => window.removeEventListener("pp-favorites-changed", onFavChange);
+    function onFavChange(e)  { setFacilities(e.detail); }
+    function onHistChange(e) { setHistory(e.detail); }
+    window.addEventListener("pp-favorites-changed",  onFavChange);
+    window.addEventListener("pp-history-changed",    onHistChange);
+    return () => {
+      window.removeEventListener("pp-favorites-changed",  onFavChange);
+      window.removeEventListener("pp-history-changed",    onHistChange);
+    };
   }, []);
 
   const triggerToast = (msg) => {
@@ -498,21 +506,23 @@ export default function PreferencesPage({
                           key={f.id}
                           className="prefs-facility-card"
                           onClick={() => {
-                            const fullFacility = {
+                            setModalSkipHistory(true);
+                            handleFacilitySelect({
                               id: f.id,
+                              name: f.name,
+                              type: f.type,
                               hospitalName: f.name,
                               facilityName: f.type,
                               priceLow: f.budget,
-                              priceHigh: f.budget + 200,
+                              priceHigh: (f.budget || 0) + 200,
                               distance: f.travel,
                               waitTime: 30,
                               services: ["General Care"],
                               rating: f.rating,
                               address: "Address available upon request",
                               phone: "",
-                              hours: "24/7"
-                            };
-                            handleFacilitySelect(fullFacility);
+                              hours: "24/7",
+                            });
                           }}
                         >
                           <div className="prefs-facility-info">
@@ -548,7 +558,7 @@ export default function PreferencesPage({
                 isLoggedIn ? (
                   <div className="section-block">
                     <div className="section-label">
-                      Search History
+                      Recently Viewed
                       {history.length > 0 && (
                         <button className="prefs-clear-btn"
                           onClick={() => { setHistory([]); triggerToast("History cleared"); }}>
@@ -558,19 +568,42 @@ export default function PreferencesPage({
                     </div>
                     {history.length === 0 ? (
                       <p className="section-text" style={{ textAlign: "center", padding: "16px 0", color: "var(--c-text-mute)" }}>
-                        No search history yet.
+                        No recently viewed facilities yet.
                       </p>
                     ) : (
                       <div className="prefs-history-list">
                         {history.map((h) => (
-                          <div key={h.id} className="prefs-history-item">
-                            <div>
-                              <div className="prefs-history-date">{h.date}</div>
+                          <div
+                            key={h.viewedAt}
+                            className="prefs-history-item"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => {
+                              setModalSkipHistory(true);
+                              handleFacilitySelect({
+                                id: h.facilityId,
+                                name: h.name,
+                                type: h.type,
+                                hospitalName: h.name,
+                                facilityName: h.type,
+                                priceLow: h.budget,
+                                priceHigh: (h.budget || 0) + 200,
+                                distance: h.travel,
+                                waitTime: 30,
+                                services: [],
+                                rating: h.rating,
+                                address: "Address available upon request",
+                                phone: "",
+                                hours: "24/7",
+                              });
+                            }}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div className="prefs-history-date">{formatViewedAt(h.viewedAt)}</div>
+                              <div className="prefs-facility-name" style={{ fontSize: 12, marginBottom: 2 }}>{h.name}</div>
                               <div className="prefs-history-params">
-                                Budget: ₱{h.budget} · Travel: {h.travel}m · Wait: {h.wait}m
+                                {h.type}{h.budget ? ` · ₱${h.budget}` : ""}{h.travel ? ` · ${h.travel}m` : ""}{h.rating ? ` · ★ ${h.rating}` : ""}
                               </div>
                             </div>
-                            <div className="prefs-history-results">{h.results} results</div>
                           </div>
                         ))}
                       </div>
@@ -638,6 +671,7 @@ export default function PreferencesPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
+          skipHistoryRecord={modalSkipHistory}
         />
       )}
 

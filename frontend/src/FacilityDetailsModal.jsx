@@ -179,7 +179,7 @@ function writeFavs(favs) {
   } catch {}
 }
 
-export default function FacilityDetailsModal({ facility, onClose }) {
+export default function FacilityDetailsModal({ facility, onClose, skipHistoryRecord = false }) {
   const [userRating,    setUserRating]    = useState(0);
   const [isFavorited,   setIsFavorited]   = useState(() => {
     const id = facility?.id;
@@ -200,6 +200,25 @@ export default function FacilityDetailsModal({ facility, onClose }) {
 
   useEffect(() => {
     if (!facility) return;
+
+    // Record this view to history (skip when re-opening from history/favorites)
+    if (!skipHistoryRecord) try {
+      const entry = {
+        facilityId: facility.id,
+        name:   facility.hospitalName || facility.name  || "Facility",
+        type:   facility.facilityName || facility.type  || "Healthcare Facility",
+        budget: facility.priceLow     || facility.budget || 0,
+        travel: facility.distance     || facility.travel || 0,
+        rating: facility.rating       || 0,
+        viewedAt: new Date().toISOString(),
+      };
+      const prev    = JSON.parse(localStorage.getItem("pp_history") || "[]");
+      const deduped = prev.filter(h => String(h.facilityId) !== String(facility.id));
+      const next    = [entry, ...deduped].slice(0, 20);
+      localStorage.setItem("pp_history", JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent("pp-history-changed", { detail: next }));
+    } catch {}
+
     const reviews = JSON.parse(localStorage.getItem(`fdm-reviews-${facility.id}`) || "[]");
     if (reviews.length > 0) {
       setUserRating(reviews[reviews.length - 1].stars);
@@ -211,7 +230,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
     setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
     setReviewSubmitted(false);
-  }, [facility]);
+  }, [facility, skipHistoryRecord]);
 
   useEffect(() => {
     function onKey(e) { if (e.key === "Escape") onClose(); }
