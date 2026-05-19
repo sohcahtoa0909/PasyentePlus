@@ -11,3 +11,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Map selected marker styling */
+.map-marker-selected {
+  transform: scale(1.25) !important;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.35));
+  z-index: 9999 !important;
+}

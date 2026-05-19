@@ -10,7 +10,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, markers = [] }) {
+export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, markers = [], selectedId = null, selectedZoom = 16, selectedPosition = null }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -44,9 +44,48 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
+    // Prepare icon URLs (reuse same CDN assets)
+    const iconUrl = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png";
+    const iconRetinaUrl = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png";
+    const shadowUrl = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png";
+
+    const defaultIcon = L.icon({
+      iconUrl,
+      iconRetinaUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+
+    // Create a gold SVG marker as a data URL so we can match app color scheme
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='36' height='58' viewBox='0 0 36 58'>
+        <defs>
+          <filter id='s' x='-50%' y='-50%' width='200%' height='200%'>
+            <feDropShadow dx='0' dy='6' stdDeviation='6' flood-color='rgba(0,0,0,0.35)' />
+          </filter>
+        </defs>
+        <g filter='url(#s)'>
+          <path d='M18 0c6 0 11 4.9 11 11 0 9.6-11 26-11 26S7 20.6 7 11C7 4.9 12 0 18 0z' fill='#f59e0b' stroke='#b76a00' stroke-width='1'/>
+          <circle cx='18' cy='11' r='5.5' fill='white' opacity='0.95'/>
+        </g>
+      </svg>
+    `;
+
+    const selectedIcon = L.icon({
+      iconUrl: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
+      iconSize: [36, 58],
+      iconAnchor: [18, 58],
+      popupAnchor: [1, -44],
+      shadowSize: [58, 58],
+    });
+
     // Add new markers
     markers.forEach((markerData) => {
-      const marker = L.marker(markerData.position)
+      const isSelected = selectedId != null && markerData.id === selectedId;
+      const marker = L.marker(markerData.position, { icon: isSelected ? selectedIcon : defaultIcon })
         .addTo(mapInstanceRef.current)
         .bindPopup(markerData.popupContent || markerData.name);
 
@@ -60,14 +99,19 @@ export default function MapComponent({ center = [7.1907, 125.4553], zoom = 12, m
 
       markersRef.current.push(marker);
     });
-  }, [markers]);
+  }, [markers, selectedId]);
 
-  // Update view when center or zoom changes
+  // Update view when center/zoom or selectedPosition/selectedId changes
   useEffect(() => {
-    if (mapInstanceRef.current) {
+    if (!mapInstanceRef.current) return;
+
+    if (selectedPosition) {
+      // If a specific facility is selected, zoom in and center on it
+      mapInstanceRef.current.setView(selectedPosition, selectedZoom);
+    } else {
       mapInstanceRef.current.setView(center, zoom);
     }
-  }, [center, zoom]);
+  }, [center, zoom, selectedId, selectedPosition, selectedZoom]);
 
   return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
 }

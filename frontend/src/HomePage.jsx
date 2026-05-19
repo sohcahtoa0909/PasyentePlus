@@ -399,6 +399,7 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
   const mapMarkers = filtered.length > 0
     ? filtered.map(facility => ({
         position: facility.position,
+        id: facility.id,
         name: facility.name,
         popupContent: `<strong>${facility.name}</strong><br/>${facility.type}`,
         onClick: () => handleFacilityCardClick(facility),
@@ -420,6 +421,9 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
           center={filtered.length > 0 ? filtered[0].position : [7.1907, 125.4553]}
           zoom={12}
           markers={mapMarkers}
+          selectedId={selectedFacilityData?.id}
+          selectedPosition={selectedFacilityData?.position}
+          selectedZoom={18}
         />
       </div>
 
