@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './FacilityDetails.css';
+import './FacilityDetailsPage.css';
 import LogoSrc from './Logo.png';
 
 /* ── Icons ─────────────────────────────────── */

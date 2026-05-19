@@ -5,7 +5,7 @@ import PreferencesPage from "./PreferencesPage";
 import HomePage from "./HomePage";
 import AuthPage from "./AuthPage";
 import SettingsPage from "./SettingsPage";
-import FacilityDetails from "./FacilityDetails";
+import FacilityDetails from "./FacilityDetailsPage";
 
 export default function App() {
   const [activePage, setActivePage] = useState("Home");
