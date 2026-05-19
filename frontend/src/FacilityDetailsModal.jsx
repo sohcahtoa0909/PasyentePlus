@@ -117,35 +117,66 @@ function StarRater({ value, onChange, locked, size = "md" }) {
 
 function PhotoGallery({ photos }) {
   const [active, setActive] = useState(0);
+
+  // If there are no photos provided yet, return a fallback layout
+  if (!photos || photos.length === 0) {
+    return (
+      <div className="fdm-gallery">
+        <div className="fdm-gallery-main" style={{ background: "linear-gradient(135deg, #f0fafb 0%, #a2dff7 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#007b8a", fontWeight: "600" }}>
+          No Photos Available
+        </div>
+      </div>
+    );
+  }
+
   function prev() { setActive(a => (a - 1 + photos.length) % photos.length); }
   function next() { setActive(a => (a + 1) % photos.length); }
+
   return (
     <div className="fdm-gallery">
-      <div className="fdm-gallery-main" style={{ background: photos[active].gradient }}>
+      <div className="fdm-gallery-main" style={{ background: "#f3f4f6" }}>
+        <img
+          src={photos[active].src}
+          alt={photos[active].label}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          onError={(e) => {
+            // Broken image link fallback so your UI stays beautiful
+            e.currentTarget.src = "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80";
+          }}
+        />
         <div className="fdm-gallery-label">{photos[active].label}</div>
+
         {photos.length > 1 && (
           <>
             <button className="fdm-gallery-nav fdm-gallery-nav--prev" onClick={prev}><IconChevronLeft /></button>
             <button className="fdm-gallery-nav fdm-gallery-nav--next" onClick={next}><IconChevronRight /></button>
           </>
         )}
-        <div className="fdm-gallery-dots">
-          {photos.map((_, i) => (
-            <button key={i} className={`fdm-gallery-dot${i === active ? " active" : ""}`} onClick={() => setActive(i)} />
+
+        {photos.length > 1 && (
+          <div className="fdm-gallery-dots">
+            {photos.map((_, i) => (
+              <button key={i} className={`fdm-gallery-dot${i === active ? " active" : ""}`} onClick={() => setActive(i)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {photos.length > 1 && (
+        <div className="fdm-gallery-thumbs">
+          {photos.map((p, i) => (
+            <button
+              key={p.id}
+              className={`fdm-gallery-thumb${i === active ? " active" : ""}`}
+              onClick={() => setActive(i)}
+              title={p.label}
+              style={{ padding: 0, overflow: "hidden" }}
+            >
+              <img src={p.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </button>
           ))}
         </div>
-      </div>
-      <div className="fdm-gallery-thumbs">
-        {photos.map((p, i) => (
-          <button
-            key={p.id}
-            className={`fdm-gallery-thumb${i === active ? " active" : ""}`}
-            style={{ background: p.gradient }}
-            onClick={() => setActive(i)}
-            title={p.label}
-          />
-        ))}
-      </div>
+      )}
     </div>
   );
 }
@@ -176,11 +207,53 @@ export default function FacilityDetailsModal({ facility, onClose }) {
   const [amountSpent,      setAmountSpent]      = useState("");
   const [reviewComment,    setReviewComment]    = useState("");
   
+  /* For facility photos */
+  const [facilityPhotos, setFacilityPhotos] = useState([]);
+
   /* Submission State: "idle" | "submitting" | "success" | "error" */
   const [submitStatus,     setSubmitStatus]     = useState("idle");
   const [errorMessage,     setErrorMessage]     = useState("");
 
   const overlayRef = useRef(null);
+
+  useEffect(() => {
+    if (!facility?.id) return;
+
+    const backendBaseUrl = `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}`;
+
+    async function fetchPhotos() {
+      try {
+        const res = await fetch(`${backendBaseUrl}/std/getPhotos?facilityId=${facility.id}`);
+        if (!res.ok) throw new Error("Failed to load images");
+
+        const data = await res.json();
+
+        if (data.urls && data.urls.length > 0) {
+          // Map the flat strings into objects matching our new PhotoGallery properties
+          const loadedPhotos = data.urls.map((url, index) => {
+            // Clean up double-slashes securely: /static//facilities -> /static/facilities
+            const sanitizedUrl = url.replace(/\/+/g, '/');
+
+            return {
+              id: `live-${index}`,
+              label: index === 0 ? "Main View" : `Photo ${index + 1}`,
+              src: `${backendBaseUrl}${sanitizedUrl}`
+            };
+          });
+          setFacilityPhotos(loadedPhotos);
+        } else {
+          // Fall back to gradients if array is explicitly empty
+          setFacilityPhotos(PLACEHOLDER_PHOTOS.map(p => ({ ...p, src: "" })));
+        }
+      } catch (err) {
+        console.error("Error retrieving facility images:", err);
+        // Fallback gracefully on network failure
+        setFacilityPhotos([]);
+      }
+    }
+
+    fetchPhotos();
+  }, [facility]);
 
   useEffect(() => {
     if (!facility) return;
@@ -358,7 +431,7 @@ export default function FacilityDetailsModal({ facility, onClose }) {
 
             <div className="fdm-section">
               <div className="fdm-section-label">Photos</div>
-              <PhotoGallery photos={PLACEHOLDER_PHOTOS} />
+              <PhotoGallery photos={facilityPhotos} />
             </div>
 
             <div className="fdm-section">
