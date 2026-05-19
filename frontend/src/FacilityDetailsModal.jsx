@@ -306,7 +306,6 @@ export default function FacilityDetailsModal({ facility, onClose, skipHistoryRec
     setPendingStars(0);
     setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
-    setReviewSubmitted(false);
     setSubmitStatus("idle");
     setErrorMessage("");
     setVisitDate("");
