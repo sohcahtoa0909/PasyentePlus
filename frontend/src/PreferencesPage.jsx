@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import "./AboutPage.css";
 import "./PreferencesPage.css";
 import MapComponent from "./MapComponent";
@@ -71,6 +71,19 @@ const initialHistory = [
 
 const DEFAULT_CENTER = [7.1907, 125.4553];
 
+function loadPref(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function savePref(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
 // ── Guest gate banner ─────────────────────────────────────────────────────────
 function GuestGate({ label, onLogin }) {
   return (
@@ -108,12 +121,12 @@ export default function PreferencesPage({
   isLoggedIn = false,
 }) {
   const [tab, setTab]               = useState("Search");
-  const [budget, setBudget]         = useState(1); // 0=Low, 1=Mid, 2=High
+  const [budget, setBudget]         = useState(() => loadPref("pp_budget", 1));
   const BUDGET_TIERS = ["Low", "Mid", "High"];
-  const [travel, setTravel]         = useState(20);
-  const [wait, setWait]             = useState(60);
-  const [facilities, setFacilities] = useState(initialFacilities);
-  const [history, setHistory]       = useState(initialHistory);
+  const [travel, setTravel]         = useState(() => loadPref("pp_travel", 20));
+  const [wait, setWait]             = useState(() => loadPref("pp_wait", 60));
+  const [facilities, setFacilities] = useState(() => loadPref("pp_facilities", initialFacilities));
+  const [history, setHistory]       = useState(() => loadPref("pp_history", initialHistory));
   const [toast, setToast]           = useState("");
   const [showToast, setShowToast]   = useState(false);
   const toastTimer                  = useRef(null);
@@ -121,8 +134,17 @@ export default function PreferencesPage({
   const panelOpen = activePage === "Preferences";
 
   // ── Location state ────────────────────────────────────────────────────────
-  const [activeLocation, setActiveLocation] = useState(null);
-  const [homeLocation, setHomeLocation]     = useState(null);
+  const [activeLocation, setActiveLocation] = useState(() => loadPref("pp_active_location", null));
+  const [homeLocation, setHomeLocation]     = useState(() => loadPref("pp_home_location", null));
+
+  // ── Persist to localStorage ───────────────────────────────────────────────
+  useEffect(() => savePref("pp_budget", budget),          [budget]);
+  useEffect(() => savePref("pp_travel", travel),          [travel]);
+  useEffect(() => savePref("pp_wait", wait),              [wait]);
+  useEffect(() => savePref("pp_facilities", facilities),  [facilities]);
+  useEffect(() => savePref("pp_history", history),        [history]);
+  useEffect(() => savePref("pp_active_location", activeLocation), [activeLocation]);
+  useEffect(() => savePref("pp_home_location", homeLocation),     [homeLocation]);
 
   const [isChangingLocation, setIsChangingLocation] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
@@ -440,21 +462,10 @@ export default function PreferencesPage({
                       </div>
                     </div>
 
-                    {/* Save button — guest sees a login prompt instead */}
-                    {isLoggedIn ? (
-                      <button className="prefs-save-btn" onClick={() => triggerToast("✓ Preferences saved!")}>
-                        Save Preferences
-                      </button>
-                    ) : (
-                      <button
-                        className="prefs-save-btn"
-                        style={{ background: "var(--c-text-mute)", opacity: 0.7, cursor: "pointer" }}
-                        onClick={() => setActivePage("Auth")}
-                        title="Sign in to save preferences"
-                      >
-                        Sign In to Save
-                      </button>
-                    )}
+                    {/* Search preferences auto-save to localStorage; button gives feedback */}
+                    <button className="prefs-save-btn" onClick={() => triggerToast("✓ Preferences saved locally!")}>
+                      Save Preferences
+                    </button>
                   </div>
                 </div>
                 </div>
