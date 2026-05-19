@@ -384,10 +384,14 @@ export default function HomePage({ activePage = "Home", setActivePage = () => {}
     if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
   }
 
-  // When a facility is picked from the nav search, highlight it in the list
+  // When a facility is picked from the nav search, open facility details
   function handleFacilitySelect(facility) {
     setSelectedFacility(facility);
-    if (facility) setSelectedId(facility.id);
+    if (facility) {
+      setSelectedId(facility.id);
+      setSelectedFacilityData(facility);
+      setActivePage("FacilityDetails");
+    }
   }
 
   // Navigate to facility details page
