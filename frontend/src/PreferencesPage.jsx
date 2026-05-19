@@ -25,8 +25,14 @@ const IconEdit = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 
 const IconHome = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="12" height="12"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" /></svg>;
 
+// Lock icon for guest-gated tabs
+const IconLock = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+  </svg>
+);
+
 // Reverse geocode using Nominatim (free, no key needed)
-// Returns address string on success, null on failure
 async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
@@ -35,7 +41,6 @@ async function reverseGeocode(lat, lng) {
     );
     if (!res.ok) return null;
     const data = await res.json();
-    // Use road + suburb + city, or fall back to display_name trimmed
     const a = data.address || {};
     const parts = [
       a.road || a.pedestrian || a.footway,
@@ -48,7 +53,6 @@ async function reverseGeocode(lat, lng) {
   }
 }
 
-// Format coords as fallback label
 function coordLabel(lat, lng) {
   return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 }
@@ -65,14 +69,43 @@ const initialHistory = [
   { id: 3, date: "2026-04-15", budget: 1000, travel: 10, wait: 30, results: 3 },
 ];
 
-// Fallback center (Davao City) used when no location is set yet
 const DEFAULT_CENTER = [7.1907, 125.4553];
 
-export default function PreferencesPage({ 
-  activePage, 
+// ── Guest gate banner ─────────────────────────────────────────────────────────
+function GuestGate({ label, onLogin }) {
+  return (
+    <div className="section-block" style={{ textAlign: "center", padding: "28px 16px" }}>
+      <div style={{
+        width: 44, height: 44,
+        borderRadius: "50%",
+        background: "var(--c-teal-lt)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        margin: "0 auto 12px",
+        color: "var(--c-teal-dk)",
+      }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="20" height="20">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--c-text)", marginBottom: 5 }}>
+        Sign in to use {label}
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--c-text-mute)", lineHeight: 1.55, marginBottom: 16 }}>
+        Create a free account to save your {label.toLowerCase()} and access them across devices.
+      </div>
+      <button className="prefs-save-btn" style={{ maxWidth: 180, margin: "0 auto" }} onClick={onLogin}>
+        Log In or Sign Up
+      </button>
+    </div>
+  );
+}
+
+export default function PreferencesPage({
+  activePage,
   setActivePage,
   selectedFacility: propSelectedFacility,
-  onFacilitySelect 
+  onFacilitySelect,
+  isLoggedIn = false,
 }) {
   const [tab, setTab]               = useState("Search");
   const [budget, setBudget]         = useState(1); // 0=Low, 1=Mid, 2=High
@@ -88,22 +121,17 @@ export default function PreferencesPage({
   const panelOpen = activePage === "Preferences";
 
   // ── Location state ────────────────────────────────────────────────────────
-  // activeLocation: { type: "current"|"home", coords: [lat,lng], label: string }
   const [activeLocation, setActiveLocation] = useState(null);
-  // homeLocation: persisted home pin { coords, label }
   const [homeLocation, setHomeLocation]     = useState(null);
 
   const [isChangingLocation, setIsChangingLocation] = useState(false);
-  // mapExpanded modes: false | "view" | "setHome"
   const [mapExpanded, setMapExpanded] = useState(false);
-  // geocoding spinner inside the modal
   const [geocoding, setGeocoding]     = useState(false);
 
   const handleNavClick = (key) => {
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
-  // Handle facility selection and open modal
   function handleFacilitySelect(facility) {
     if (facility) {
       setModalFacility(facility);
@@ -113,7 +141,6 @@ export default function PreferencesPage({
     }
   }
 
-  // Close modal handler
   function handleCloseModal() {
     setModalFacility(null);
     if (propSelectedFacility && onFacilitySelect) {
@@ -198,10 +225,16 @@ export default function PreferencesPage({
     ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>${activeLocation.label}</strong>` }]
     : [];
 
-  // Center for the modal: if setHome mode use home if set, else current/default
   const modalCenter = mapExpanded === "setHome"
     ? (homeLocation?.coords ?? activeLocation?.coords ?? DEFAULT_CENTER)
     : displayCenter;
+
+  // ── Tab labels with lock icons for guests ────────────────────────────────
+  const TABS = [
+    { key: "Search",    label: "Search" },
+    { key: "Favorites", label: "Favorites", gated: true },
+    { key: "History",   label: "History",   gated: true },
+  ];
 
   return (
     <div className="app-shell">
@@ -211,7 +244,6 @@ export default function PreferencesPage({
           zoom={12}
           markers={[{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
           onMarkerClick={(markerData) => {
-            // Convert marker to facility format
             const facility = {
               id: markerData.id || markerData.name,
               hospitalName: markerData.name,
@@ -267,10 +299,18 @@ export default function PreferencesPage({
           </div>
 
           <div className="panel-tabs">
-            {["Search", "Favorites", "History"].map((t) => (
-              <button key={t}
-                className={`panel-tab ${tab === t ? "active" : ""}`}
-                onClick={() => setTab(t)}>{t}
+            {TABS.map(({ key, label, gated }) => (
+              <button key={key}
+                className={`panel-tab ${tab === key ? "active" : ""}`}
+                onClick={() => setTab(key)}
+                title={gated && !isLoggedIn ? "Sign in to access" : undefined}
+              >
+                {label}
+                {gated && !isLoggedIn && (
+                  <span style={{ marginLeft: 4, opacity: 0.55, display: "inline-flex", verticalAlign: "middle" }}>
+                    <IconLock />
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -278,6 +318,7 @@ export default function PreferencesPage({
           <div className="panel-body">
             <div className="panel-body-inner">
 
+              {/* ── Search tab ── */}
               {tab === "Search" && (
                 <div className="section-block">
                 <div className="prefs-search-split">
@@ -286,7 +327,6 @@ export default function PreferencesPage({
                   <div className="prefs-split-col">
                     <div className="section-label" style={{ marginBottom: 10 }}>Default Location</div>
 
-                    {/* Mini map */}
                     <div
                       className="prefs-mini-map"
                       onClick={() => setMapExpanded("view")}
@@ -302,7 +342,6 @@ export default function PreferencesPage({
                       </div>
                     </div>
 
-                    {/* Current location label */}
                     <div className="prefs-location-current">
                       <span className="prefs-location-pin">
                         {activeLocation?.type === "home" ? <IconHome /> : <IconLocation />}
@@ -310,7 +349,6 @@ export default function PreferencesPage({
                       <span className="prefs-location-name">{displayLabel}</span>
                     </div>
 
-                    {/* Change location button / picker */}
                     {!isChangingLocation ? (
                       <button
                         className="prefs-change-loc-btn"
@@ -330,8 +368,6 @@ export default function PreferencesPage({
                           </button>
                         </div>
                         <div className="prefs-location-options">
-
-                          {/* Option 1: Current Location */}
                           <button
                             className={`prefs-location-option ${activeLocation?.type === "current" ? "active" : ""}`}
                             onClick={handleUseCurrentLocation}
@@ -339,8 +375,6 @@ export default function PreferencesPage({
                             <span className="prefs-location-pin" style={{ marginRight: 5 }}><IconLocation /></span>
                             Use Current Location
                           </button>
-
-                          {/* Option 2: Home */}
                           <button
                             className={`prefs-location-option ${activeLocation?.type === "home" ? "active" : ""}`}
                             onClick={handleSelectHome}
@@ -348,10 +382,8 @@ export default function PreferencesPage({
                             <span className="prefs-location-pin" style={{ marginRight: 5 }}><IconHome /></span>
                             {homeLocation ? `Home — ${homeLocation.label}` : "Set Home on Map…"}
                           </button>
-
                         </div>
 
-                        {/* Re-pin home shortcut (only shown if home already set) */}
                         {homeLocation && (
                           <button
                             className="prefs-expand-map-btn"
@@ -368,7 +400,7 @@ export default function PreferencesPage({
                   {/* Vertical divider */}
                   <div className="prefs-split-divider" />
 
-                  {/* RIGHT: Default Search Preferences */}
+                  {/* RIGHT: Search Preferences */}
                   <div className="prefs-split-col">
                     <div className="section-label" style={{ marginBottom: 10 }}>Search Preferences</div>
                     <div className="prefs-slider-group">
@@ -407,105 +439,127 @@ export default function PreferencesPage({
                           onChange={(e) => setWait(Number(e.target.value))} />
                       </div>
                     </div>
-                    <button className="prefs-save-btn" onClick={() => triggerToast("✓ Preferences saved!")}>
-                      Save Preferences
-                    </button>
-                  </div>
-                </div>
-                </div>
-              )}
 
-              {tab === "Favorites" && (
-                <div className="section-block">
-                  <div className="section-label">
-                    Favorite Facilities
-                    <span className="section-count">{facilities.filter(f => f.saved).length} saved</span>
-                    {facilities.some(f => f.saved) && (
-                      <button className="prefs-clear-btn" style={{ color: "#e05555" }}
-                        onClick={deleteCheckedFavorites}>
-                        Delete
+                    {/* Save button — guest sees a login prompt instead */}
+                    {isLoggedIn ? (
+                      <button className="prefs-save-btn" onClick={() => triggerToast("✓ Preferences saved!")}>
+                        Save Preferences
                       </button>
-                    )}
-                  </div>
-                  <div className="prefs-facility-list">
-                    {facilities.map((f) => (
-                      <div 
-                        key={f.id} 
-                        className="prefs-facility-card"
-                        onClick={() => {
-                          // Convert facility to full format for modal
-                          const fullFacility = {
-                            id: f.id,
-                            hospitalName: f.name,
-                            facilityName: f.type,
-                            priceLow: f.budget,
-                            priceHigh: f.budget + 200,
-                            distance: f.travel,
-                            waitTime: 30,
-                            services: ["General Care"],
-                            rating: f.rating,
-                            address: "Address available upon request",
-                            phone: "",
-                            hours: "24/7"
-                          };
-                          handleFacilitySelect(fullFacility);
-                        }}
+                    ) : (
+                      <button
+                        className="prefs-save-btn"
+                        style={{ background: "var(--c-text-mute)", opacity: 0.7, cursor: "pointer" }}
+                        onClick={() => setActivePage("Auth")}
+                        title="Sign in to save preferences"
                       >
-                        <div className="prefs-facility-info">
-                          <div className="prefs-facility-name">{f.name}</div>
-                          <div className="prefs-facility-type">{f.type}</div>
-                          <div className="prefs-facility-meta">
-                            <span>₱{f.budget}</span>
-                            <span>⏱ {f.travel}m</span>
-                            <span>★ {f.rating}</span>
-                          </div>
-                        </div>
-                        <input 
-                          type="checkbox" 
-                          className="prefs-checkbox"
-                          checked={f.saved}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            toggleFacility(f.id);
-                          }} 
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {tab === "History" && (
-                <div className="section-block">
-                  <div className="section-label">
-                    Search History
-                    {history.length > 0 && (
-                      <button className="prefs-clear-btn"
-                        onClick={() => { setHistory([]); triggerToast("History cleared"); }}>
-                        Clear All
+                        Sign In to Save
                       </button>
                     )}
                   </div>
-                  {history.length === 0 ? (
-                    <p className="section-text" style={{ textAlign: "center", padding: "16px 0", color: "var(--c-text-mute)" }}>
-                      No search history yet.
-                    </p>
-                  ) : (
-                    <div className="prefs-history-list">
-                      {history.map((h) => (
-                        <div key={h.id} className="prefs-history-item">
-                          <div>
-                            <div className="prefs-history-date">{h.date}</div>
-                            <div className="prefs-history-params">
-                              Budget: ₱{h.budget} · Travel: {h.travel}m · Wait: {h.wait}m
+                </div>
+                </div>
+              )}
+
+              {/* ── Favorites tab ── */}
+              {tab === "Favorites" && (
+                isLoggedIn ? (
+                  <div className="section-block">
+                    <div className="section-label">
+                      Favorite Facilities
+                      <span className="section-count">{facilities.filter(f => f.saved).length} saved</span>
+                      {facilities.some(f => f.saved) && (
+                        <button className="prefs-clear-btn" style={{ color: "#e05555" }}
+                          onClick={deleteCheckedFavorites}>
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                    <div className="prefs-facility-list">
+                      {facilities.map((f) => (
+                        <div
+                          key={f.id}
+                          className="prefs-facility-card"
+                          onClick={() => {
+                            const fullFacility = {
+                              id: f.id,
+                              hospitalName: f.name,
+                              facilityName: f.type,
+                              priceLow: f.budget,
+                              priceHigh: f.budget + 200,
+                              distance: f.travel,
+                              waitTime: 30,
+                              services: ["General Care"],
+                              rating: f.rating,
+                              address: "Address available upon request",
+                              phone: "",
+                              hours: "24/7"
+                            };
+                            handleFacilitySelect(fullFacility);
+                          }}
+                        >
+                          <div className="prefs-facility-info">
+                            <div className="prefs-facility-name">{f.name}</div>
+                            <div className="prefs-facility-type">{f.type}</div>
+                            <div className="prefs-facility-meta">
+                              <span>₱{f.budget}</span>
+                              <span>⏱ {f.travel}m</span>
+                              <span>★ {f.rating}</span>
                             </div>
                           </div>
-                          <div className="prefs-history-results">{h.results} results</div>
+                          <input
+                            type="checkbox"
+                            className="prefs-checkbox"
+                            checked={f.saved}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              toggleFacility(f.id);
+                            }}
+                          />
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <GuestGate label="Favorites" onLogin={() => setActivePage("Auth")} />
+                )
+              )}
+
+              {/* ── History tab ── */}
+              {tab === "History" && (
+                isLoggedIn ? (
+                  <div className="section-block">
+                    <div className="section-label">
+                      Search History
+                      {history.length > 0 && (
+                        <button className="prefs-clear-btn"
+                          onClick={() => { setHistory([]); triggerToast("History cleared"); }}>
+                          Clear All
+                        </button>
+                      )}
+                    </div>
+                    {history.length === 0 ? (
+                      <p className="section-text" style={{ textAlign: "center", padding: "16px 0", color: "var(--c-text-mute)" }}>
+                        No search history yet.
+                      </p>
+                    ) : (
+                      <div className="prefs-history-list">
+                        {history.map((h) => (
+                          <div key={h.id} className="prefs-history-item">
+                            <div>
+                              <div className="prefs-history-date">{h.date}</div>
+                              <div className="prefs-history-params">
+                                Budget: ₱{h.budget} · Travel: {h.travel}m · Wait: {h.wait}m
+                              </div>
+                            </div>
+                            <div className="prefs-history-results">{h.results} results</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <GuestGate label="History" onLogin={() => setActivePage("Auth")} />
+                )
               )}
 
             </div>
