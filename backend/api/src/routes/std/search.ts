@@ -3,73 +3,110 @@ export const pathOverride: String | null = "/search";
 //Set if you don't want this file to be read 
 export const exclude: boolean = false;
 
-import { error } from "node:console";
 import { prisma } from "../../lib/prismaclient";
 
 import { Router } from "express";
+import { authenticateToken } from "../auth/authgate";
+import { calculatePriceRange, calculatePriceRangeFromReports, calculateRating, calculateRatingFromReports, calculateWait, calculateWaitFromReports } from "../../lib/feedback";
+
 const router: Router = Router();
 router.get('/', async (req, res) => {
-    
-    const searchParams = req.query;
+    try {
+        const {
+            facility_type, //Required
+            service, //Optional
+            lat, lng //Location
+        } = req.query;
 
-    const lat = parseFloat(searchParams.lat as string);
-    const lng = parseFloat(searchParams.lng as string);
-    const svcName = searchParams.service;
+        if(!facility_type) {
+            return res.status(400).json({
+                error: "Facility type is required"
+            });
+        }
 
-    if(!svcName) {
-        res.json({
-            error: "Missing service"
-        });
-    }
-    
-    const facilities = await prisma.facility.findMany({
-        where: {
-            services: {
-                some: {
-                    service: {
-                        name: svcName as string,
-                    },
-                    isAvailable: true
-                },
-            },
-        },
-        include: {
-            hospital: true,
-            services: {
-                where: {
-                    service: {
-                        name: svcName as string,
-                    },
-                },
-                include: {
-                    service: true,
-                },
-            },
-        },
-    });
-
-    const results = facilities.map((f) => {
-        const hospital = f.hospital;
-        const service = f.services[0];
-
-        const d = getDistance(
-            lat, lng, hospital.locLat, hospital.locLng
-        );
-
-        return {
-            hospitalName: hospital.hospitalName,
-            facilityName: f.facilityName,
-            service: service?.service.name,
-            minCost: service?.minCost ?? null,
-            maxCost: service?.maxCost ?? null,
-            isAvailable: service?.isAvailable ?? false,
-            distanceKm: d,
+        const whereClause: any = {
+            type: {
+                name: { contains: facility_type as string, mode: 'insensitive' }
+            }
         };
-    });
 
-    results.sort((a,b)=> a.distanceKm - b.distanceKm);
+        if (service) {
+            whereClause.services = {
+                some: { service: { name: { contains: service as string, mode: 'insensitive' } } }
+            };
+        }
 
-    res.json(results);
+        let facilities = await prisma.facility.findMany({
+            where: {
+                type: {
+                    name: {
+                        contains: facility_type as string,
+                        mode: 'insensitive'
+                    }
+                },
+
+                services: {
+                    some: {
+                        service: {
+                            name: {
+                                contains: service as string,
+                                mode: 'insensitive'
+                            }
+                        }
+                    }
+                }
+            },
+            include: {
+                hospital: true,
+                type: true,
+                services: {                     
+                    include: { service: true }
+                }
+            }
+        });        
+
+        facilities = await Promise.all(facilities.map(async (f) => {
+            const reportsFiltered = await prisma.feedbackReport.findMany({
+                where: {
+                    facilityId: f.id
+                }
+            });     
+            
+            const [ratingCount, ratingValue] = calculateRatingFromReports(reportsFiltered);
+            const [hasWaitTime, waitTime] = calculateWaitFromReports(reportsFiltered);
+            const [hasCostRange, minCost, maxCost] = calculatePriceRangeFromReports(reportsFiltered);
+
+            return {
+                ...f,
+                ...(ratingCount! > 0 && { rating: ratingValue, ratingCount }),
+                ...(hasWaitTime && { waitTime: waitTime }),
+                ...(hasCostRange && { minCost: minCost, maxCost: maxCost })
+            };
+        }));        
+
+        if (lat && lng) {
+            const results = await Promise.all(facilities.map(async (f) => {
+                const hospital = f.hospital;
+
+                const d = getDistance(
+                    parseInt(lat as string),
+                    parseInt(lng as string),
+                    hospital.locLat, hospital.locLng);
+
+                return {
+                    ...f,
+                    distance: d,                    
+                }
+            }));
+            results.sort((a, b) => a.distance - b.distance);
+
+            res.json(results);
+        } else {
+            res.json(facilities);
+        }
+    } catch (err) {
+        res.status(500).json({error: 'Error!' });
+    }
 });
 export default router;
 
