@@ -53,9 +53,9 @@ const solutions = [
 ];
 
 const problems = [
-  "No centralized source for Philippine healthcare facilities",
-  "Can't filter by personal budget or wait time",
-  "Comparing options across areas is tedious",
+  "Whether a facility is affordable within their budget",
+  "How far it is from their current location",
+  "Expected waiting time at each facility",
 ];
 
 /* ── Component ──────────────────────────────── */
@@ -191,7 +191,7 @@ export default function AboutPage({
           </div>
 
           <div className="panel-tabs">
-            {["Overview", "Mission", "Solution"].map((t) => (
+            {["Overview"].map((t) => (
               <button
                 key={t}
                 className={`panel-tab ${tab === t ? "active" : ""}`}
@@ -205,7 +205,7 @@ export default function AboutPage({
           <div className="panel-body">
             <div className="panel-body-inner">
 
-              {(tab === "Overview" || tab === "Mission") && (
+              {(tab === "Overview") && (
                 <div className="section-block">
                   <div className="section-label">Our Mission</div>
                   <p className="section-text">
@@ -222,13 +222,11 @@ export default function AboutPage({
                 </div>
               )}
 
-              {(tab === "Overview" || tab === "Mission") && (
+              {(tab === "Overview") && (
                 <div className="section-block">
                   <div className="section-label">The Problem We Solve</div>
                   <p className="section-text">
-                    Finding the right facility in the Philippines is often stressful.
-                    Patients face fragmented information and no way to compare options
-                    when they need help most.
+                    Although healthcare facilities may already be known to the public, patients still have difficulty deciding which facility best fits their needs. The decision is not based on one factor alone, so patients need to consider:
                   </p>
                   <ul className="bullet-list">
                     {problems.map((p, i) => (
@@ -238,10 +236,14 @@ export default function AboutPage({
                       </li>
                     ))}
                   </ul>
+                  <br></br>
+                  <p className="section-text">
+                    Without a unified system, this decision-making process becomes inefficient and may depend on guesswork or incomplete information. Patients deserve a better way to find the care they need, when they need it.
+                  </p>
                 </div>
               )}
 
-              {(tab === "Overview" || tab === "Solution") && (
+              {(tab === "Overview") && (
                 <div className="section-block">
                   <div className="section-label">Our Solution</div>
                   <p className="section-text">
