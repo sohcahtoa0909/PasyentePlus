@@ -107,6 +107,8 @@ export default function App() {
             setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
+            isLoggedIn={isLoggedIn}
+            currentUser={currentUser}
           />
         );
       case "Auth":
