@@ -6,7 +6,7 @@ export const exclude: boolean = true;
 import jwt from "jsonwebtoken";
 
 export const authenticateToken = (req: any, res: any, next: any) => {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers['authorization'];    
     const token = authHeader && authHeader.split(' ')[1];
 
     if(!token) {
@@ -20,7 +20,7 @@ export const authenticateToken = (req: any, res: any, next: any) => {
             if (err) return res.status(403).json({
                 message: "Invalid session token!"
             });
-            req.user = decoded;
+            req.user = decoded;            
             next();
         }
     );

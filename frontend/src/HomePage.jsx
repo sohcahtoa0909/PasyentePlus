@@ -47,8 +47,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
         }));
         setServices(mapped);
       } catch (error) {
-        console.error("The exact error is:", error);
-        alert("Error: " + error.message);
+        console.error("The exact error is:", error);        
       } finally {
         setLoading(false);
       }
@@ -86,7 +85,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
 
   async function queryHospitals(svc) {
     try {
-      const response = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search2?${
+      const response = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${
         new URLSearchParams({ facility_type: svc.facilityType, service: svc.serviceType })
       }`);
       const json = await response.json();

@@ -140,69 +140,51 @@ async function main2() {
             {
                 facilityId: CLINIC_DAVAODOC_DUMOY.id,
                 serviceId: SVC_DIALYSIS_HEMODIAFILTRATION.id,
-                minCost: 5000,
-                maxCost: 7500,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_FRESEN.id,
                 serviceId: SVC_DIALYSIS_HEMODIAFILTRATION.id,
-                minCost: 6000,
-                maxCost: 8500,
                 isAvailable: true,
             },
             {
                 facilityId: CLINIC_FRESEN.id,
                 serviceId: SVC_DIALYSIS_HEMODIALYSIS.id,
-                minCost: 3500,
-                maxCost: 4500,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_UNICARE_DIALYSIS.id,
                 serviceId: SVC_DIALYSIS_HEMODIALYSIS.id,
-                minCost: 4000,
-                maxCost: 5230,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_UNICARE_DENTIST.id,
                 serviceId: SVC_DENTIST_CLEANING.id,
-                minCost: 500,
-                maxCost: 1500,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_BKSH_DIALYSIS.id,
                 serviceId: SVC_DIALYSIS_HEMODIAFILTRATION.id,
-                minCost: 5000,
-                maxCost: 7350,
                 isAvailable: true,
             },
             {
                 facilityId: CLINIC_BKSH_DIALYSIS.id,
                 serviceId: SVC_DIALYSIS_HEMODIALYSIS.id,
-                minCost: 4500,
-                maxCost: 6200,
                 isAvailable: true,
             },
 
             {
                 facilityId: CLINIC_BKSH_DENTIST.id,
                 serviceId: SVC_DENTIST_CLEANING.id,
-                minCost: 350,
-                maxCost: 1250,
                 isAvailable: true,
             },
             {
                 facilityId: CLINIC_BKSH_DENTIST.id,
                 serviceId: SVC_DENTIST_EXTRACTION.id,
-                minCost: 2500,
-                maxCost: 3500,
                 isAvailable: true,
             },
         ]
@@ -220,131 +202,6 @@ async function main2() {
 
     console.log("INFO: DB seeding successful!");
 }
-
-/*
-async function main() {
-    // 🔹 Facility Types
-    const dentist = await prisma.facilityType.upsert({
-        where: { name: "dentist" },
-        update: {},
-        create: { name: "dentist" },
-    });
-
-    const dialysis = await prisma.facilityType.upsert({
-        where: { name: "DIALYSIS" },
-        update: {},
-        create: { name: "DIALYSIS" },
-    });
-
-    const er = await prisma.facilityType.upsert({
-        where: { name: "EMERGENCY ROOM" },
-        update: {},
-        create: { name: "EMERGENCY ROOM" },
-    });
-
-    // 🔹 Service Types
-    const cleaning = await prisma.serviceType.create({
-        data: {
-            name: "Cleaning",
-            facilityTypeId: dentist.id,
-        },
-    });
-
-    const braces = await prisma.serviceType.create({
-        data: {
-            name: "Braces",
-            facilityTypeId: dentist.id,
-        },
-    });
-
-    const consultation = await prisma.serviceType.create({
-        data: {
-            name: "Consultation",
-            facilityTypeId: er.id,
-        },
-    });
-
-    // 🔹 Hospitals
-    const hospitalA = await prisma.hospital.create({
-        data: {
-            hospitalName: "Davao Medical Center",
-            locLat: 7.0731,
-            locLng: 125.6128,
-            address: "Davao City",
-        },
-    });
-
-    const hospitalB = await prisma.hospital.create({
-        data: {
-            hospitalName: "Brokenshire Hospital",
-            locLat: 7.065,
-            locLng: 125.6,
-            address: "Davao City",
-        },
-    });
-
-    // 🔹 Facilities
-    const dentistA = await prisma.facility.create({
-        data: {
-            facilityName: "DMC Dentist",
-            hospitalId: hospitalA.id,
-            typeId: dentist.id,
-        },
-    });
-
-    const dentistB = await prisma.facility.create({
-        data: {
-            facilityName: "Brokenshire Dentist",
-            hospitalId: hospitalB.id,
-            typeId: dentist.id,
-        },
-    });
-
-    // 🔹 Facility Services (Costs + Availability)
-    await prisma.facilityService.createMany({
-        data: [
-            {
-                facilityId: dentistA.id,
-                serviceId: cleaning.id,
-                minCost: 800,
-                maxCost: 1200,
-                isAvailable: true,
-            },
-            {
-                facilityId: dentistA.id,
-                serviceId: braces.id,
-                minCost: 40000,
-                maxCost: 70000,
-                isAvailable: true,
-            },
-            {
-                facilityId: dentistB.id,
-                serviceId: cleaning.id,
-                minCost: 700,
-                maxCost: 1000,
-                isAvailable: true,
-            },
-            {
-                facilityId: dentistB.id,
-                serviceId: braces.id,
-                isAvailable: false, // doesn't offer braces
-            },
-        ],
-    });
-
-    // Create new users
-    await prisma.user.create({
-        data: {
-            displayName: process.env.ADMIN_DNAME!,
-            userName: process.env.ADMIN_UNAME!,
-            emailAddress: process.env.ADMIN_EMAIL!,
-            hashedPassword: await argon2.hash(process.env.ADMIN_PASSWORD!)
-        }
-    });
-
-    console.log("INFO: DB seeding successful!");
-}
-*/
 
 main2()
     .catch((e) => {

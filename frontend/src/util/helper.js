@@ -11,6 +11,7 @@ export const transformFacilityData = (rawData) => {
         });
 
         return {
+            id: x.id,
             facilityName: x.facilityName,
 
             hospitalId: x.hospitalId,

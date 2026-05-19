@@ -39,6 +39,8 @@ async function loadRoutes(dir: string, baseRoute: string = '') {
 loadRoutes(path.join(__dirname, 'routes')).then(() => {
   console.log("INFO: Finished loading routes.");
 
+  app.use('/static', express.static(path.join(__dirname, '../public')));
+
   app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
   });

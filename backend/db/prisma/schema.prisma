@@ -62,6 +62,17 @@ model Facility {
   services      FacilityService[]
 
   reports       FeedbackReport[]
+
+  photos FacilityPhoto[]
+}
+
+model FacilityPhoto {
+  id          String    @id @default(uuid())
+
+  facility    Facility  @relation(fields: [facilityId], references: [id])
+  facilityId  String 
+
+  photoUrl    String
 }
 
 /*
