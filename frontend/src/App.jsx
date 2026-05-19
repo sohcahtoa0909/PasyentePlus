@@ -8,7 +8,7 @@ import SettingsPage from "./SettingsPage";
 import FacilityDetails from "./FacilityDetailsPage";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("Home");
+  const [activePage, setActivePage] = useState("Auth");
   const [selectedFacilityData, setSelectedFacilityData] = useState(null);
 
   const renderPage = () => {
