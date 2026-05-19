@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
 
     res.status(200).json({
         token,
-        user: { displayName: user.displayName }
+        user: { displayName: user.displayName, userName: user.userName, emailAddress: user.emailAddress, darkMode: user.darkMode, }
     });
 });
 export default router;

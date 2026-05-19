@@ -2,5 +2,8 @@
   "name": "@pasyenteplus/db",
   "dependencies": {
     "argon2": "^0.44.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19"
   }
 }

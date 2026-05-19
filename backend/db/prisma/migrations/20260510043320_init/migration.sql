@@ -58,6 +58,7 @@ CREATE TABLE "User" (
     "emailAddress" TEXT NOT NULL,
     "hashedPassword" TEXT NOT NULL,
     "isAdmin" BOOLEAN NOT NULL DEFAULT false,
+    "darkMode" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
