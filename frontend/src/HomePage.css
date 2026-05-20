@@ -99,9 +99,6 @@
 .hp-nav-spacer { flex: 1; }
 .hp-nav-divider { width: 28px; height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
 
-/* Drag handle hidden on desktop */
-.hp-drag-handle { display: none; }
-
 /* ── Main Panel (1/3 width) ── */
 .hp-panel {
   position: absolute;
@@ -660,77 +657,7 @@
 @media (max-width: 720px) {
   .hp-panel { width: 320px; max-width: 85vw; }
   .hp-card-stats { flex-wrap: wrap; gap: 6px; }
-}
-
-@media (max-width: 640px) {
-  /* Side nav becomes a bottom tab bar */
-  .hp-side-nav {
-    position: fixed;
-    left: 0; right: 0;
-    bottom: 0; top: auto;
-    width: 100%; height: 58px;
-    flex-direction: row;
-    border-radius: 16px 16px 0 0;
-    padding: 0 8px;
-    gap: 0;
-    z-index: 40;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-  }
-  .hp-nav-logo,
-  .hp-nav-spacer,
-  .hp-nav-divider { display: none; }
-  .hp-nav-item { flex: 1; border-radius: 8px; height: 44px; }
-  .hp-nav-item.active::after {
-    top: auto; bottom: 0;
-    right: 50%; transform: translateX(50%);
-    width: 18px; height: 3px;
-    border-radius: 3px 3px 0 0;
-  }
-
-  /* Panel fills screen above bottom nav — behaves as a draggable bottom sheet */
-  .hp-panel {
-    left: 0; right: 0;
-    top: 0; bottom: 58px;
-    width: 100%; max-width: 100%;
-    border-radius: 16px 16px 0 0;
-    /* Use translateY for open/close instead of translateX */
-    transform: translateY(110%);
-    transition: opacity 0.3s, transform 0.35s cubic-bezier(0.4,0,0.2,1);
-  }
-  .hp-panel.open { transform: translateY(0); }
-
-  .hp-panel-header { padding: 8px 16px 0; }
-  .hp-panel-body   { padding: 12px 14px 14px; }
-  .hp-panel-divider { margin: 0 -16px; }
-  .hp-panel-title { font-size: 22px; }
-
-  /* Drag handle — hidden on desktop, shown on mobile */
-  .hp-drag-handle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0 2px;
-    flex-shrink: 0;
-    touch-action: none;
-    cursor: grab;
-  }
-  .hp-drag-pill {
-    width: 36px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--c-border);
-  }
-
-  /* Let the full panel body scroll instead of the internal facility list */
-  .hp-section-block.grow {
-    flex: none;
-    overflow: visible;
-  }
-  .hp-facility-list {
-    overflow-y: visible;
-    flex: none;
-    max-height: none;
-  }
+  .hp-filter-tabs { justify-content: flex-start; }
 }
 /* ══════════════════════════════════════════════════════
    DARK MODE — applied when <html class="dark">
@@ -751,14 +678,9 @@ html.dark .hp-shell {
 /* Shell background */
 html.dark .hp-shell        { background: #0f1117; }
 
-/* Side nav — matches SettingsPage.css dark mode nav rules */
-html.dark .hp-side-nav                         { background: #1a1d27; }
-html.dark .hp-nav-logo                         { background: #1a1d27; }
-html.dark .hp-nav-item                         { color: #8b90a8; }
-html.dark .hp-nav-item:hover,
-html.dark .hp-nav-item.active                  { background: rgba(56,189,248,0.12); color: #38bdf8; }
-html.dark .hp-nav-item.active::after           { background: #38bdf8; }
-html.dark .hp-nav-divider                      { background: #2e3147; }
+/* Side nav stays dark — it already is, but deepen it */
+html.dark .hp-side-nav     { background: #0d0f18; }
+html.dark .hp-nav-logo     { background: #1a1d27; }
 
 /* Panel */
 html.dark .hp-panel-inner  {

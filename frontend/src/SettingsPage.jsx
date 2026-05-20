@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSheetDrag } from "./useSheetDrag";
 import "./AboutPage.css";
 import "./SettingsPage.css";
 import MapComponent from "./MapComponent";
@@ -37,7 +36,6 @@ export default function SettingsPage({
   onUserUpdate = null,
 }) {
   const panelOpen = activePage === "Settings";
-  const { sheetHidden, setSheetHidden, sheetStyle, dragHandleProps } = useSheetDrag();
 
   const [tab, setTab] = useState("Profile");
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -123,7 +121,6 @@ export default function SettingsPage({
   const [modalFacility, setModalFacility] = useState(null);
 
   const handleNavClick = (key) => {
-    if (sheetHidden && key === activePage) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -303,12 +300,8 @@ export default function SettingsPage({
       </nav>
 
       {/* ── Panel ── */}
-      <div className={`panel ${panelOpen ? "open" : ""}`} style={sheetStyle}>
+      <div className={`panel ${panelOpen ? "open" : ""}`}>
         <div className="panel-inner">
-
-          <div className="panel-drag-handle" {...dragHandleProps}>
-            <div className="panel-drag-pill" />
-          </div>
 
           <div className="panel-header">
             <div className="panel-header-inner">
@@ -347,8 +340,8 @@ export default function SettingsPage({
                             <div className="settings-profile-email">{profile.email}</div>
                           </div>
                           <button
-                            className="settings-btn settings-change-pw-btn"
-                            style={{ border: "1px solid var(--c-border)", whiteSpace: "nowrap" }}
+                            className="settings-btn"
+                            style={{ width: "auto", border: "1px solid var(--c-border)", whiteSpace: "nowrap" }}
                             onClick={() => { setShowPasswordForm(true); setPwFeedback({ msg: "", type: "" }); setPasswords({ current: "", next: "", confirm: "" }); }}>
                             Change Password
                           </button>
@@ -522,8 +515,6 @@ export default function SettingsPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
-          isLoggedIn={isLoggedIn}
-          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
     </div>
