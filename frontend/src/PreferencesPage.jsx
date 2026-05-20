@@ -122,8 +122,6 @@ export default function PreferencesPage({
   isLoggedIn = false,
 }) {
   const [tab, setTab]               = useState("Search");
-  const [budget, setBudget]         = useState(() => loadPref("pp_budget", 1));
-  const BUDGET_TIERS = ["Low", "Mid", "High"];
   const [travel, setTravel]         = useState(() => loadPref("pp_travel", 20));
   const [wait, setWait]             = useState(() => loadPref("pp_wait", 60));
   const [facilities, setFacilities] = useState(() => loadPref("pp_facilities", initialFacilities));
@@ -140,7 +138,6 @@ export default function PreferencesPage({
   const [homeLocation, setHomeLocation]     = useState(() => loadPref("pp_home_location", null));
 
   // ── Persist to localStorage ───────────────────────────────────────────────
-  useEffect(() => savePref("pp_budget", budget),          [budget]);
   useEffect(() => savePref("pp_travel", travel),          [travel]);
   useEffect(() => savePref("pp_wait", wait),              [wait]);
   useEffect(() => savePref("pp_facilities", facilities),  [facilities]);
@@ -441,22 +438,6 @@ export default function PreferencesPage({
                   <div className="prefs-split-col">
                     <div className="section-label" style={{ marginBottom: 10 }}>Search Preferences</div>
                     <div className="prefs-slider-group">
-                      <div className="prefs-slider-item">
-                        <div className="prefs-slider-label">
-                          Budget <span>{BUDGET_TIERS[budget]}</span>
-                        </div>
-                        <div className="prefs-budget-tiers">
-                          {BUDGET_TIERS.map((tier, i) => (
-                            <button
-                              key={tier}
-                              className={`prefs-budget-tier-btn ${budget === i ? "active" : ""}`}
-                              onClick={() => setBudget(i)}
-                            >
-                              {tier}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
                       <div className="prefs-slider-item">
                         <div className="prefs-slider-label">
                           Max Travel Time <span>{travel} mins</span>
