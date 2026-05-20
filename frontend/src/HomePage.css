@@ -657,7 +657,55 @@
 @media (max-width: 720px) {
   .hp-panel { width: 320px; max-width: 85vw; }
   .hp-card-stats { flex-wrap: wrap; gap: 6px; }
-  .hp-filter-tabs { justify-content: flex-start; }
+}
+
+@media (max-width: 640px) {
+  /* Side nav becomes a bottom tab bar */
+  .hp-side-nav {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 0; top: auto;
+    width: 100%; height: 58px;
+    flex-direction: row;
+    border-radius: 16px 16px 0 0;
+    padding: 0 8px;
+    gap: 0;
+    z-index: 40;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+  }
+  .hp-nav-logo,
+  .hp-nav-spacer,
+  .hp-nav-divider { display: none; }
+  .hp-nav-item { flex: 1; border-radius: 8px; height: 44px; }
+  .hp-nav-item.active::after {
+    top: auto; bottom: 0;
+    right: 50%; transform: translateX(50%);
+    width: 18px; height: 3px;
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* Panel fills screen above bottom nav */
+  .hp-panel {
+    left: 0; right: 0;
+    top: 0; bottom: 58px;
+    width: 100%; max-width: 100%;
+    border-radius: 0;
+  }
+  .hp-panel-header { padding: 16px 16px 0; }
+  .hp-panel-body   { padding: 12px 14px 14px; }
+  .hp-panel-divider { margin: 0 -16px; }
+  .hp-panel-title { font-size: 22px; }
+
+  /* Let the full panel body scroll instead of the internal facility list */
+  .hp-section-block.grow {
+    flex: none;
+    overflow: visible;
+  }
+  .hp-facility-list {
+    overflow-y: visible;
+    flex: none;
+    max-height: none;
+  }
 }
 /* ══════════════════════════════════════════════════════
    DARK MODE — applied when <html class="dark">
@@ -678,9 +726,14 @@ html.dark .hp-shell {
 /* Shell background */
 html.dark .hp-shell        { background: #0f1117; }
 
-/* Side nav stays dark — it already is, but deepen it */
-html.dark .hp-side-nav     { background: #0d0f18; }
-html.dark .hp-nav-logo     { background: #1a1d27; }
+/* Side nav — matches SettingsPage.css dark mode nav rules */
+html.dark .hp-side-nav                         { background: #1a1d27; }
+html.dark .hp-nav-logo                         { background: #1a1d27; }
+html.dark .hp-nav-item                         { color: #8b90a8; }
+html.dark .hp-nav-item:hover,
+html.dark .hp-nav-item.active                  { background: rgba(56,189,248,0.12); color: #38bdf8; }
+html.dark .hp-nav-item.active::after           { background: #38bdf8; }
+html.dark .hp-nav-divider                      { background: #2e3147; }
 
 /* Panel */
 html.dark .hp-panel-inner  {

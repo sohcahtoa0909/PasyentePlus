@@ -865,6 +865,14 @@ html.dark .fdm-review-input[type="time"]::-webkit-calendar-picker-indicator:hove
   border-top: 1px solid var(--c-border);
   flex-shrink: 0;
   background: #fafafa;
+  display: flex;
+  justify-content: center;
+}
+
+.fdm-review-footer .fdm-btn {
+  flex: none;
+  min-width: 200px;
+  max-width: 280px;
 }
 
 /* ═══════════════════════════════════════════
@@ -1020,16 +1028,19 @@ html.dark .fdm-review-success-icon {
     flex-direction: column;
     max-width: 100%;
     border-radius: 16px 16px 0 0;
+    height: 95vh;
     max-height: 95vh;
   }
   .fdm-shell--expanded { max-width: 100%; }
-  .fdm-modal { width: 100%; flex: none; }
+  .fdm-modal { width: 100%; flex: 1; min-height: 0; }
   .fdm-review-panel {
     width: 100%;
-    flex: none;
+    flex: 0 0 auto;
+    max-height: 50vh;
+    min-height: 0;
     border-left: none;
     border-top: 1px solid var(--c-border);
-    max-height: 55vh;
+    overflow: hidden;
   }
   .fdm-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .fdm-title { font-size: 17px; }
