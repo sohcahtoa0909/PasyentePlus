@@ -602,16 +602,6 @@ export default function FacilityDetailsModal({ facility, onClose, skipHistoryRec
               <IconDirections />
               Get Directions
             </button>
-            <button
-              className="fdm-btn fdm-btn--secondary"
-              onClick={() => {
-                const num = (facility.phone || "+63821234567").replace(/\D/g, "");
-                window.open(`tel:${num}`);
-              }}
-            >
-              <IconPhone />
-              Call Now
-            </button>
           </div>
 
         </div>
