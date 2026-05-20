@@ -25,7 +25,6 @@ const NAV = [
   { key: "Help",        icon: <IconHelp /> },
 ];
 
-const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
 
 /* ── ServiceSearch ────────────────────────── */
 function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities, queryHospitals }) {
@@ -266,32 +265,82 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
   );
 }
 
+function loadPref(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 /* ══════════════════════════════════════════════════════
    Main Component
    ══════════════════════════════════════════════════════ */
+const DEFAULT_CENTER = [7.1907, 125.4553];
+
 export default function HomePage({
   activePage = "Home",
   setActivePage = () => {},
-  selectedFacility,       // ← lifted from App
-  onFacilitySelect,       // ← lifted from App
+  selectedFacility,
+  onFacilitySelect,
+  activeLocation,
+  isLoggedIn = false,
 }) {
   const [budget,            setBudget]            = useState(1500);
-  const [travel,            setTravel]            = useState(20);
-  const [waiting,           setWaiting]           = useState(60);
+  const [travel,            setTravel]            = useState(() => loadPref("pp_travel", 20));
+  const [waiting,           setWaiting]           = useState(() => loadPref("pp_wait",   60));
+
   const [selectedId,        setSelectedId]        = useState(1);
-  const [filterTab,         setFilterTab]         = useState("All");
   const [selectedService,   setSelectedService]   = useState(null);
   const [dynamicFacilities, setDynamicFacilities] = useState([]);
   const [modalFacility,     setModalFacility]     = useState(null);
   const [routeDestination,  setRouteDestination]  = useState(null);
 
-  const markers = useMemo(() =>
-    getHospitalMarkers(dynamicFacilities)
-  , [dynamicFacilities]);
+  const markers = useMemo(() => {
+    const facilityMarkers = getHospitalMarkers(dynamicFacilities);
+    if (!activeLocation) return facilityMarkers;
+    const locationPin = {
+      position: activeLocation.coords,
+      name: activeLocation.label,
+      popupContent: `<strong>📍 ${activeLocation.label}</strong>`,
+    };
+    return [locationPin, ...facilityMarkers];
+  }, [dynamicFacilities, activeLocation]);
 
   const panelOpen = activePage === "Home";
 
+  // ── Mobile bottom-sheet drag-to-hide ────────────────────────────────────
+  const [sheetHidden,  setSheetHidden]  = useState(false);
+  const [dragY,        setDragY]        = useState(0);
+  const [isDragging,   setIsDragging]   = useState(false);
+  const dragRef = useRef({ startY: 0, dy: 0 });
+
+  function onHandleTouchStart(e) {
+    dragRef.current.startY = e.touches[0].clientY;
+    dragRef.current.dy = 0;
+    setIsDragging(true);
+  }
+  function onHandleTouchMove(e) {
+    const dy = Math.max(0, e.touches[0].clientY - dragRef.current.startY);
+    dragRef.current.dy = dy;
+    setDragY(dy);
+  }
+  function onHandleTouchEnd() {
+    setIsDragging(false);
+    setDragY(0);
+    if (dragRef.current.dy > 100) setSheetHidden(true);
+  }
+
+  const sheetStyle = isDragging
+    ? { transform: `translateY(${dragY}px)`, transition: 'none' }
+    : sheetHidden
+      ? { transform: 'translateY(110%)', transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)', pointerEvents: 'none' }
+      : {};
+  // ────────────────────────────────────────────────────────────────────────
+
   const handleNavClick = (key) => {
+    if (key === "Home" && sheetHidden) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -355,7 +404,7 @@ export default function HomePage({
       {/* Map background */}
       <div className="map-full">
         <MapComponent
-          center={[7.1907, 125.4553]}
+          center={activeLocation?.coords ?? DEFAULT_CENTER}
           zoom={12}
           markers={markers}
           onMarkerClick={handleMarkerClick}
@@ -400,13 +449,23 @@ export default function HomePage({
       </nav>
 
       {/* ── Panel ── */}
-      <div className={`hp-panel${panelOpen ? " open" : ""}`}>
+      <div className={`hp-panel${panelOpen ? " open" : ""}`} style={sheetStyle}>
         <div className="hp-panel-inner">
+
+          {/* Drag handle — only visible on mobile */}
+          <div
+            className="hp-drag-handle"
+            onTouchStart={onHandleTouchStart}
+            onTouchMove={onHandleTouchMove}
+            onTouchEnd={onHandleTouchEnd}
+          >
+            <div className="hp-drag-pill" />
+          </div>
 
           <div className="hp-panel-header">
             <div className="hp-eyebrow">PASYENTE+</div>
             <div className="hp-panel-title">Find a Facility</div>
-            <div className="hp-panel-subtitle">Personalized healthcare near Davao City</div>
+            <div className="hp-panel-subtitle">Near {activeLocation?.label ?? "Davao City"}</div>
             <div className="hp-panel-divider" />
           </div>
 
@@ -424,8 +483,8 @@ export default function HomePage({
             <div className="hp-section-block">
               <div className="hp-section-label">Your Preferences</div>
               <PrefSlider label="Budget"           value={budget}  min={300}  max={3000} prefix="₱"    onChange={setBudget}  />
-              <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={60}   unit=" mins"  onChange={setTravel}  />
-              <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={120}  unit=" mins"  onChange={setWaiting} />
+              <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={120}   unit=" mins"  onChange={setTravel}  />
+              <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={180}  unit=" mins"  onChange={setWaiting} />
             </div>
 
             <div className="hp-section-block grow">
@@ -433,15 +492,6 @@ export default function HomePage({
                 <div className="hp-facilities-title-row">
                   <div className="hp-section-label" style={{ marginBottom: 0 }}>Recommended Facilities</div>
                   <span className="hp-count-badge">{dynamicFacilities.length}</span>
-                </div>
-                <div className="hp-filter-tabs">
-                  {FILTER_TABS.map(t => (
-                    <button
-                      key={t}
-                      className={`hp-filter-tab${filterTab === t ? " active" : ""}`}
-                      onClick={() => setFilterTab(t)}
-                    >{t}</button>
-                  ))}
                 </div>
               </div>
 
@@ -481,6 +531,8 @@ export default function HomePage({
             setModalFacility(null);            
             if (selectedFacility) onFacilitySelect(null);
           }}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
 
