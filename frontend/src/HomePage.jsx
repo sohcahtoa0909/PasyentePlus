@@ -25,7 +25,6 @@ const NAV = [
   { key: "Help",        icon: <IconHelp /> },
 ];
 
-const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
 
 /* ── ServiceSearch ────────────────────────── */
 function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities }) {
@@ -304,7 +303,6 @@ export default function HomePage({
   const [waiting,           setWaiting]           = useState(() => loadPref("pp_wait",   60));
 
   const [selectedId,        setSelectedId]        = useState(1);
-  const [filterTab,         setFilterTab]         = useState("All");
   const [selectedService,   setSelectedService]   = useState(null);
   const [dynamicFacilities, setDynamicFacilities] = useState([]);
   const [modalFacility,     setModalFacility]     = useState(null);
@@ -427,15 +425,6 @@ export default function HomePage({
                 <div className="hp-facilities-title-row">
                   <div className="hp-section-label" style={{ marginBottom: 0 }}>Recommended Facilities</div>
                   <span className="hp-count-badge">{dynamicFacilities.length}</span>
-                </div>
-                <div className="hp-filter-tabs">
-                  {FILTER_TABS.map(t => (
-                    <button
-                      key={t}
-                      className={`hp-filter-tab${filterTab === t ? " active" : ""}`}
-                      onClick={() => setFilterTab(t)}
-                    >{t}</button>
-                  ))}
                 </div>
               </div>
 
