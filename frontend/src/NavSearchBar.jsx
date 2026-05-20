@@ -35,11 +35,11 @@ const FACILITIES = [
 ];
 
 export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
-  const [open, setOpen]               = useState(false);
-  const [query, setQuery]             = useState("");
-  const [isDropOpen, setIsDropOpen]   = useState(false);
+  const [open, setOpen]             = useState(false);
+  const [query, setQuery]           = useState("");
+  const [isDropOpen, setIsDropOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(-1);
-  const [dropStyle, setDropStyle]     = useState({});
+  const [dropStyle, setDropStyle]   = useState({});
 
   const navBtnRef = useRef(null);
   const barRef    = useRef(null);
@@ -55,7 +55,6 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
       );
 
   function updateDropPos() {
-    if (window.innerWidth <= 640) return;
     if (!barRef.current) return;
     const rect = barRef.current.getBoundingClientRect();
     setDropStyle({
@@ -125,39 +124,35 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
     return                                  { letter: "C", color: "#00838f" };
   }
 
-  function FacilityItems() {
-    if (filtered.length === 0) {
-      return <div className="nsb-empty">No facilities found for "{query}"</div>;
-    }
-    return filtered.map((f, idx) => {
-      const tl = typeLabel(f.type);
-      return (
-        <button
-          key={f.id}
-          className={`nsb-option${highlighted === idx ? " highlighted" : ""}`}
-          onMouseEnter={() => setHighlighted(idx)}
-          onMouseDown={e => { e.preventDefault(); selectFacility(f); }}
-        >
-          <span className="nsb-type-badge" style={{ background: tl.color }}>{tl.letter}</span>
-          <span className="nsb-facility-info">
-            <span className="nsb-name">{f.name}</span>
-            <span className="nsb-type">{f.type}</span>
-          </span>
-          <span className="nsb-rating">★ {f.rating}</span>
-        </button>
-      );
-    });
-  }
-
-  const tl = selectedFacility ? typeLabel(selectedFacility.type) : null;
-
-  /* Portal dropdown — desktop only, hidden on mobile via CSS */
-  const portalDropdown = isDropOpen && !selectedFacility && createPortal(
+  const dropdown = isDropOpen && !selectedFacility && createPortal(
     <div className="nsb-dropdown nsb-dropdown-portal" style={dropStyle}>
-      <FacilityItems />
+      {filtered.length === 0 ? (
+        <div className="nsb-empty">No facilities found for "{query}"</div>
+      ) : (
+        filtered.map((f, idx) => {
+          const tl = typeLabel(f.type);
+          return (
+            <button
+              key={f.id}
+              className={`nsb-option${highlighted === idx ? " highlighted" : ""}`}
+              onMouseEnter={() => setHighlighted(idx)}
+              onMouseDown={e => { e.preventDefault(); selectFacility(f); }}
+            >
+              <span className="nsb-type-badge" style={{ background: tl.color }}>{tl.letter}</span>
+              <span className="nsb-facility-info">
+                <span className="nsb-name">{f.name}</span>
+                <span className="nsb-type">{f.type}</span>
+              </span>
+              <span className="nsb-rating">★ {f.rating}</span>
+            </button>
+          );
+        })
+      )}
     </div>,
     document.body
   );
+
+  const tl = selectedFacility ? typeLabel(selectedFacility.type) : null;
 
   return (
     <div className="nsb-root">
@@ -172,69 +167,48 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
       </button>
 
       <div ref={barRef} className={`nsb-bar${open ? " nsb-bar--open" : ""}`}>
-        {/* Mobile-only page header */}
-        <div className="nsb-bar-header">
-          <div className="nsb-bar-header-text">
-            <div className="nsb-bar-eyebrow">PASYENTE+</div>
-            <div className="nsb-bar-title">Search Facilities</div>
-          </div>
-          <button className="nsb-bar-close" onClick={() => setOpen(false)} title="Close">
-            <IconX />
-          </button>
-        </div>
-
-        {/* Search input + results */}
-        <div className="nsb-bar-content">
-          {selectedFacility ? (
-            <div className="nsb-selected">
-              <span className="nsb-type-badge nsb-type-badge--lg" style={{ background: tl.color }}>
-                {tl.letter}
+        {selectedFacility ? (
+          <div className="nsb-selected">
+            <span className="nsb-type-badge nsb-type-badge--lg" style={{ background: tl.color }}>
+              {tl.letter}
+            </span>
+            <div className="nsb-selected-info">
+              <span className="nsb-selected-name">{selectedFacility.name}</span>
+              <span className="nsb-selected-meta">
+                <IconMapPin /> {selectedFacility.travel} min away · ★ {selectedFacility.rating}
               </span>
-              <div className="nsb-selected-info">
-                <span className="nsb-selected-name">{selectedFacility.name}</span>
-                <span className="nsb-selected-meta">
-                  <IconMapPin /> {selectedFacility.travel} min away · ★ {selectedFacility.rating}
-                </span>
-              </div>
-              <button className="nsb-clear" onClick={clearFacility} title="Clear"><IconX /></button>
             </div>
-          ) : (
-            <div className={`nsb-input-wrap${isDropOpen ? " nsb-input-wrap--open" : ""}`}>
-              <span className="nsb-input-icon"><IconSearch /></span>
-              <input
-                ref={inputRef}
-                className="nsb-input"
-                placeholder="Search hospital or clinic…"
-                value={query}
-                onChange={e => { setQuery(e.target.value); setIsDropOpen(true); setHighlighted(-1); }}
-                onFocus={() => setIsDropOpen(true)}
-                onKeyDown={handleKeyDown}
-                autoComplete="off"
-              />
-              {query && (
-                <button className="nsb-input-clear" onClick={() => { setQuery(""); setHighlighted(-1); }}>
-                  <IconX />
-                </button>
-              )}
-            </div>
-          )}
+            <button className="nsb-clear" onClick={clearFacility} title="Clear"><IconX /></button>
+          </div>
+        ) : (
+          <div className={`nsb-input-wrap${isDropOpen ? " nsb-input-wrap--open" : ""}`}>
+            <span className="nsb-input-icon"><IconSearch /></span>
+            <input
+              ref={inputRef}
+              className="nsb-input"
+              placeholder="Search hospital or clinic…"
+              value={query}
+              onChange={e => { setQuery(e.target.value); setIsDropOpen(true); setHighlighted(-1); }}
+              onFocus={() => setIsDropOpen(true)}
+              onKeyDown={handleKeyDown}
+              autoComplete="off"
+            />
+            {query && (
+              <button className="nsb-input-clear" onClick={() => { setQuery(""); setHighlighted(-1); }}>
+                <IconX />
+              </button>
+            )}
+          </div>
+        )}
 
-          {selectedFacility && (
-            <div className="nsb-hint">
-              Budget ~<strong>₱{selectedFacility.budget}</strong> · Wait ~<strong>{selectedFacility.wait} min</strong>
-            </div>
-          )}
-
-          {/* Inline results — mobile only, hidden on desktop via CSS */}
-          {isDropOpen && !selectedFacility && (
-            <div className="nsb-dropdown nsb-dropdown-inline">
-              <FacilityItems />
-            </div>
-          )}
-        </div>
+        {selectedFacility && (
+          <div className="nsb-hint">
+            Budget ~<strong>₱{selectedFacility.budget}</strong> · Wait ~<strong>{selectedFacility.wait} min</strong>
+          </div>
+        )}
       </div>
 
-      {portalDropdown}
+      {dropdown}
     </div>
   );
 }

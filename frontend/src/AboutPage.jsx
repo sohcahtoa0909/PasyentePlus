@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSheetDrag } from "./useSheetDrag";
 import "./AboutPage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
@@ -60,20 +59,17 @@ const problems = [
 ];
 
 /* ── Component ──────────────────────────────── */
-export default function AboutPage({
-  activePage,
+export default function AboutPage({ 
+  activePage, 
   setActivePage,
-  selectedFacility: propSelectedFacility,
-  onFacilitySelect,
-  isLoggedIn = false,
+  selectedFacility: propSelectedFacility,  // Renamed prop to avoid conflict
+  onFacilitySelect 
 }) {
   const [tab, setTab] = useState("Overview");
-  const [modalFacility, setModalFacility] = useState(null);
+  const [modalFacility, setModalFacility] = useState(null);  // Separate state for modal
   const panelOpen = activePage === "About";
-  const { sheetHidden, setSheetHidden, sheetStyle, dragHandleProps } = useSheetDrag();
 
   const handleNavClick = (key) => {
-    if (sheetHidden && key === activePage) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -182,12 +178,8 @@ export default function AboutPage({
       </nav>
 
       {/* Panel */}
-      <div className={`panel ${panelOpen ? "open" : ""}`} style={sheetStyle}>
+      <div className={`panel ${panelOpen ? "open" : ""}`}>
         <div className="panel-inner">
-
-          <div className="panel-drag-handle" {...dragHandleProps}>
-            <div className="panel-drag-pill" />
-          </div>
 
           <div className="panel-header">
             <div className="panel-header-inner">
@@ -280,8 +272,6 @@ export default function AboutPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
-          isLoggedIn={isLoggedIn}
-          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
 
