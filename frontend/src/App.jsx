@@ -6,9 +6,36 @@ import HomePage from "./HomePage";
 import AuthPage from "./AuthPage";
 import SettingsPage from "./SettingsPage";
 
+function loadLocationPref(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveLocationPref(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
 export default function App() {
   const [activePage, setActivePage] = useState("Home");
   const [selectedFacility, setSelectedFacility] = useState(null);
+
+  // ── Location state ────────────────────────────────────────────────────────
+  const [activeLocation, setActiveLocationState] = useState(() => loadLocationPref("pp_active_location", null));
+  const [homeLocation,   setHomeLocationState]   = useState(() => loadLocationPref("pp_home_location",   null));
+
+  function setActiveLocation(loc) {
+    setActiveLocationState(loc);
+    saveLocationPref("pp_active_location", loc);
+  }
+
+  function setHomeLocation(loc) {
+    setHomeLocationState(loc);
+    saveLocationPref("pp_home_location", loc);
+  }
 
   // ── Auth state ────────────────────────────────────────────────────────────
   const [isLoggedIn,  setIsLoggedIn]  = useState(false);
@@ -80,6 +107,7 @@ export default function App() {
             setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
+            activeLocation={activeLocation}
           />
         );
       case "About":
@@ -109,6 +137,10 @@ export default function App() {
             onFacilitySelect={setSelectedFacility}
             isLoggedIn={isLoggedIn}
             currentUser={currentUser}
+            activeLocation={activeLocation}
+            homeLocation={homeLocation}
+            setActiveLocation={setActiveLocation}
+            setHomeLocation={setHomeLocation}
           />
         );
       case "Auth":

@@ -120,6 +120,10 @@ export default function PreferencesPage({
   selectedFacility: propSelectedFacility,
   onFacilitySelect,
   isLoggedIn = false,
+  activeLocation,
+  homeLocation,
+  setActiveLocation,
+  setHomeLocation,
 }) {
   const [tab, setTab]               = useState("Search");
   const [travel, setTravel]         = useState(() => loadPref("pp_travel", 20));
@@ -133,17 +137,11 @@ export default function PreferencesPage({
   const [modalSkipHistory,  setModalSkipHistory]  = useState(false);
   const panelOpen = activePage === "Preferences";
 
-  // ── Location state ────────────────────────────────────────────────────────
-  const [activeLocation, setActiveLocation] = useState(() => loadPref("pp_active_location", null));
-  const [homeLocation, setHomeLocation]     = useState(() => loadPref("pp_home_location", null));
-
   // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => savePref("pp_travel", travel),          [travel]);
   useEffect(() => savePref("pp_wait", wait),              [wait]);
   useEffect(() => savePref("pp_facilities", facilities),  [facilities]);
   useEffect(() => savePref("pp_history", history),        [history]);
-  useEffect(() => savePref("pp_active_location", activeLocation), [activeLocation]);
-  useEffect(() => savePref("pp_home_location", homeLocation),     [homeLocation]);
 
   const [isChangingLocation, setIsChangingLocation] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);

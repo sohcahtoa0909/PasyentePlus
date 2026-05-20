@@ -290,11 +290,14 @@ function loadPref(key, fallback) {
 /* ══════════════════════════════════════════════════════
    Main Component
    ══════════════════════════════════════════════════════ */
+const DEFAULT_CENTER = [7.1907, 125.4553];
+
 export default function HomePage({
   activePage = "Home",
   setActivePage = () => {},
   selectedFacility,       // ← lifted from App
   onFacilitySelect,       // ← lifted from App
+  activeLocation,
 }) {
   const [budget,            setBudget]            = useState(1500);
   const [travel,            setTravel]            = useState(() => loadPref("pp_travel", 20));
@@ -306,9 +309,16 @@ export default function HomePage({
   const [dynamicFacilities, setDynamicFacilities] = useState([]);
   const [modalFacility,     setModalFacility]     = useState(null);
 
-  const markers = useMemo(() =>
-    getHospitalMarkers(dynamicFacilities)
-  , [dynamicFacilities]);
+  const markers = useMemo(() => {
+    const facilityMarkers = getHospitalMarkers(dynamicFacilities);
+    if (!activeLocation) return facilityMarkers;
+    const locationPin = {
+      position: activeLocation.coords,
+      name: activeLocation.label,
+      popupContent: `<strong>📍 ${activeLocation.label}</strong>`,
+    };
+    return [locationPin, ...facilityMarkers];
+  }, [dynamicFacilities, activeLocation]);
 
   const panelOpen = activePage === "Home";
 
@@ -341,7 +351,7 @@ export default function HomePage({
       {/* Map background */}
       <div className="map-full">
         <MapComponent
-          center={[7.1907, 125.4553]}
+          center={activeLocation?.coords ?? DEFAULT_CENTER}
           zoom={12}
           markers={markers}
           onMarkerClick={handleMarkerClick}
@@ -391,7 +401,7 @@ export default function HomePage({
           <div className="hp-panel-header">
             <div className="hp-eyebrow">PASYENTE+</div>
             <div className="hp-panel-title">Find a Facility</div>
-            <div className="hp-panel-subtitle">Personalized healthcare near Davao City</div>
+            <div className="hp-panel-subtitle">Near {activeLocation?.label ?? "Davao City"}</div>
             <div className="hp-panel-divider" />
           </div>
 
