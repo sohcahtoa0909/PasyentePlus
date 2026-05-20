@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import "./HomePage.css";
 import MapComponent from "./MapComponent";
@@ -28,7 +28,7 @@ const NAV = [
 const FILTER_TABS = ["All", "Hospital", "Clinic", "Government"];
 
 /* ── ServiceSearch ────────────────────────── */
-function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities }) {
+function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities, queryHospitals }) {
   const [loading, setLoading] = useState(true);
   const [SERVICES, setServices] = useState([]);
 
@@ -83,18 +83,6 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
     setDropdownStyle({ position: "fixed", top: rect.bottom + 6, left: rect.left, width: rect.width, zIndex: 9999 });
   }
 
-  async function queryHospitals(svc) {
-    try {
-      const response = await fetch(`http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${
-        new URLSearchParams({ facility_type: svc.facilityType, service: svc.serviceType })
-      }`);
-      const json = await response.json();
-      handleQueryFacilities(transformFacilityData(json));
-    } catch (err) {
-      console.log("An error occurred! " + err);
-    }
-  }
-
   useEffect(() => { if (isOpen) updateDropdownPos(); }, [isOpen]);
 
   useEffect(() => {
@@ -131,7 +119,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
     setHighlighted(-1);
     queryHospitals(svc);
   }
-
+  
   function clearService() {
     onServiceSelect(null);
     setQuery("");
@@ -311,6 +299,33 @@ export default function HomePage({
     if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
   }
 
+  const queryHospitals = useCallback(
+    async (svc) => {
+      if (!svc) return;
+      try {
+        const response = await fetch(
+          `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${new URLSearchParams(
+            {
+              facility_type: svc.facilityType,
+              service: svc.serviceType,
+              desiredPrice: budget,
+            },
+          )}`,
+        );
+        const json = await response.json();
+        setDynamicFacilities(transformFacilityData(json));
+      } catch (err) {
+        console.log("An error occurred! " + err);
+      }
+    },
+    [budget],
+  );
+
+  useEffect(() => {
+    if (!selectedService) return;
+    queryHospitals(selectedService);
+  }, [budget, selectedService, queryHospitals]);
+
   // Wraps the App-level setter so we can also update local selectedId + open modal
   function handleFacilitySelect(facility) {
     onFacilitySelect(facility);
@@ -392,6 +407,7 @@ export default function HomePage({
                 selectedService={selectedService}
                 onServiceSelect={handleServiceSelect}
                 handleQueryFacilities={(facis) => setDynamicFacilities(facis)}
+                queryHospitals={queryHospitals}
               />
             </div>
 

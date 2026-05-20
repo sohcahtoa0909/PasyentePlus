@@ -190,8 +190,8 @@ export function calculatePriceRangeFromReports(reports: Report[]) {
     }
 
     moneySpent = moneySpent.sort((a, b) => a-b);
-    const minMoney = moneySpent[0];
-    const maxMoney = moneySpent[moneySpent.length - 1];
+    const minMoney = moneySpent[0]!;
+    const maxMoney = moneySpent[moneySpent.length - 1]!;
 
     return [true, minMoney, maxMoney];
 }

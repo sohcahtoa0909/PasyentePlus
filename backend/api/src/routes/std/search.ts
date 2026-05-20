@@ -14,6 +14,7 @@ router.get('/', async (req, res) => {
     try {
         const {
             facility_type, //Required
+            desiredPrice, //Optional
             service, //Optional
             lat, lng //Location
         } = req.query;
@@ -65,7 +66,7 @@ router.get('/', async (req, res) => {
             }
         });        
 
-        facilities = await Promise.all(facilities.map(async (f) => {
+        facilities = (await Promise.all(facilities.map(async (f) => {
             const reportsFiltered = await prisma.feedbackReport.findMany({
                 where: {
                     facilityId: f.id
@@ -76,13 +77,29 @@ router.get('/', async (req, res) => {
             const [hasWaitTime, waitTime] = calculateWaitFromReports(reportsFiltered);
             const [hasCostRange, minCost, maxCost] = calculatePriceRangeFromReports(reportsFiltered);
 
+            let costDelta = 0;
+            if(Number(desiredPrice) < Number(minCost)) {
+                costDelta = Math.abs(Number(minCost) - Number(desiredPrice));
+            }
+            else if(Number(maxCost) < Number(desiredPrice)) {
+                costDelta = Math.abs(Number(desiredPrice) - Number(maxCost));
+            }
+
             return {
                 ...f,
                 ...(ratingCount! > 0 && { rating: ratingValue, ratingCount }),
                 ...(hasWaitTime && { waitTime: waitTime }),
-                ...(hasCostRange && { minCost: minCost, maxCost: maxCost })
-            };
-        }));        
+                ...(hasCostRange && { minCost: minCost, maxCost: maxCost, costDelta: costDelta }),                
+              };
+        }))).sort((a, b) => {
+            const deltaDiff = (a.costDelta ?? 0) - (b.costDelta ?? 0);
+            if(deltaDiff !== 0 ) return deltaDiff;
+
+            const ratingA = a.rating ?? 0;
+            const ratingB = b.rating ?? 0;
+
+            return ratingB - ratingA;
+        });
 
         if (lat && lng) {
             const results = await Promise.all(facilities.map(async (f) => {
@@ -105,7 +122,8 @@ router.get('/', async (req, res) => {
             res.json(facilities);
         }
     } catch (err) {
-        res.status(500).json({error: 'Error!' });
+        res.status(500).json({error: `Error! ${err}` });
+        console.error(err);
     }
 });
 export default router;
