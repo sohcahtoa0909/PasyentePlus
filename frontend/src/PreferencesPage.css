@@ -219,10 +219,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .prefs-history-date {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--c-teal-dk);
-  margin-bottom: 3px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--c-text-mute);
+  white-space: nowrap;
+  align-self: flex-start;
+  padding-left: 8px;
+  flex-shrink: 0;
 }
 
 .prefs-history-params {
@@ -622,7 +625,7 @@ html.dark .prefs-history-item:hover {
   border-color: #38bdf8;
   background: #12151f;
 }
-html.dark .prefs-history-date   { color: var(--c-teal-dk); }
+html.dark .prefs-history-date   { color: var(--c-text-mute); }
 html.dark .prefs-history-params { color: var(--c-text-mid); }
 html.dark .prefs-history-results{ color: var(--c-text-mute); }
 
