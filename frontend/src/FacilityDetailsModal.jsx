@@ -210,8 +210,9 @@ function writeFavs(favs) {
   } catch {}
 }
 
-export default function FacilityDetailsModal({ facility, onClose, onGetDirections, skipHistoryRecord = false }) {
+export default function FacilityDetailsModal({ facility, onClose, onGetDirections, skipHistoryRecord = false, isLoggedIn = false, onLoginRequest = null }) {
   const [userRating,    setUserRating]    = useState(0);
+  const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [isFavorited,   setIsFavorited]   = useState(() => {
     const id = facility?.id;
     return id != null && readFavs().some(f => String(f.id) === String(id));
@@ -303,6 +304,7 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
       setUserRating(0);
     }
     setReviewPanelOpen(false);
+    setShowGuestPrompt(false);
     setPendingStars(0);
     setTimeIn(""); setTimeOut(""); setServiceAvailed("");
     setAmountSpent(""); setReviewComment("");
@@ -340,6 +342,10 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
   const facilityType = facility.type || facility.facilityName || "Healthcare Facility";
 
   function openReviewPanel(n) {
+    if (!isLoggedIn) {
+      setShowGuestPrompt(true);
+      return;
+    }
     setPendingStars(n);
     setSubmitStatus("idle");
     setErrorMessage("");
@@ -457,30 +463,32 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
                 <h2 className="fdm-title">{facilityName}</h2>
                 <div className="fdm-subtitle">{facilityType}</div>
               </div>
-              <button
-                className={`fdm-fav-btn${isFavorited ? " fdm-fav-btn--active" : ""}`}
-                onClick={() => {
-                  const id = facility.id;
-                  const favs = readFavs();
-                  const exists = favs.some(f => String(f.id) === String(id));
-                  const next = exists
-                    ? favs.filter(f => String(f.id) !== String(id))
-                    : [...favs, {
-                        id,
-                        name: facility.hospitalName || facility.name || "Facility",
-                        type: facility.facilityName || facility.type || "Healthcare Facility",
-                        budget: facility.priceLow || facility.budget || 0,
-                        travel: facility.distance || facility.travel || 0,
-                        rating: facility.rating || 0,
-                        saved: false,
-                      }];
-                  writeFavs(next);
-                  setIsFavorited(!exists);
-                }}
-                title={isFavorited ? "Remove from favorites" : "Add to favorites"}
-              >
-                <IconHeart filled={isFavorited} />
-              </button>
+              {isLoggedIn && (
+                <button
+                  className={`fdm-fav-btn${isFavorited ? " fdm-fav-btn--active" : ""}`}
+                  onClick={() => {
+                    const id = facility.id;
+                    const favs = readFavs();
+                    const exists = favs.some(f => String(f.id) === String(id));
+                    const next = exists
+                      ? favs.filter(f => String(f.id) !== String(id))
+                      : [...favs, {
+                          id,
+                          name: facility.hospitalName || facility.name || "Facility",
+                          type: facility.facilityName || facility.type || "Healthcare Facility",
+                          budget: facility.priceLow || facility.budget || 0,
+                          travel: facility.distance || facility.travel || 0,
+                          rating: facility.rating || 0,
+                          saved: false,
+                        }];
+                    writeFavs(next);
+                    setIsFavorited(!exists);
+                  }}
+                  title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                >
+                  <IconHeart filled={isFavorited} />
+                </button>
+              )}
               <button className="fdm-close" onClick={onClose} title="Close"><IconX /></button>
             </div>
             <div className="fdm-header-rating">
@@ -552,7 +560,23 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
                   onChange={openReviewPanel}
                   locked={false}
                 />
-                {userRating > 0 ? (
+                {!isLoggedIn ? (
+                  showGuestPrompt ? (
+                    <div className="fdm-guest-prompt">
+                      <p className="fdm-guest-prompt-msg">Sign in to rate this facility.</p>
+                      <div className="fdm-guest-prompt-actions">
+                        {onLoginRequest && (
+                          <button className="fdm-btn fdm-btn--primary fdm-guest-prompt-btn" onClick={onLoginRequest}>
+                            Log In / Sign Up
+                          </button>
+                        )}
+                        <button className="fdm-rate-change" onClick={() => setShowGuestPrompt(false)}>Dismiss</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="fdm-rate-hint">Sign in to rate this facility.</div>
+                  )
+                ) : userRating > 0 ? (
                   <div className="fdm-rate-msg">
                     Your last rating: {userRating} star{userRating !== 1 ? "s" : ""}.
                     <button className="fdm-rate-change" onClick={() => openReviewPanel(userRating)}>
@@ -586,17 +610,6 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
             >
               <IconDirections />
               Get Directions
-            </button>
-            
-            <button
-              className="fdm-btn fdm-btn--secondary"
-              onClick={() => {
-                const num = (facility.phone || "+63821234567").replace(/\D/g, "");
-                window.open(`tel:${num}`);
-              }}
-            >
-              <IconPhone />
-              Call Now
             </button>
           </div>
 
