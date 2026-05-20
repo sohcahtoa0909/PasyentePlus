@@ -16,11 +16,14 @@ export default function MapComponent({
   markers = [],
   clickable = false,
   onMapClick = null,
+  routeTo = null,
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
   const clickHandlerRef = useRef(null);
+  const userLocRef = useRef(null);
+  const routeLayerRef = useRef(null);
 
   // Map initialization - only runs once
   useEffect(() => {
@@ -33,30 +36,31 @@ export default function MapComponent({
       maxZoom: 19,
     }).addTo(mapInstanceRef.current);
 
-      const handleLocationFound = (e) => {
-    mapInstanceRef.current.setView(e.latlng, 15);
-    
-    L.marker(e.latlng)
-      .addTo(mapInstanceRef.current)
-      .bindPopup("You are here!")
-      .openPopup();
-  };
+    const handleLocationFound = (e) => {
+      userLocRef.current = e.latlng;
+      mapInstanceRef.current.setView(e.latlng, 15);
 
-  const handleLocationError = (e) => {
-    console.log("Location error:", e.message);
-  };
+      L.marker(e.latlng)
+        .addTo(mapInstanceRef.current)
+        .bindPopup("You are here!")
+        .openPopup();
+    };
 
-  mapInstanceRef.current.on('locationfound', handleLocationFound);
-  mapInstanceRef.current.on('locationerror', handleLocationError);
-  
-  mapInstanceRef.current.locate({
-    setView: false,
-    maxZoom: 16,
-    watch: false,
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0
-  });
+    const handleLocationError = (e) => {
+      console.log("Location error:", e.message);
+    };
+
+    mapInstanceRef.current.on('locationfound', handleLocationFound);
+    mapInstanceRef.current.on('locationerror', handleLocationError);
+
+    mapInstanceRef.current.locate({
+      setView: false,
+      maxZoom: 16,
+      watch: false,
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    });
 
     return () => {
       if (mapInstanceRef.current) {
@@ -122,6 +126,80 @@ export default function MapComponent({
       }
     };
   }, [clickable, onMapClick]);
+
+  useEffect(() => {    
+    if (!mapInstanceRef.current) return;
+
+    // Clear existing route
+    if (routeLayerRef.current) {
+      routeLayerRef.current.remove();
+      routeLayerRef.current = null;
+    }
+
+    if (!routeTo) return;
+
+    const { lat: toLat, lng: toLng } = routeTo;
+
+    function drawRoute(origin) {
+      // ✅ Fixed: no trailing comma before ?
+      const url =
+        `https://router.project-osrm.org/route/v1/driving/` +
+        `${origin.lng},${origin.lat};${toLng},${toLat}` +
+        `?overview=full&geometries=geojson`;
+
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.code !== "Ok" || !data.routes.length) {
+            console.error("Could not find a route to this facility");
+            return;
+          }
+
+          const coords = data.routes[0].geometry.coordinates
+            .map(([lng, lat]) => [lat, lng]);
+
+          routeLayerRef.current = L.polyline(coords, {
+            color: "#007b8a",
+            weight: 5,
+            opacity: 0.85,
+            lineJoin: "round",
+          }).addTo(mapInstanceRef.current);
+
+          // ✅ Fixed: fitBounds not fitBound
+          mapInstanceRef.current.fitBounds(routeLayerRef.current.getBounds(), {
+            padding: [40, 40],
+          });
+        })
+        .catch((err) => console.error("Routing request failed", err));
+    }
+    // If we already have the user's location, draw immediately
+    if (userLocRef.current) {
+      drawRoute(userLocRef.current);
+      return;
+    }
+
+    // ✅ Otherwise wait for geolocation to resolve, then draw
+    const onLocationFound = (e) => {
+      mapInstanceRef.current.off("locationfound", onLocationFound);
+      drawRoute(e.latlng);
+    };
+    mapInstanceRef.current.on("locationfound", onLocationFound);
+
+    const onLocationError = (e) => {
+      console.error("locationerror during routing locate():", e.message, "code:", e.code);
+      mapInstanceRef.current.off("locationerror", onLocationError);
+      mapInstanceRef.current.off("locationfound", onLocationFound);
+    };
+    mapInstanceRef.current.on("locationerror", onLocationError);
+
+    // Re-request location in case the first one already fired and we missed it
+    mapInstanceRef.current.locate({
+      setView: false,
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    });
+  }, [routeTo]);
 
   return <div ref={mapRef} style={{ width: "100%", height: "100%" }} />;
 }

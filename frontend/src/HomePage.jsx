@@ -283,6 +283,7 @@ export default function HomePage({
   const [selectedService,   setSelectedService]   = useState(null);
   const [dynamicFacilities, setDynamicFacilities] = useState([]);
   const [modalFacility,     setModalFacility]     = useState(null);
+  const [routeDestination,  setRouteDestination]  = useState(null);
 
   const markers = useMemo(() =>
     getHospitalMarkers(dynamicFacilities)
@@ -336,8 +337,16 @@ export default function HomePage({
   }
 
   function handleMarkerClick(markerData) {
-    const full = dynamicFacilities.find(f => f.id === markerData.id) ?? markerData;
-    setModalFacility(full);
+    const full = dynamicFacilities.find(f => f.id === markerData.id);
+    if (full) {
+      setModalFacility(full);
+    } else {
+      console.warn("Could not find full facility for marker:", markerData);
+    }
+  }
+
+  function handleGetDirections(latLng) {    
+    setRouteDestination(latLng);    
   }
 
   return (
@@ -350,6 +359,7 @@ export default function HomePage({
           zoom={12}
           markers={markers}
           onMarkerClick={handleMarkerClick}
+          routeTo={routeDestination}
         />
       </div>
 
@@ -448,7 +458,9 @@ export default function HomePage({
                       facility={f}
                       selected={selectedId === f.id}
                       onClick={() => setSelectedId(f.id)}
-                      onOpenDetails={setModalFacility}
+                      onOpenDetails={(facility) => {                        
+                        setModalFacility(facility);
+                      }}
                       animDelay={i * 0.055 + 0.05}
                     />
                   ))
@@ -464,11 +476,10 @@ export default function HomePage({
       {modalFacility && (
         <FacilityDetailsModal
           facility={modalFacility}
+          onGetDirections={handleGetDirections}
           onClose={() => {
-            setModalFacility(null);
-            if (selectedFacility) {
-              onFacilitySelect(null);
-            }
+            setModalFacility(null);            
+            if (selectedFacility) onFacilitySelect(null);
           }}
         />
       )}
