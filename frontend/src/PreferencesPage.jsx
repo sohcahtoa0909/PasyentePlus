@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useSheetDrag } from "./useSheetDrag";
 import "./AboutPage.css";
 import "./PreferencesPage.css";
 import MapComponent from "./MapComponent";
@@ -120,6 +121,10 @@ export default function PreferencesPage({
   selectedFacility: propSelectedFacility,
   onFacilitySelect,
   isLoggedIn = false,
+  activeLocation,
+  homeLocation,
+  setActiveLocation,
+  setHomeLocation,
 }) {
   const [tab, setTab]               = useState("Search");
   const [travel, setTravel]         = useState(() => loadPref("pp_travel", 20));
@@ -132,24 +137,20 @@ export default function PreferencesPage({
   const [modalFacility,     setModalFacility]     = useState(null);
   const [modalSkipHistory,  setModalSkipHistory]  = useState(false);
   const panelOpen = activePage === "Preferences";
-
-  // ── Location state ────────────────────────────────────────────────────────
-  const [activeLocation, setActiveLocation] = useState(() => loadPref("pp_active_location", null));
-  const [homeLocation, setHomeLocation]     = useState(() => loadPref("pp_home_location", null));
+  const { sheetHidden, setSheetHidden, sheetStyle, dragHandleProps } = useSheetDrag();
 
   // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => savePref("pp_travel", travel),          [travel]);
   useEffect(() => savePref("pp_wait", wait),              [wait]);
   useEffect(() => savePref("pp_facilities", facilities),  [facilities]);
   useEffect(() => savePref("pp_history", history),        [history]);
-  useEffect(() => savePref("pp_active_location", activeLocation), [activeLocation]);
-  useEffect(() => savePref("pp_home_location", homeLocation),     [homeLocation]);
 
   const [isChangingLocation, setIsChangingLocation] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [geocoding, setGeocoding]     = useState(false);
 
   const handleNavClick = (key) => {
+    if (sheetHidden && key === activePage) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -239,7 +240,7 @@ export default function PreferencesPage({
     setGeocoding(false);
     setMapExpanded(false);
     triggerToast(`✓ Home set to ${label}`);
-  }, []);
+  }, [setHomeLocation, setActiveLocation]);
 
   // ── Select home as active (if already set) ───────────────────────────────
   const handleSelectHome = () => {
@@ -320,8 +321,12 @@ export default function PreferencesPage({
         <button className="nav-item" onClick={() => setActivePage("Settings")} title="Settings"><IconSettings /></button>
       </nav>
 
-      <div className={`panel ${panelOpen ? "open" : ""}`}>
+      <div className={`panel ${panelOpen ? "open" : ""}`} style={sheetStyle}>
         <div className="panel-inner">
+
+          <div className="panel-drag-handle" {...dragHandleProps}>
+            <div className="panel-drag-pill" />
+          </div>
 
           <div className="panel-header">
             <div className="panel-header-inner">
@@ -653,6 +658,8 @@ export default function PreferencesPage({
           facility={modalFacility}
           onClose={handleCloseModal}
           skipHistoryRecord={modalSkipHistory}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
 

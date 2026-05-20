@@ -33,35 +33,15 @@ export default function MapComponent({
       maxZoom: 19,
     }).addTo(mapInstanceRef.current);
 
-      const handleLocationFound = (e) => {
-    mapInstanceRef.current.setView(e.latlng, 15);
-    
-    L.marker(e.latlng)
-      .addTo(mapInstanceRef.current)
-      .bindPopup("You are here!")
-      .openPopup();
-  };
-
-  const handleLocationError = (e) => {
-    console.log("Location error:", e.message);
-  };
-
-  mapInstanceRef.current.on('locationfound', handleLocationFound);
-  mapInstanceRef.current.on('locationerror', handleLocationError);
-  
-  mapInstanceRef.current.locate({
-    setView: false,
-    maxZoom: 16,
-    watch: false,
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0
-  });
+    // Re-center whenever the container is resized (panel open animation, tab switch, etc.)
+    const ro = new ResizeObserver(() => {
+      mapInstanceRef.current?.invalidateSize();
+    });
+    ro.observe(mapRef.current);
 
     return () => {
+      ro.disconnect();
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.off('locationfound', handleLocationFound);
-        mapInstanceRef.current.off('locationerror', handleLocationError);
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }

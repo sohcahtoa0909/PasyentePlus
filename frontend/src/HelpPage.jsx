@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSheetDrag } from "./useSheetDrag";
 import "./AboutPage.css";
 import "./HelpPage.css";
 import MapComponent from "./MapComponent";
@@ -75,18 +76,21 @@ const contacts = [
   { icon: "💬", label: "Live Chat", value: "Mon–Fri, 8AM–5PM" },
 ];
 
-export default function HelpPage({ 
-  activePage, 
+export default function HelpPage({
+  activePage,
   setActivePage,
   selectedFacility: propSelectedFacility,
-  onFacilitySelect 
+  onFacilitySelect,
+  isLoggedIn = false,
 }) {
   const [tab, setTab] = useState("How To");
   const [openFaq, setOpenFaq] = useState(null);
   const [modalFacility, setModalFacility] = useState(null);
   const panelOpen = activePage === "Help";
+  const { sheetHidden, setSheetHidden, sheetStyle, dragHandleProps } = useSheetDrag();
 
   const handleNavClick = (key) => {
+    if (sheetHidden && key === activePage) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -165,8 +169,12 @@ export default function HelpPage({
         <button className="nav-item" onClick={() => setActivePage("Settings")} title="Settings"><IconSettings /></button>
       </nav>
 
-      <div className={`panel ${panelOpen ? "open" : ""}`}>
+      <div className={`panel ${panelOpen ? "open" : ""}`} style={sheetStyle}>
         <div className="panel-inner">
+
+          <div className="panel-drag-handle" {...dragHandleProps}>
+            <div className="panel-drag-pill" />
+          </div>
 
           <div className="panel-header">
             <div className="panel-header-inner">
@@ -254,6 +262,8 @@ export default function HelpPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
     </div>

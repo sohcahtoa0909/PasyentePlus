@@ -238,3 +238,8 @@ html.dark .leaflet-tooltip {
 }
 html.dark .leaflet-popup-content-wrapper { background: #1a1d27; color: var(--c-text); }
 html.dark .leaflet-popup-tip            { background: #1a1d27; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .contact-grid { grid-template-columns: 1fr 1fr; }
+}
