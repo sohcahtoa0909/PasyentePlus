@@ -62,13 +62,8 @@ const initialFacilities = [];
 
 function formatViewedAt(iso) {
   const d = new Date(iso);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
   const time = d.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit", hour12: true });
-  if (d.toDateString() === today.toDateString())     return `Today · ${time}`;
-  if (d.toDateString() === yesterday.toDateString()) return `Yesterday · ${time}`;
-  return d.toLocaleDateString("en-PH", { month: "short", day: "numeric" }) + ` · ${time}`;
+  return d.toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) + ` · ${time}`;
 }
 
 const DEFAULT_CENTER = [7.1907, 125.4553];
@@ -584,12 +579,12 @@ export default function PreferencesPage({
                             }}
                           >
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div className="prefs-history-date">{formatViewedAt(h.viewedAt)}</div>
-                              <div className="prefs-facility-name" style={{ fontSize: 12, marginBottom: 2 }}>{h.name}</div>
+                              <div className="prefs-facility-name" style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{h.name}</div>
                               <div className="prefs-history-params">
                                 {h.type}{h.budget ? ` · ₱${h.budget}` : ""}{h.travel ? ` · ${h.travel}m` : ""}{h.rating ? ` · ★ ${h.rating}` : ""}
                               </div>
                             </div>
+                            <div className="prefs-history-date">{formatViewedAt(h.viewedAt)}</div>
                           </div>
                         ))}
                       </div>
