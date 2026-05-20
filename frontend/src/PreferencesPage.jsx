@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useSheetDrag } from "./useSheetDrag";
 import "./AboutPage.css";
 import "./PreferencesPage.css";
 import MapComponent from "./MapComponent";
@@ -136,6 +137,7 @@ export default function PreferencesPage({
   const [modalFacility,     setModalFacility]     = useState(null);
   const [modalSkipHistory,  setModalSkipHistory]  = useState(false);
   const panelOpen = activePage === "Preferences";
+  const { sheetHidden, setSheetHidden, sheetStyle, dragHandleProps } = useSheetDrag();
 
   // ── Persist to localStorage ───────────────────────────────────────────────
   useEffect(() => savePref("pp_travel", travel),          [travel]);
@@ -148,6 +150,7 @@ export default function PreferencesPage({
   const [geocoding, setGeocoding]     = useState(false);
 
   const handleNavClick = (key) => {
+    if (sheetHidden && key === activePage) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -318,8 +321,12 @@ export default function PreferencesPage({
         <button className="nav-item" onClick={() => setActivePage("Settings")} title="Settings"><IconSettings /></button>
       </nav>
 
-      <div className={`panel ${panelOpen ? "open" : ""}`}>
+      <div className={`panel ${panelOpen ? "open" : ""}`} style={sheetStyle}>
         <div className="panel-inner">
+
+          <div className="panel-drag-handle" {...dragHandleProps}>
+            <div className="panel-drag-pill" />
+          </div>
 
           <div className="panel-header">
             <div className="panel-header-inner">

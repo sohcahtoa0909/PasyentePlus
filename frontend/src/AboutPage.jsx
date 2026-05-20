@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSheetDrag } from "./useSheetDrag";
 import "./AboutPage.css";
 import MapComponent from "./MapComponent";
 import LogoSrc from './Logo.png';
@@ -67,10 +68,12 @@ export default function AboutPage({
   isLoggedIn = false,
 }) {
   const [tab, setTab] = useState("Overview");
-  const [modalFacility, setModalFacility] = useState(null);  // Separate state for modal
+  const [modalFacility, setModalFacility] = useState(null);
   const panelOpen = activePage === "About";
+  const { sheetHidden, setSheetHidden, sheetStyle, dragHandleProps } = useSheetDrag();
 
   const handleNavClick = (key) => {
+    if (sheetHidden && key === activePage) { setSheetHidden(false); return; }
     setActivePage(activePage === key && key !== "Home" ? "Home" : key);
   };
 
@@ -179,8 +182,12 @@ export default function AboutPage({
       </nav>
 
       {/* Panel */}
-      <div className={`panel ${panelOpen ? "open" : ""}`}>
+      <div className={`panel ${panelOpen ? "open" : ""}`} style={sheetStyle}>
         <div className="panel-inner">
+
+          <div className="panel-drag-handle" {...dragHandleProps}>
+            <div className="panel-drag-pill" />
+          </div>
 
           <div className="panel-header">
             <div className="panel-header-inner">
