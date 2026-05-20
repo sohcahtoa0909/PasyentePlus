@@ -33,7 +33,14 @@ export default function MapComponent({
       maxZoom: 19,
     }).addTo(mapInstanceRef.current);
 
+    // Re-center whenever the container is resized (panel open animation, tab switch, etc.)
+    const ro = new ResizeObserver(() => {
+      mapInstanceRef.current?.invalidateSize();
+    });
+    ro.observe(mapRef.current);
+
     return () => {
+      ro.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;

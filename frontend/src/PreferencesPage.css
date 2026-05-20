@@ -724,7 +724,7 @@ html.dark .prefs-guest-gate-icon {
 /* ── Responsive ── */
 @media (max-width: 640px) {
   /* Stack the two-column search/preferences split vertically */
-  .prefs-search-split { flex-direction: column; }
+  .prefs-search-split { flex-direction: column; align-items: stretch; }
   .prefs-split-divider {
     width: 100%; height: 1px;
     align-self: stretch;

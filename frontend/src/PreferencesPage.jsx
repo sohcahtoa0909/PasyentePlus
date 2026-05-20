@@ -237,7 +237,7 @@ export default function PreferencesPage({
     setGeocoding(false);
     setMapExpanded(false);
     triggerToast(`✓ Home set to ${label}`);
-  }, []);
+  }, [setHomeLocation, setActiveLocation]);
 
   // ── Select home as active (if already set) ───────────────────────────────
   const handleSelectHome = () => {
