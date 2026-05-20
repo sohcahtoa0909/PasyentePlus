@@ -278,6 +278,15 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
   );
 }
 
+function loadPref(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 /* ══════════════════════════════════════════════════════
    Main Component
    ══════════════════════════════════════════════════════ */
@@ -288,8 +297,9 @@ export default function HomePage({
   onFacilitySelect,       // ← lifted from App
 }) {
   const [budget,            setBudget]            = useState(1500);
-  const [travel,            setTravel]            = useState(20);
-  const [waiting,           setWaiting]           = useState(60);
+  const [travel,            setTravel]            = useState(() => loadPref("pp_travel", 20));
+  const [waiting,           setWaiting]           = useState(() => loadPref("pp_wait",   60));
+
   const [selectedId,        setSelectedId]        = useState(1);
   const [filterTab,         setFilterTab]         = useState("All");
   const [selectedService,   setSelectedService]   = useState(null);
@@ -398,8 +408,8 @@ export default function HomePage({
             <div className="hp-section-block">
               <div className="hp-section-label">Your Preferences</div>
               <PrefSlider label="Budget"           value={budget}  min={300}  max={3000} prefix="₱"    onChange={setBudget}  />
-              <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={60}   unit=" mins"  onChange={setTravel}  />
-              <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={120}  unit=" mins"  onChange={setWaiting} />
+              <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={120}   unit=" mins"  onChange={setTravel}  />
+              <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={180}  unit=" mins"  onChange={setWaiting} />
             </div>
 
             <div className="hp-section-block grow">
