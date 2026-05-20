@@ -210,7 +210,7 @@ function writeFavs(favs) {
   } catch {}
 }
 
-export default function FacilityDetailsModal({ facility, onClose, skipHistoryRecord = false, isLoggedIn = false, onLoginRequest = null }) {
+export default function FacilityDetailsModal({ facility, onClose, onGetDirections, skipHistoryRecord = false, isLoggedIn = false, onLoginRequest = null }) {
   const [userRating,    setUserRating]    = useState(0);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [isFavorited,   setIsFavorited]   = useState(() => {
@@ -594,9 +594,18 @@ export default function FacilityDetailsModal({ facility, onClose, skipHistoryRec
           <div className="fdm-footer">
             <button
               className="fdm-btn fdm-btn--primary"
-              onClick={() => {
-                const q = encodeURIComponent(facilityName + " Davao City");
-                window.open(`https://www.google.com/maps/search/${q}`, "_blank");
+              onClick={() => {                
+
+                const lat = facility.locLat;
+                const lng = facility.locLng;
+
+                if (lat != null && lng != null) {                  
+                  onGetDirections({ lat, lng });                  
+                  onClose();
+                } else {                  
+                  const q = encodeURIComponent(facilityName + " Davao City");
+                  window.open(`https://www.google.com/maps/search/${q}`, "_blank");
+                }
               }}
             >
               <IconDirections />

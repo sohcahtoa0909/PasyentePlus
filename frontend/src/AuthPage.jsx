@@ -278,6 +278,11 @@ export default function AuthPage({ activePage, setActivePage, onLoginSuccess }) 
               </p>
             )}
 
+            {mode === "login" && (
+              <div className="auth-forgot-row">
+                <button className="auth-forgot-link">Forgot password?</button>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
