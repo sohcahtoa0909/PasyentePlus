@@ -294,9 +294,10 @@ const DEFAULT_CENTER = [7.1907, 125.4553];
 export default function HomePage({
   activePage = "Home",
   setActivePage = () => {},
-  selectedFacility,       // ← lifted from App
-  onFacilitySelect,       // ← lifted from App
+  selectedFacility,
+  onFacilitySelect,
   activeLocation,
+  isLoggedIn = false,
 }) {
   const [budget,            setBudget]            = useState(1500);
   const [travel,            setTravel]            = useState(() => loadPref("pp_travel", 20));
@@ -463,6 +464,8 @@ export default function HomePage({
               onFacilitySelect(null);
             }
           }}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
 

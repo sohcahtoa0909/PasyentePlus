@@ -651,6 +651,8 @@ export default function PreferencesPage({
           facility={modalFacility}
           onClose={handleCloseModal}
           skipHistoryRecord={modalSkipHistory}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
 

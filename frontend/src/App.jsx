@@ -108,6 +108,7 @@ export default function App() {
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
             activeLocation={activeLocation}
+            isLoggedIn={isLoggedIn}
           />
         );
       case "About":
@@ -117,6 +118,7 @@ export default function App() {
             setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
+            isLoggedIn={isLoggedIn}
           />
         );
       case "Help":
@@ -126,6 +128,7 @@ export default function App() {
             setActivePage={handleSetActivePage}
             selectedFacility={selectedFacility}
             onFacilitySelect={setSelectedFacility}
+            isLoggedIn={isLoggedIn}
           />
         );
       case "Preferences":

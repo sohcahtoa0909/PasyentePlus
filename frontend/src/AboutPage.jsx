@@ -59,11 +59,12 @@ const problems = [
 ];
 
 /* ── Component ──────────────────────────────── */
-export default function AboutPage({ 
-  activePage, 
+export default function AboutPage({
+  activePage,
   setActivePage,
-  selectedFacility: propSelectedFacility,  // Renamed prop to avoid conflict
-  onFacilitySelect 
+  selectedFacility: propSelectedFacility,
+  onFacilitySelect,
+  isLoggedIn = false,
 }) {
   const [tab, setTab] = useState("Overview");
   const [modalFacility, setModalFacility] = useState(null);  // Separate state for modal
@@ -272,6 +273,8 @@ export default function AboutPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
 

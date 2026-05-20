@@ -75,11 +75,12 @@ const contacts = [
   { icon: "💬", label: "Live Chat", value: "Mon–Fri, 8AM–5PM" },
 ];
 
-export default function HelpPage({ 
-  activePage, 
+export default function HelpPage({
+  activePage,
   setActivePage,
   selectedFacility: propSelectedFacility,
-  onFacilitySelect 
+  onFacilitySelect,
+  isLoggedIn = false,
 }) {
   const [tab, setTab] = useState("How To");
   const [openFaq, setOpenFaq] = useState(null);
@@ -254,6 +255,8 @@ export default function HelpPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
     </div>

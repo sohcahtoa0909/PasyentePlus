@@ -515,6 +515,8 @@ export default function SettingsPage({
         <FacilityDetailsModal
           facility={modalFacility}
           onClose={handleCloseModal}
+          isLoggedIn={isLoggedIn}
+          onLoginRequest={() => setActivePage("Auth")}
         />
       )}
     </div>
