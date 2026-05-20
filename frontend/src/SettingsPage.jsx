@@ -340,8 +340,8 @@ export default function SettingsPage({
                             <div className="settings-profile-email">{profile.email}</div>
                           </div>
                           <button
-                            className="settings-btn"
-                            style={{ width: "auto", border: "1px solid var(--c-border)", whiteSpace: "nowrap" }}
+                            className="settings-btn settings-change-pw-btn"
+                            style={{ border: "1px solid var(--c-border)", whiteSpace: "nowrap" }}
                             onClick={() => { setShowPasswordForm(true); setPwFeedback({ msg: "", type: "" }); setPasswords({ current: "", next: "", confirm: "" }); }}>
                             Change Password
                           </button>

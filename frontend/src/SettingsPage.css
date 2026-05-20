@@ -204,6 +204,14 @@
 .settings-feedback.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 .settings-feedback.error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
+/* Change Password button — auto width on desktop, full-width below avatar on mobile */
+.settings-change-pw-btn { width: auto; }
+
+@media (max-width: 640px) {
+  .settings-profile-header { flex-wrap: wrap; }
+  .settings-change-pw-btn  { width: 100%; flex-basis: 100%; }
+}
+
 /* ── Back button ─────────────────────────────────────── */
 .settings-back-btn {
   background: none;
