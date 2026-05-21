@@ -288,8 +288,10 @@ export default function HomePage({
   isLoggedIn = false,
 }) {
   const [budget,            setBudget]            = useState(1500);
+  const [budgetMax,         setBudgetMax]         = useState(3000);
   const [travel,            setTravel]            = useState(() => loadPref("pp_travel", 20));
   const [waiting,           setWaiting]           = useState(() => loadPref("pp_wait",   60));
+  const budgetRangeSetRef = useRef(false);
 
   const [selectedId,        setSelectedId]        = useState(1);
   const [selectedService,   setSelectedService]   = useState(null);
@@ -347,7 +349,11 @@ export default function HomePage({
 
   function handleServiceSelect(svc) {
     setSelectedService(svc);
-    if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
+    budgetRangeSetRef.current = false;
+    if (!svc) {
+      setBudgetMax(3000);
+      setBudget(1500);
+    }
   }
 
   const queryHospitals = useCallback(
@@ -355,13 +361,11 @@ export default function HomePage({
       if (!svc) return;
       try {
         const response = await fetch(
-          `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${new URLSearchParams(
-            {
-              facility_type: svc.facilityType,
-              service: svc.serviceType,
-              desiredPrice: budget,
-            },
-          )}`,
+          `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${new URLSearchParams({
+            facility_type: svc.facilityType,
+            service: svc.serviceType,
+            desiredPrice: budget,
+          })}`,
         );
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
@@ -370,7 +374,21 @@ export default function HomePage({
           return;
         }
         const json = await response.json();
-        setDynamicFacilities(Array.isArray(json) ? transformFacilityData(json) : []);
+        const raw = Array.isArray(json) ? json : [];
+
+        // On first fetch for this service, derive the slider range from report data
+        if (!budgetRangeSetRef.current) {
+          const maxCosts = raw.map(f => f.maxCost).filter(c => c != null && c > 0);
+          const maxPrice = maxCosts.length > 0
+            ? Math.max(...maxCosts)
+            : svc.suggestedBudget * 2;
+          const newMax = Math.ceil(maxPrice / 1000) * 1000;
+          setBudgetMax(newMax);
+          setBudget(Math.round(newMax / 2));
+          budgetRangeSetRef.current = true;
+        }
+
+        setDynamicFacilities(raw.length > 0 ? transformFacilityData(raw) : []);
       } catch (err) {
         console.error("An error occurred!", err);
         setDynamicFacilities([]);
@@ -492,7 +510,7 @@ export default function HomePage({
 
             <div className="hp-section-block">
               <div className="hp-section-label">Your Preferences</div>
-              <PrefSlider label="Budget"           value={budget}  min={300}  max={3000} prefix="₱"    onChange={setBudget}  />
+              <PrefSlider label="Budget"           value={budget}  min={0}    max={budgetMax} prefix="₱" onChange={setBudget}  />
               <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={120}   unit=" mins"  onChange={setTravel}  />
               <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={180}  unit=" mins"  onChange={setWaiting} />
             </div>
