@@ -409,6 +409,8 @@ export default function HomePage({
           markers={markers}
           onMarkerClick={handleMarkerClick}
           routeTo={routeDestination}
+          autoCenter={!activeLocation}
+          origin={activeLocation?.coords ?? null}
         />
       </div>
 

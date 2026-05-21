@@ -17,6 +17,8 @@ export default function MapComponent({
   clickable = false,
   onMapClick = null,
   routeTo = null,
+  autoCenter = true,
+  origin = null,
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -24,6 +26,16 @@ export default function MapComponent({
   const clickHandlerRef = useRef(null);
   const userLocRef = useRef(null);
   const routeLayerRef = useRef(null);
+  const autoCenterRef = useRef(autoCenter);
+  const originRef = useRef(origin);
+
+  useEffect(() => {
+    autoCenterRef.current = autoCenter;
+  }, [autoCenter]);
+
+  useEffect(() => {
+    originRef.current = origin;
+  }, [origin]);
 
   // Map initialization - only runs once
   useEffect(() => {
@@ -38,12 +50,15 @@ export default function MapComponent({
 
     const handleLocationFound = (e) => {
       userLocRef.current = e.latlng;
-      mapInstanceRef.current.setView(e.latlng, 15);
-
-      L.marker(e.latlng)
-        .addTo(mapInstanceRef.current)
-        .bindPopup("You are here!")
-        .openPopup();
+      // Only recenter on GPS and show "You are here" when no explicit location is set.
+      // openPopup() triggers Leaflet autoPan which would override the home pin center.
+      if (autoCenterRef.current) {
+        mapInstanceRef.current.setView(e.latlng, 15);
+        L.marker(e.latlng)
+          .addTo(mapInstanceRef.current)
+          .bindPopup("You are here!")
+          .openPopup();
+      }
     };
 
     const handleLocationError = (e) => {
@@ -176,13 +191,19 @@ export default function MapComponent({
         })
         .catch((err) => console.error("Routing request failed", err));
     }
-    // If we already have the user's location, draw immediately
+    // Prefer the explicit origin (home/active location) over GPS
+    if (originRef.current) {
+      drawRoute({ lat: originRef.current[0], lng: originRef.current[1] });
+      return;
+    }
+
+    // Fall back to GPS if no explicit origin is set
     if (userLocRef.current) {
       drawRoute(userLocRef.current);
       return;
     }
 
-    // ✅ Otherwise wait for geolocation to resolve, then draw
+    // Otherwise wait for geolocation to resolve, then draw
     const onLocationFound = (e) => {
       mapInstanceRef.current.off("locationfound", onLocationFound);
       drawRoute(e.latlng);

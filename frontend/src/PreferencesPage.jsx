@@ -270,26 +270,12 @@ export default function PreferencesPage({
     <div className="app-shell">
       <div className="map-full">
         <MapComponent
-          center={DEFAULT_CENTER}
+          center={activeLocation?.coords ?? DEFAULT_CENTER}
           zoom={12}
-          markers={[{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
-          onMarkerClick={(markerData) => {
-            const facility = {
-              id: markerData.id || markerData.name,
-              hospitalName: markerData.name,
-              facilityName: "Healthcare Facility",
-              priceLow: 1000,
-              priceHigh: 5000,
-              distance: 5,
-              waitTime: 30,
-              services: ["General Care"],
-              rating: 4.5,
-              address: markerData.popupContent?.replace(/<[^>]*>/g, '') || "Address available upon request",
-              phone: "",
-              hours: "24/7"
-            };
-            handleFacilitySelect(facility);
-          }}
+          markers={activeLocation
+            ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>📍 ${activeLocation.label}</strong>` }]
+            : [{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
+          autoCenter={!activeLocation}
         />
       </div>
 
@@ -370,6 +356,7 @@ export default function PreferencesPage({
                         center={displayCenter}
                         zoom={13}
                         markers={displayMarkers}
+                        autoCenter={!activeLocation}
                       />
                       <div className="prefs-mini-map-overlay">
                         <span className="prefs-mini-map-expand-icon"><IconExpand /></span>
@@ -641,6 +628,7 @@ export default function PreferencesPage({
                 }
                 clickable={mapExpanded === "setHome"}
                 onMapClick={mapExpanded === "setHome" ? handleMapClick : null}
+                autoCenter={!homeLocation && !activeLocation}
               />
             </div>
           </div>
