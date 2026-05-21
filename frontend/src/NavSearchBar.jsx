@@ -22,37 +22,46 @@ const IconMapPin = () => (
   </svg>
 );
 
-/* ── Facility Data (mirrors HomePage) ── */
-const FACILITIES = [
-  { id: 1, best: true,  name: "Southern Philippines Medical Center", type: "Government Hospital", budget: 800,  travel: 15, wait: 45, rating: 4.5, tags: ["PhilHealth", "ER"] },
-  { id: 2, best: false, name: "San Pedro Hospital",                  type: "Private Hospital",   budget: 900,  travel: 14, wait: 40, rating: 4.5, tags: ["Pediatrics", "OB-GYN"] },
-  { id: 3, best: false, name: "Davao Doctors Hospital",              type: "Private Hospital",   budget: 1000, travel: 13, wait: 35, rating: 4.5, tags: ["Cardiology"] },
-  { id: 4, best: false, name: "Brokenshire Memorial Hospital",       type: "Mission Hospital",   budget: 1100, travel: 12, wait: 30, rating: 4.5, tags: ["Rehab"] },
-  { id: 5, best: false, name: "Davao Regional Medical Center",       type: "Government Hospital",budget: 600,  travel: 22, wait: 60, rating: 4.2, tags: ["PhilHealth"] },
-  { id: 6, best: false, name: "Metro Davao Medical Center",          type: "Private Hospital",   budget: 1200, travel: 10, wait: 25, rating: 4.7, tags: ["Cancer Care"] },
-  { id: 7, best: false, name: "Mindanao Sanitarium Hospital",        type: "Private Hospital",   budget: 950,  travel: 18, wait: 50, rating: 4.3, tags: ["General"] },
-  { id: 8, best: false, name: "Davao Central Clinic",                type: "Clinic",             budget: 500,  travel: 8,  wait: 20, rating: 4.1, tags: ["GP", "Checkup"] },
-];
-
 export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
   const [open, setOpen]               = useState(false);
   const [query, setQuery]             = useState("");
   const [isDropOpen, setIsDropOpen]   = useState(false);
   const [highlighted, setHighlighted] = useState(-1);
   const [dropStyle, setDropStyle]     = useState({});
+  const [results, setResults]         = useState([]);
+  const [loading, setLoading]         = useState(false);
 
-  const navBtnRef = useRef(null);
-  const barRef    = useRef(null);
-  const inputRef  = useRef(null);
+  const navBtnRef  = useRef(null);
+  const barRef     = useRef(null);
+  const inputRef   = useRef(null);
+  const debounceRef = useRef(null);
 
-  /* Filter by name, type, or tags */
-  const filtered = query.trim().length === 0
-    ? FACILITIES
-    : FACILITIES.filter(f =>
-        f.name.toLowerCase().includes(query.toLowerCase()) ||
-        f.type.toLowerCase().includes(query.toLowerCase()) ||
-        f.tags.some(t => t.toLowerCase().includes(query.toLowerCase()))
-      );
+  /* Fetch all hospitals when dropdown opens; debounce 300ms when typing */
+  useEffect(() => {
+    if (!isDropOpen) return;
+    clearTimeout(debounceRef.current);
+    const trimmed = query.trim();
+    setLoading(true);
+    const delay = trimmed.length === 0 ? 0 : 300;
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const url = trimmed.length === 0
+          ? `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/hospitals/search`
+          : `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/hospitals/search?q=${encodeURIComponent(trimmed)}`;
+        const res = await fetch(url);
+        if (!res.ok) { setResults([]); return; }
+        const data = await res.json();
+        setResults(Array.isArray(data) ? data : []);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, delay);
+    return () => clearTimeout(debounceRef.current);
+  }, [query, isDropOpen]);
+
+  const filtered = results;
 
   function updateDropPos() {
     if (window.innerWidth <= 640) return;
@@ -99,13 +108,28 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
     }
     if (e.key === "ArrowDown")      { e.preventDefault(); setHighlighted(h => Math.min(h + 1, filtered.length - 1)); }
     else if (e.key === "ArrowUp")   { e.preventDefault(); setHighlighted(h => Math.max(h - 1, 0)); }
-    else if (e.key === "Enter" && highlighted >= 0) selectFacility(filtered[highlighted]);
+    else if (e.key === "Enter" && highlighted >= 0) selectHospital(filtered[highlighted]);
     else if (e.key === "Escape")    setOpen(false);
   }
 
-  function selectFacility(facility) {
-    onFacilitySelect(facility);
+  function selectHospital(hospital) {
+    // Build a facility-compatible object from the hospital search result
+    const facilityObj = {
+      id: hospital.facilityId ?? hospital.id,
+      hospitalName: hospital.hospitalName,
+      name: hospital.hospitalName,
+      facilityName: hospital.facilityTypes.join(" · ") || "Healthcare Facility",
+      type: hospital.facilityTypes[0] || "Healthcare Facility",
+      locLat: hospital.locLat,
+      locLng: hospital.locLng,
+      address: hospital.address,
+      rating: hospital.avgRating,
+      ratingCount: hospital.ratingCount,
+      tags: hospital.facilityTypes,
+    };
+    onFacilitySelect(facilityObj);
     setQuery("");
+    setResults([]);
     setIsDropOpen(false);
     setHighlighted(-1);
     setOpen(false);
@@ -114,42 +138,49 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
   function clearFacility() {
     onFacilitySelect(null);
     setQuery("");
+    setResults([]);
     inputRef.current?.focus();
   }
 
-  function typeLabel(type = "") {
-    if (!type) return { letter: "C", color: "#00838f" };
-    if (type.includes("Government")) return { letter: "G", color: "#2e7d32" };
-    if (type.includes("Private"))    return { letter: "P", color: "#1565c0" };
-    if (type.includes("Mission"))    return { letter: "M", color: "#6a1b9a" };
-    return                                  { letter: "C", color: "#00838f" };
+  function typeLabel(types = []) {
+    const first = (Array.isArray(types) ? types[0] : types) ?? "";
+    if (first.toLowerCase().includes("dentis"))  return { letter: "D", color: "#00838f" };
+    if (first.toLowerCase().includes("dialysis")) return { letter: "Di", color: "#1565c0" };
+    return { letter: "H", color: "#007b8a" };
   }
 
   function FacilityItems() {
-    if (filtered.length === 0) {
-      return <div className="nsb-empty">No facilities found for "{query}"</div>;
+    if (loading) {
+      return <div className="nsb-empty">Searching…</div>;
     }
-    return filtered.map((f, idx) => {
-      const tl = typeLabel(f.type);
+    if (filtered.length === 0) {
+      return <div className="nsb-empty">
+        {query.trim().length === 0 ? "No hospitals found" : `No hospitals found for "${query}"`}
+      </div>;
+    }
+    return filtered.map((h, idx) => {
+      const tl = typeLabel(h.facilityTypes);
       return (
         <button
-          key={f.id}
+          key={h.id}
           className={`nsb-option${highlighted === idx ? " highlighted" : ""}`}
           onMouseEnter={() => setHighlighted(idx)}
-          onMouseDown={e => { e.preventDefault(); selectFacility(f); }}
+          onMouseDown={e => { e.preventDefault(); selectHospital(h); }}
         >
           <span className="nsb-type-badge" style={{ background: tl.color }}>{tl.letter}</span>
           <span className="nsb-facility-info">
-            <span className="nsb-name">{f.name}</span>
-            <span className="nsb-type">{f.type}</span>
+            <span className="nsb-name">{h.hospitalName}</span>
+            <span className="nsb-type">{h.facilityTypes.join(" · ") || "Healthcare Facility"}</span>
           </span>
-          <span className="nsb-rating">★ {f.rating}</span>
+          {h.avgRating != null && (
+            <span className="nsb-rating">★ {h.avgRating.toFixed(1)}</span>
+          )}
         </button>
       );
     });
   }
 
-  const tl = selectedFacility ? typeLabel(selectedFacility.type) : null;
+  const tl = selectedFacility ? typeLabel(selectedFacility.tags ?? []) : null;
 
   /* Portal dropdown — desktop only, hidden on mobile via CSS */
   const portalDropdown = isDropOpen && !selectedFacility && createPortal(
@@ -191,9 +222,13 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
                 {tl.letter}
               </span>
               <div className="nsb-selected-info">
-                <span className="nsb-selected-name">{selectedFacility.name}</span>
+                <span className="nsb-selected-name">{selectedFacility.hospitalName ?? selectedFacility.name}</span>
                 <span className="nsb-selected-meta">
-                  <IconMapPin /> {selectedFacility.travel} min away · ★ {selectedFacility.rating}
+                  {selectedFacility.address
+                    ? <><IconMapPin /> {selectedFacility.address}</>
+                    : selectedFacility.rating != null
+                      ? `★ ${selectedFacility.rating.toFixed(1)}`
+                      : "No ratings yet"}
                 </span>
               </div>
               <button className="nsb-clear" onClick={clearFacility} title="Clear"><IconX /></button>
@@ -219,10 +254,8 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
             </div>
           )}
 
-          {selectedFacility && (
-            <div className="nsb-hint">
-              Budget ~<strong>₱{selectedFacility.budget}</strong> · Wait ~<strong>{selectedFacility.wait} min</strong>
-            </div>
+          {selectedFacility && selectedFacility.facilityName && (
+            <div className="nsb-hint">{selectedFacility.facilityName}</div>
           )}
 
           {/* Inline results — mobile only, hidden on desktop via CSS */}

@@ -197,7 +197,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
 }
 
 /* ── PrefSlider ── */
-function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }) {
+function PrefSlider({ label, value, min, max, step = 1, prefix = "", unit = "", onChange }) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
     <div className="hp-pref-row">
@@ -208,7 +208,7 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
       <div className="hp-slider-track">
         <div className="hp-slider-fill" style={{ width: `${pct}%` }} />
         <div className="hp-slider-thumb" style={{ left: `${pct}%` }} />
-        <input className="hp-slider-input" type="range" min={min} max={max} value={value}
+        <input className="hp-slider-input" type="range" min={min} max={max} step={step} value={value}
           onChange={e => onChange(Number(e.target.value))} />
       </div>
     </div>
@@ -217,12 +217,15 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
 
 /* ── Stars ── */
 function Stars({ rating, ratingCount }) {
+  const hasRating = rating != null && rating > 0;
   return (
     <span className="hp-stars">
       {[1, 2, 3, 4, 5].map(i => (
-        <span key={i} className={`hp-star${parseFloat(rating) >= i ? " on" : ""}`}>★</span>
+        <span key={i} className={`hp-star${hasRating && parseFloat(rating) >= i ? " on" : ""}`}>★</span>
       ))}
-      <span className="hp-stars-score">{parseFloat(rating).toFixed(1)} ({ratingCount})</span>
+      <span className="hp-stars-score">
+        {hasRating ? `${parseFloat(rating).toFixed(1)} (${ratingCount})` : "No ratings yet"}
+      </span>
     </span>
   );
 }
@@ -251,10 +254,7 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
         }        
       </div>
       <div className="hp-card-bottom">
-        {facility.rating ?
-          <Stars rating={facility.rating} ratingCount={facility.ratingCount}/> :
-          <span className="hp-stat">No ratings yet.</span>
-        }        
+        <Stars rating={facility.rating} ratingCount={facility.ratingCount} />
         <div className="hp-tags">
           {facility.services.map(s => (
             <span key={s} className="hp-tag">{s}</span>
@@ -288,8 +288,10 @@ export default function HomePage({
   isLoggedIn = false,
 }) {
   const [budget,            setBudget]            = useState(1500);
+  const [budgetMax,         setBudgetMax]         = useState(3000);
   const [travel,            setTravel]            = useState(() => loadPref("pp_travel", 20));
   const [waiting,           setWaiting]           = useState(() => loadPref("pp_wait",   60));
+  const budgetRangeSetRef = useRef(false);
 
   const [selectedId,        setSelectedId]        = useState(1);
   const [selectedService,   setSelectedService]   = useState(null);
@@ -304,6 +306,7 @@ export default function HomePage({
       position: activeLocation.coords,
       name: activeLocation.label,
       popupContent: `<strong>📍 ${activeLocation.label}</strong>`,
+      markerType: "user",
     };
     return [locationPin, ...facilityMarkers];
   }, [dynamicFacilities, activeLocation]);
@@ -346,7 +349,11 @@ export default function HomePage({
 
   function handleServiceSelect(svc) {
     setSelectedService(svc);
-    if (svc) setBudget(Math.min(3000, Math.max(300, svc.suggestedBudget)));
+    budgetRangeSetRef.current = false;
+    if (!svc) {
+      setBudgetMax(3000);
+      setBudget(1500);
+    }
   }
 
   const queryHospitals = useCallback(
@@ -354,18 +361,37 @@ export default function HomePage({
       if (!svc) return;
       try {
         const response = await fetch(
-          `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${new URLSearchParams(
-            {
-              facility_type: svc.facilityType,
-              service: svc.serviceType,
-              desiredPrice: budget,
-            },
-          )}`,
+          `http://${process.env.REACT_APP_BACKEND_API_ENDPOINT}/search?${new URLSearchParams({
+            facility_type: svc.facilityType,
+            service: svc.serviceType,
+            desiredPrice: budget,
+          })}`,
         );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          console.error("Search API error:", response.status, err);
+          setDynamicFacilities([]);
+          return;
+        }
         const json = await response.json();
-        setDynamicFacilities(transformFacilityData(json));
+        const raw = Array.isArray(json) ? json : [];
+
+        // On first fetch for this service, derive the slider range from report data
+        if (!budgetRangeSetRef.current) {
+          const maxCosts = raw.map(f => f.maxCost).filter(c => c != null && c > 0);
+          const maxPrice = maxCosts.length > 0
+            ? Math.max(...maxCosts)
+            : svc.suggestedBudget * 2;
+          const newMax = Math.ceil(maxPrice / 1000) * 1000;
+          setBudgetMax(newMax);
+          setBudget(Math.round(newMax / 2));
+          budgetRangeSetRef.current = true;
+        }
+
+        setDynamicFacilities(raw.length > 0 ? transformFacilityData(raw) : []);
       } catch (err) {
-        console.log("An error occurred! " + err);
+        console.error("An error occurred!", err);
+        setDynamicFacilities([]);
       }
     },
     [budget],
@@ -409,6 +435,8 @@ export default function HomePage({
           markers={markers}
           onMarkerClick={handleMarkerClick}
           routeTo={routeDestination}
+          autoCenter={!activeLocation}
+          origin={activeLocation?.coords ?? null}
         />
       </div>
 
@@ -482,7 +510,7 @@ export default function HomePage({
 
             <div className="hp-section-block">
               <div className="hp-section-label">Your Preferences</div>
-              <PrefSlider label="Budget"           value={budget}  min={300}  max={3000} prefix="₱"    onChange={setBudget}  />
+              <PrefSlider label="Budget"           value={budget}  min={0}    max={budgetMax} step={50} prefix="₱" onChange={setBudget}  />
               <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={120}   unit=" mins"  onChange={setTravel}  />
               <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={180}  unit=" mins"  onChange={setWaiting} />
             </div>

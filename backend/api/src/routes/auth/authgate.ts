@@ -15,12 +15,15 @@ export const authenticateToken = (req: any, res: any, next: any) => {
         });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET!, 
+    jwt.verify(token, process.env.JWT_SECRET!,
         (err: any, decoded: any) => {
-            if (err) return res.status(403).json({
-                message: "Invalid session token!"
-            });
-            req.user = decoded;            
+            if (err) {
+                if (err.name === "TokenExpiredError") {
+                    return res.status(401).json({ message: "Session expired. Please log in again." });
+                }
+                return res.status(403).json({ message: "Invalid session token!" });
+            }
+            req.user = decoded;
             next();
         }
     );

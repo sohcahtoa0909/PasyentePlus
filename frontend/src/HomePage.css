@@ -429,6 +429,8 @@
 }
 .hp-stars { display: flex; align-items: center; gap: 2px; }
 .hp-stars svg { width: 12px; height: 12px; }
+.hp-star { font-size: 11px; color: #d1d5db; line-height: 1; }
+.hp-star.on { color: #f59e0b; }
 .hp-stars-score {
   font-size: 10px;
   font-weight: 700;
@@ -791,6 +793,8 @@ html.dark .hp-card.selected {
 html.dark .hp-card-name   { color: var(--c-teal-dk); }
 html.dark .hp-card-type   { color: var(--c-teal-mid); }
 html.dark .hp-card-stats  { color: var(--c-text-mid); }
+html.dark .hp-star { color: #374151; }
+html.dark .hp-star.on { color: #f59e0b; }
 html.dark .hp-stars-score { color: var(--c-text-mid); }
 
 /* Tags */

@@ -93,9 +93,13 @@ export async function calculateWait(facilityId: string) {
 
         return {
             waitTime: waitTimeInMins,
-            reportAge        
+            reportAge
         }
     });
+
+    if (waitTimes.length <= 0) {
+        return [false, -1];
+    }
 
     return [true, getWaitTimeMedian(waitTimes)];
 }
@@ -125,9 +129,13 @@ export function calculateWaitFromReports(reports: Report[]) {
 
         return {
             waitTime: waitTimeInMins,
-            reportAge        
+            reportAge
         }
     });
+
+    if (waitTimes.length <= 0) {
+        return [false, -1];
+    }
 
     return [true, getWaitTimeMedian(waitTimes)];
 }
@@ -203,12 +211,14 @@ export function calculatePriceRangeFromReports(reports: Report[]) {
  * @returns {number} Median number of minutes waited
  */
 function getWaitTimeMedian(waitTimes: {waitTime: number, reportAge: number}[]) {
+    if (waitTimes.length === 0) return 0;
+
     waitTimes = [...waitTimes].sort((a, b) => a.waitTime - b.waitTime);
 
     const half = Math.floor(waitTimes.length / 2);
 
-    return (waitTimes.length % 2 ? 
-        waitTimes[half]?.waitTime :
+    return (waitTimes.length % 2 ?
+        waitTimes[half]!.waitTime :
         (waitTimes[half - 1]!.waitTime + waitTimes[half]!.waitTime) / 2
     );
 }

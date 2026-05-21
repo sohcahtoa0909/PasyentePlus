@@ -252,7 +252,7 @@ export default function PreferencesPage({
   const displayCenter  = activeLocation?.coords ?? DEFAULT_CENTER;
   const displayLabel   = activeLocation?.label  ?? "No location set";
   const displayMarkers = activeLocation
-    ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>${activeLocation.label}</strong>` }]
+    ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>${activeLocation.label}</strong>`, markerType: "user" }]
     : [];
 
   const modalCenter = mapExpanded === "setHome"
@@ -270,26 +270,12 @@ export default function PreferencesPage({
     <div className="app-shell">
       <div className="map-full">
         <MapComponent
-          center={DEFAULT_CENTER}
+          center={activeLocation?.coords ?? DEFAULT_CENTER}
           zoom={12}
-          markers={[{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
-          onMarkerClick={(markerData) => {
-            const facility = {
-              id: markerData.id || markerData.name,
-              hospitalName: markerData.name,
-              facilityName: "Healthcare Facility",
-              priceLow: 1000,
-              priceHigh: 5000,
-              distance: 5,
-              waitTime: 30,
-              services: ["General Care"],
-              rating: 4.5,
-              address: markerData.popupContent?.replace(/<[^>]*>/g, '') || "Address available upon request",
-              phone: "",
-              hours: "24/7"
-            };
-            handleFacilitySelect(facility);
-          }}
+          markers={activeLocation
+            ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>📍 ${activeLocation.label}</strong>`, markerType: "user" }]
+            : [{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
+          autoCenter={!activeLocation}
         />
       </div>
 
@@ -370,6 +356,7 @@ export default function PreferencesPage({
                         center={displayCenter}
                         zoom={13}
                         markers={displayMarkers}
+                        autoCenter={!activeLocation}
                       />
                       <div className="prefs-mini-map-overlay">
                         <span className="prefs-mini-map-expand-icon"><IconExpand /></span>
@@ -512,7 +499,7 @@ export default function PreferencesPage({
                             <div className="prefs-facility-meta">
                               <span>₱{f.budget}</span>
                               <span>⏱ {f.travel}m</span>
-                              <span>★ {f.rating}</span>
+                              <span>★ {f.rating != null ? parseFloat(f.rating).toFixed(1) : "—"}</span>
                             </div>
                           </div>
                           <input
@@ -581,7 +568,7 @@ export default function PreferencesPage({
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div className="prefs-facility-name" style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{h.name}</div>
                               <div className="prefs-history-params">
-                                {h.type}{h.budget ? ` · ₱${h.budget}` : ""}{h.travel ? ` · ${h.travel}m` : ""}{h.rating ? ` · ★ ${h.rating}` : ""}
+                                {h.type}{h.budget ? ` · ₱${h.budget}` : ""}{h.travel ? ` · ${h.travel}m` : ""}{h.rating != null ? ` · ★ ${parseFloat(h.rating).toFixed(1)}` : ""}
                               </div>
                             </div>
                             <div className="prefs-history-date">{formatViewedAt(h.viewedAt)}</div>
@@ -636,11 +623,12 @@ export default function PreferencesPage({
                 zoom={13}
                 markers={
                   mapExpanded === "setHome" && homeLocation
-                    ? [{ position: homeLocation.coords, name: homeLocation.label, popupContent: `<strong>${homeLocation.label}</strong>` }]
+                    ? [{ position: homeLocation.coords, name: homeLocation.label, popupContent: `<strong>${homeLocation.label}</strong>`, markerType: "user" }]
                     : displayMarkers
                 }
                 clickable={mapExpanded === "setHome"}
                 onMapClick={mapExpanded === "setHome" ? handleMapClick : null}
+                autoCenter={!homeLocation && !activeLocation}
               />
             </div>
           </div>

@@ -388,12 +388,14 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
         return { success: true };
       }
 
-      // Route custom API error strings based on status code fallbacks
       switch(res.status) {
-        case 403:
-          return { success: false, message: "Not logged in! Please log in to leave a review." };
         case 401:
-          return { success: false, message: data.message || "Unauthorized access." };
+          // Expired or missing token — clear stale session so the user is prompted to re-login
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          return { success: false, sessionExpired: true, message: data.message || "Your session has expired. Please log in again." };
+        case 403:
+          return { success: false, message: "Invalid session. Please log out and log in again." };
         case 429:
           return { success: false, message: "You have submitted a review too recently! Please try again later." };
         default:
@@ -428,7 +430,10 @@ export default function FacilityDetailsModal({ facility, onClose, onGetDirection
       setSubmitStatus("success");
     } else {
       setSubmitStatus("error");
-      setErrorMessage(result.message);
+      setErrorMessage(typeof result.message === "string" ? result.message : "An error occurred. Please try again.");
+      if (result.sessionExpired && onLoginRequest) {
+        onLoginRequest();
+      }
     }
   }
 
