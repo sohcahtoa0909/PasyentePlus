@@ -17,63 +17,58 @@ const NAV = [
 const IconSettings = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 
 const steps = [
-  {title: "Set Your Preferences", desc: "Tell us what matters — location, services, insurance, and more." },
-  {title: "Browse Results",        desc: "Explore a curated list of facilities ranked by your preferences." },
-  {title: "View Details",           desc: "Dive into full facility profiles: hours, contacts, services." },
-  {title: "Take Action",            desc: "Call, get directions, or save a facility directly from the app." },
+  { title: "Set Your Location",            desc: "In the Preferences tab, tap the map to pin your home location. This is used as your starting point for calculating travel times and getting directions." },
+  { title: "Adjust Your Preferences",      desc: "Use the Max Travel Time and Max Waiting Time sliders in Preferences to set what works for you. PASYENTE+ uses these to rank facilities." },
+  { title: "Browse Recommended Facilities", desc: "The Home page shows facilities ranked by how well they match your preferences. The best-matching facility is highlighted at the top." },
+  { title: "View Facility Details",        desc: "Tap any facility card to see its full profile: services, estimated wait time, budget range, location on the map, and community ratings." },
+  { title: "Get Directions",               desc: "Inside a facility's details, tap Get Directions to see a driving route drawn on the map from your home location to the facility." },
 ];
 
 const faqs = [
-  { 
-    q: "What is PASYENTE+ and who is it for?",   
-    a: "PASYENTE+ is a healthcare facility finder designed for Filipinos. It helps patients locate, compare, and choose hospitals and clinics based on their personal needs, location, and preferences." 
+  {
+    q: "What is PASYENTE+ and who is it for?",
+    a: "PASYENTE+ is a healthcare facility finder designed for patients in Davao City. It helps you locate, compare, and choose hospitals and clinics based on your location, budget, and time preferences.",
   },
-  { 
-    q: "Is PASYENTE+ free to use?",              
-    a: "Yes, completely free for all users. No hidden charges or subscription fees are required to search and view healthcare facilities." 
+  {
+    q: "Is PASYENTE+ free to use?",
+    a: "Yes, completely free for all users. No hidden charges or subscription fees are required to search and view healthcare facilities.",
   },
-  { 
-    q: "How does PASYENTE+ recommend healthcare facilities?", 
-    a: "PASYENTE+ uses your preferences (budget, travel time, and waiting time) to filter and rank facilities. We calculate a match score based on how well each facility meets your criteria, then present you with the best options tailored to your needs. The facility that best balances all three factors will be marked as the best match." 
+  {
+    q: "How does PASYENTE+ recommend healthcare facilities?",
+    a: "PASYENTE+ uses your preferences — budget, max travel time, and max waiting time — to calculate a match score for each facility. The facility that best balances all three factors is marked as the best match.",
   },
-  { 
-    q: "How are facilities ranked in results?",  
-    a: "Facilities are ranked based on your preferences, proximity, available services, and user ratings. Adjust preferences anytime to refine rankings." 
+  {
+    q: "How are facilities ranked in results?",
+    a: "Facilities are ranked by how closely they match your set preferences. You can update your travel time and wait time sliders in the Preferences tab at any time to refine the rankings.",
   },
   {
     q: "Is the cost information accurate?",
-    a: "We strive to provide the most up-to-date and accurate cost information for each healthcare facility. However, prices may vary based on the services provided and other factors. We recommend confirming costs directly with the facility."
+    a: "We strive to provide the most up-to-date cost information for each facility. However, prices may vary depending on the services you need. We recommend confirming costs directly with the facility before your visit.",
   },
   {
     q: "How is waiting time estimated?",
-    a: "Waiting times are estimated based on typical patient flow at each facility. These are averages and actual waiting times may vary depending on the day, time, and number of patients. Emergency cases are prioritized and may affect waiting times."
+    a: "Wait times are estimated from community reports submitted by users. These are averages — actual wait times may vary by day, time, and patient volume.",
   },
   {
     q: "Can I book an appointment through PASYENTE+?",
-    a: "Currently, PASYENTE+ helps you find and compare facilities, but does not offer direct appointment booking. We provide contact information for each facility so you can easily reach out to them to schedule an appointment."
+    a: "No, PASYENTE+ does not offer direct appointment booking. The app helps you find and compare facilities; you will need to contact the facility directly to schedule an appointment.",
   },
-  { 
-    q: "Can I save or bookmark facilities?",     
-    a: "Yes! Tap the bookmark icon on any facility card. Saved facilities are accessible anytime from the Preferences tab." 
+  {
+    q: "Can I save facilities?",
+    a: "Yes. Open any facility's details and it will automatically appear in your History in the Preferences tab. You can also check the checkbox next to a facility in Preferences to mark it as saved.",
   },
-  { 
-    q: "How do I update my preferences?",        
-    a: "Go to the Preferences tab. From there update your location, healthcare priorities, insurance type, and other filters at any time." 
+  {
+    q: "How do I update my preferences?",
+    a: "Go to the Preferences tab. From there you can update your home location and adjust your Max Travel Time and Max Waiting Time sliders.",
   },
   {
     q: "What if no facilities match my criteria?",
-    a: "If no facilities match your criteria, try adjusting your preferences to be more flexible. You can also expand your search radius or consider nearby cities for more options."
+    a: "Try loosening your preferences — increase your Max Travel Time or Max Waiting Time sliders in the Preferences tab to allow more facilities to appear in your results.",
   },
   {
     q: "Are all Davao City healthcare facilities listed?",
-    a: "We aim to include as many healthcare facilities in Davao City as possible, but there may be some that are not yet listed. We are continuously working to expand our database and welcome suggestions for facilities to add."
-  }
-];
-
-const contacts = [
-  { icon: "✉️", label: "Email Us",  value: "help@pasyente.com" },
-  { icon: "📞", label: "Call Us",   value: "(082) 123-4567" },
-  { icon: "💬", label: "Live Chat", value: "Mon–Fri, 8AM–5PM" },
+    a: "We aim to include as many healthcare facilities in Davao City as possible, but some may not yet be listed. We are continuously working to expand our database.",
+  },
 ];
 
 export default function HelpPage({
@@ -180,13 +175,13 @@ export default function HelpPage({
             <div className="panel-header-inner">
               <div className="panel-eyebrow">PASYENTE+</div>
               <div className="panel-title">Help</div>
-              <div className="panel-subtitle">Guides, FAQs &amp; how to reach us</div>
+              <div className="panel-subtitle">Guides &amp; frequently asked questions</div>
             </div>
             <div className="panel-divider" />
           </div>
 
           <div className="panel-tabs">
-            {["How To", "FAQ", "Contact"].map((t) => (
+            {["How To", "FAQ"].map((t) => (
               <button key={t}
                 className={`panel-tab ${tab === t ? "active" : ""}`}
                 onClick={() => setTab(t)}>{t}
@@ -234,23 +229,6 @@ export default function HelpPage({
                 </div>
               )}
 
-              {(tab === "Contact") && (
-                <div className="section-block">
-                  <div className="section-label">Still Need Help?</div>
-                  <p className="section-text" style={{ marginBottom: 14 }}>
-                    Our support team is ready to assist you with any questions or issues.
-                  </p>
-                  <div className="contact-grid">
-                    {contacts.map((c, i) => (
-                      <div key={i} className="contact-card">
-                        <div className="contact-icon">{c.icon}</div>
-                        <div className="contact-label">{c.label}</div>
-                        <div className="contact-value">{c.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
             </div>
           </div>
