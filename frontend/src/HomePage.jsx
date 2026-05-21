@@ -197,7 +197,7 @@ function ServiceSearch({ onServiceSelect, selectedService, handleQueryFacilities
 }
 
 /* ── PrefSlider ── */
-function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }) {
+function PrefSlider({ label, value, min, max, step = 1, prefix = "", unit = "", onChange }) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
     <div className="hp-pref-row">
@@ -208,7 +208,7 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
       <div className="hp-slider-track">
         <div className="hp-slider-fill" style={{ width: `${pct}%` }} />
         <div className="hp-slider-thumb" style={{ left: `${pct}%` }} />
-        <input className="hp-slider-input" type="range" min={min} max={max} value={value}
+        <input className="hp-slider-input" type="range" min={min} max={max} step={step} value={value}
           onChange={e => onChange(Number(e.target.value))} />
       </div>
     </div>
@@ -510,7 +510,7 @@ export default function HomePage({
 
             <div className="hp-section-block">
               <div className="hp-section-label">Your Preferences</div>
-              <PrefSlider label="Budget"           value={budget}  min={0}    max={budgetMax} prefix="₱" onChange={setBudget}  />
+              <PrefSlider label="Budget"           value={budget}  min={0}    max={budgetMax} step={50} prefix="₱" onChange={setBudget}  />
               <PrefSlider label="Max Travel Time"  value={travel}  min={5}    max={120}   unit=" mins"  onChange={setTravel}  />
               <PrefSlider label="Max Waiting Time" value={waiting} min={10}   max={180}  unit=" mins"  onChange={setWaiting} />
             </div>
