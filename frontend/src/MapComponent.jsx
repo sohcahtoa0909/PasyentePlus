@@ -2,13 +2,57 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix for default marker icons in Leaflet with React
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
+// ── Custom map pin icons ──────────────────────────────────────────────────────
+
+// Teal teardrop with a house icon — used for the user's home/active location
+function createUserIcon() {
+  return L.divIcon({
+    className: "",
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="32" height="42">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20S24 21 24 12C24 5.4 18.6 0 12 0z"
+            fill="#007b8a" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="7" fill="white"/>
+      <path d="M12 6.8L6.5 12h1.5v5.5h3.5v-3.5h1v3.5H16V12h1.5z" fill="#007b8a"/>
+    </svg>`,
+    iconSize: [32, 42],
+    iconAnchor: [16, 42],
+    popupAnchor: [0, -44],
+  });
+}
+
+// Red teardrop with a hospital cross — used for facility locations
+function createFacilityIcon() {
+  return L.divIcon({
+    className: "",
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="26" height="34">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20S24 21 24 12C24 5.4 18.6 0 12 0z"
+            fill="#e05555" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="7" fill="white"/>
+      <rect x="10.5" y="7.5" width="3" height="9" rx="1" fill="#e05555"/>
+      <rect x="7.5" y="10.5" width="9" height="3" rx="1" fill="#e05555"/>
+    </svg>`,
+    iconSize: [26, 34],
+    iconAnchor: [13, 34],
+    popupAnchor: [0, -36],
+  });
+}
+
+// Blue pulsing dot — used for the device's live GPS location
+function createGpsIcon() {
+  return L.divIcon({
+    className: "",
+    html: `<div style="
+      width:16px;height:16px;
+      background:#3b82f6;
+      border-radius:50%;
+      border:3px solid white;
+      box-shadow:0 0 0 4px rgba(59,130,246,0.3),0 2px 6px rgba(0,0,0,0.25);
+    "></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+    popupAnchor: [0, -10],
+  });
+}
 
 export default function MapComponent({
   center = [7.1907, 125.4553],
@@ -54,7 +98,7 @@ export default function MapComponent({
       // openPopup() triggers Leaflet autoPan which would override the home pin center.
       if (autoCenterRef.current) {
         mapInstanceRef.current.setView(e.latlng, 15);
-        L.marker(e.latlng)
+        L.marker(e.latlng, { icon: createGpsIcon() })
           .addTo(mapInstanceRef.current)
           .bindPopup("You are here!")
           .openPopup();
@@ -100,7 +144,8 @@ export default function MapComponent({
     markersRef.current = [];
 
     markers.forEach((markerData) => {
-      const marker = L.marker(markerData.position)
+      const icon = markerData.markerType === "user" ? createUserIcon() : createFacilityIcon();
+      const marker = L.marker(markerData.position, { icon })
         .addTo(mapInstanceRef.current)
         .bindPopup(markerData.popupContent || markerData.name);
 

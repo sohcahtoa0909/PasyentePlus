@@ -217,12 +217,15 @@ function PrefSlider({ label, value, min, max, prefix = "", unit = "", onChange }
 
 /* ── Stars ── */
 function Stars({ rating, ratingCount }) {
+  const hasRating = rating != null && rating > 0;
   return (
     <span className="hp-stars">
       {[1, 2, 3, 4, 5].map(i => (
-        <span key={i} className={`hp-star${parseFloat(rating) >= i ? " on" : ""}`}>★</span>
+        <span key={i} className={`hp-star${hasRating && parseFloat(rating) >= i ? " on" : ""}`}>★</span>
       ))}
-      <span className="hp-stars-score">{parseFloat(rating).toFixed(1)} ({ratingCount})</span>
+      <span className="hp-stars-score">
+        {hasRating ? `${parseFloat(rating).toFixed(1)} (${ratingCount})` : "No ratings yet"}
+      </span>
     </span>
   );
 }
@@ -251,10 +254,7 @@ function FacilityCard({ facility, selected, onClick, onOpenDetails, animDelay })
         }        
       </div>
       <div className="hp-card-bottom">
-        {facility.rating ?
-          <Stars rating={facility.rating} ratingCount={facility.ratingCount}/> :
-          <span className="hp-stat">No ratings yet.</span>
-        }        
+        <Stars rating={facility.rating} ratingCount={facility.ratingCount} />
         <div className="hp-tags">
           {facility.services.map(s => (
             <span key={s} className="hp-tag">{s}</span>
@@ -304,6 +304,7 @@ export default function HomePage({
       position: activeLocation.coords,
       name: activeLocation.label,
       popupContent: `<strong>📍 ${activeLocation.label}</strong>`,
+      markerType: "user",
     };
     return [locationPin, ...facilityMarkers];
   }, [dynamicFacilities, activeLocation]);
@@ -362,10 +363,17 @@ export default function HomePage({
             },
           )}`,
         );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          console.error("Search API error:", response.status, err);
+          setDynamicFacilities([]);
+          return;
+        }
         const json = await response.json();
-        setDynamicFacilities(transformFacilityData(json));
+        setDynamicFacilities(Array.isArray(json) ? transformFacilityData(json) : []);
       } catch (err) {
-        console.log("An error occurred! " + err);
+        console.error("An error occurred!", err);
+        setDynamicFacilities([]);
       }
     },
     [budget],

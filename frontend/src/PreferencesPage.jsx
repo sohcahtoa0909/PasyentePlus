@@ -252,7 +252,7 @@ export default function PreferencesPage({
   const displayCenter  = activeLocation?.coords ?? DEFAULT_CENTER;
   const displayLabel   = activeLocation?.label  ?? "No location set";
   const displayMarkers = activeLocation
-    ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>${activeLocation.label}</strong>` }]
+    ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>${activeLocation.label}</strong>`, markerType: "user" }]
     : [];
 
   const modalCenter = mapExpanded === "setHome"
@@ -273,7 +273,7 @@ export default function PreferencesPage({
           center={activeLocation?.coords ?? DEFAULT_CENTER}
           zoom={12}
           markers={activeLocation
-            ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>📍 ${activeLocation.label}</strong>` }]
+            ? [{ position: activeLocation.coords, name: activeLocation.label, popupContent: `<strong>📍 ${activeLocation.label}</strong>`, markerType: "user" }]
             : [{ position: DEFAULT_CENTER, name: "Davao City", popupContent: "<strong>Davao City</strong>" }]}
           autoCenter={!activeLocation}
         />
@@ -623,7 +623,7 @@ export default function PreferencesPage({
                 zoom={13}
                 markers={
                   mapExpanded === "setHome" && homeLocation
-                    ? [{ position: homeLocation.coords, name: homeLocation.label, popupContent: `<strong>${homeLocation.label}</strong>` }]
+                    ? [{ position: homeLocation.coords, name: homeLocation.label, popupContent: `<strong>${homeLocation.label}</strong>`, markerType: "user" }]
                     : displayMarkers
                 }
                 clickable={mapExpanded === "setHome"}
