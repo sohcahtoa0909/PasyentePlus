@@ -62,8 +62,8 @@ router.post('/', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(`ERROR at (${err})`)
         return res.status(500).json({
-            message: err
-        });        
+            message: err instanceof Error ? err.message : String(err)
+        });
     }
 
 });

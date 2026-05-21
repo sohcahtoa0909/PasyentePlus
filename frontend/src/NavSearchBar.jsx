@@ -115,7 +115,7 @@ export default function NavSearchBar({ onFacilitySelect, selectedFacility }) {
   function selectHospital(hospital) {
     // Build a facility-compatible object from the hospital search result
     const facilityObj = {
-      id: hospital.id,
+      id: hospital.facilityId ?? hospital.id,
       hospitalName: hospital.hospitalName,
       name: hospital.hospitalName,
       facilityName: hospital.facilityTypes.join(" · ") || "Healthcare Facility",

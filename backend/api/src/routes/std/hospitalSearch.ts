@@ -41,6 +41,7 @@ router.get("/", async (req, res) => {
 
       return {
         id: h.id,
+        facilityId: h.facilities[0]?.id ?? null,
         hospitalName: h.hospitalName,
         address: h.address ?? null,
         locLat: h.locLat,
