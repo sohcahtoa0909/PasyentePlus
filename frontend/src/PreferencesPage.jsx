@@ -499,7 +499,7 @@ export default function PreferencesPage({
                             <div className="prefs-facility-meta">
                               <span>₱{f.budget}</span>
                               <span>⏱ {f.travel}m</span>
-                              <span>★ {f.rating}</span>
+                              <span>★ {f.rating != null ? parseFloat(f.rating).toFixed(1) : "—"}</span>
                             </div>
                           </div>
                           <input
@@ -568,7 +568,7 @@ export default function PreferencesPage({
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div className="prefs-facility-name" style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{h.name}</div>
                               <div className="prefs-history-params">
-                                {h.type}{h.budget ? ` · ₱${h.budget}` : ""}{h.travel ? ` · ${h.travel}m` : ""}{h.rating ? ` · ★ ${h.rating}` : ""}
+                                {h.type}{h.budget ? ` · ₱${h.budget}` : ""}{h.travel ? ` · ${h.travel}m` : ""}{h.rating != null ? ` · ★ ${parseFloat(h.rating).toFixed(1)}` : ""}
                               </div>
                             </div>
                             <div className="prefs-history-date">{formatViewedAt(h.viewedAt)}</div>
